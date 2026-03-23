@@ -4,16 +4,13 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, KeyRound } from "lucide-react";
 import { createClientComponentClient } from "@/lib/supabase";
-import { normalizeSmailIdentifier, rollNoToSmailEmail } from "@/lib/rollno";
+import { isSmailEmail } from "@/lib/rollno";
 import { InlineAlert } from "@/components/ui/Feedback";
 
 const supabase = createClientComponentClient();
-const exampleRollNo = "CY25B013";
-const exampleEmail = rollNoToSmailEmail(exampleRollNo);
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [identifier, setIdentifier] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [password, setPassword] = useState("");
@@ -31,11 +28,12 @@ export default function ForgotPasswordPage() {
 
   const otpValue = useMemo(() => otp.join(""), [otp]);
 
-  const sendOtp = async (nextIdentifier = identifier) => {
-    const normalizedEmail = normalizeSmailIdentifier(nextIdentifier);
-    const { error: otpError } = await supabase.auth.signInWithOtp({ email: normalizedEmail });
+  const sendOtp = async () => {
+    if (!isSmailEmail(email)) {
+      throw new Error("Please enter your IITM smail address.");
+    }
+    const { error: otpError } = await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase() });
     if (otpError) throw otpError;
-    setEmail(normalizedEmail);
   };
 
   return (
@@ -53,9 +51,7 @@ export default function ForgotPasswordPage() {
               <KeyRound size={28} />
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-[#0f172a]">Forgot Password</h1>
-            <p className="mt-2 text-sm font-medium tracking-wide text-slate-500">
-              Enter <span className="font-semibold text-slate-700">{exampleRollNo}</span> or <span className="font-semibold text-slate-700">{exampleEmail}</span> to receive an OTP.
-            </p>
+            <p className="mt-2 text-sm font-medium tracking-wide text-slate-500">Enter your registered smail address to receive an OTP.</p>
           </div>
 
           <form
@@ -76,8 +72,8 @@ export default function ForgotPasswordPage() {
             }}
           >
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">Smail email or roll number</label>
-              <input type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder={`${exampleRollNo} or ${exampleEmail}`} required className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <label className="text-sm font-semibold text-slate-700">Email Address</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="rollno@smail.iitm.ac.in" required className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
 
             <InlineAlert message={error} />
@@ -93,7 +89,7 @@ export default function ForgotPasswordPage() {
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div className="mb-8 mt-2 flex flex-col items-center text-center">
             <h1 className="text-2xl font-bold tracking-tight text-[#0f172a]">Verify OTP</h1>
-            <p className="mt-2 px-4 text-sm font-medium tracking-wide text-slate-500">We&apos;ve sent a 6-digit code to {email}.</p>
+            <p className="mt-2 px-4 text-sm font-medium tracking-wide text-slate-500">We&apos;ve sent a 6-digit code to your email.</p>
           </div>
 
           <form
@@ -158,7 +154,7 @@ export default function ForgotPasswordPage() {
                     setLoading(true);
                     setError(null);
                     try {
-                      await sendOtp(email);
+                      await sendOtp();
                       setTimer(60);
                     } catch (caught) {
                       setError(caught instanceof Error ? caught.message : "Unable to resend OTP.");

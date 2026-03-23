@@ -4,13 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowLeft, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { createClientComponentClient } from "@/lib/supabase";
-import { extractRollNo, normalizeSmailIdentifier, rollNoToSmailEmail, parseRollNo } from "@/lib/rollno";
+import { extractRollNo, parseRollNo } from "@/lib/rollno";
 import type { Profile, RegisteredRollNo } from "@/lib/types";
 import { InlineAlert } from "@/components/ui/Feedback";
 
 const supabase = createClientComponentClient();
-const exampleRollNo = "CY25B013";
-const exampleEmail = rollNoToSmailEmail(exampleRollNo);
 
 export default function SignupPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
@@ -52,9 +50,7 @@ export default function SignupPage() {
       if (form.password !== form.confirmPassword) {
         throw new Error("Passwords do not match.");
       }
-
-      const normalizedEmail = normalizeSmailIdentifier(form.email);
-      const rollNo = extractRollNo(normalizedEmail);
+      const rollNo = extractRollNo(form.email);
       const parsed = parseRollNo(rollNo);
 
       const { data: existingRollNo, error: rollError } = await supabase
@@ -69,7 +65,7 @@ export default function SignupPage() {
       const registered = (existingRollNo as RegisteredRollNo | null) ?? null;
       const status = registered ? "active" : "pending";
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: normalizedEmail,
+        email: form.email.trim().toLowerCase(),
         password: form.password,
       });
 
@@ -108,9 +104,7 @@ export default function SignupPage() {
 
       <div className="mb-8 mt-2 flex flex-col items-center">
         <h1 className="text-2xl font-bold tracking-tight text-[#0f172a]">Create Account</h1>
-        <p className="text-center text-sm font-medium tracking-wide text-slate-500">
-          Use <span className="font-semibold text-slate-700">{exampleRollNo}</span> or <span className="font-semibold text-slate-700">{exampleEmail}</span>
-        </p>
+        <p className="text-sm font-medium tracking-wide text-slate-500">Join ChemSAGE</p>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
@@ -127,17 +121,17 @@ export default function SignupPage() {
         </div>
 
         <div className="relative space-y-1.5">
-          <label className="text-sm font-semibold text-slate-700">Smail email or roll number</label>
+          <label className="text-sm font-semibold text-slate-700">Email</label>
           <input
-            type="text"
+            type="email"
             value={form.email}
             onChange={(e) => setForm((current) => ({ ...current, email: e.target.value }))}
-            placeholder={`${exampleRollNo} or ${exampleEmail}`}
+            placeholder="rollno@smail.iitm.ac.in"
             required
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <p className="mt-1 inline-block rounded bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600">
-            We accept either your roll number or your full @smail.iitm.ac.in email.
+            Only @smail.iitm.ac.in emails are allowed
           </p>
         </div>
 

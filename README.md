@@ -110,11 +110,6 @@ on conflict (roll_no) do nothing;
 
 If a signup roll number is **not** present there, ChemSAGE creates the auth user and profile with `status = 'pending'` until admin approval.
 
-### Ready-to-run helper SQL
-
-- `supabase/admin_queries.sql` contains admin-safe helper queries for first admin setup, approval checks, ban/unban, and verifying the global room.
-- `supabase/seed_registered_rollnos_cy25b.sql` contains the imported CY25B roll-number seed derived from the student list you supplied. Run that file in Supabase SQL Editor if you want those students to become immediately eligible for active signup.
-
 ## 7. Start the app
 
 ```bash
