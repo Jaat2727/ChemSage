@@ -45,13 +45,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let active = true;
     const bootstrap = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!active) return;
-      setSession(data.session);
-      if (data.session?.user?.id) {
-        await refreshProfile();
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!active) return;
+        setSession(data.session);
+        if (data.session?.user?.id) {
+          try {
+            await refreshProfile();
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      } catch (err) {
+        console.error("Bootstrap error:", err);
+      } finally {
+        if (active) setLoading(false);
       }
-      setLoading(false);
     };
 
     void bootstrap();
@@ -59,7 +68,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!active) return;
       setSession(nextSession);
       if (nextSession?.user?.id) {
-        await refreshProfile();
+        try {
+          await refreshProfile();
+        } catch (err) {
+          console.error(err);
+          setProfile(null);
+        }
       } else {
         setProfile(null);
       }

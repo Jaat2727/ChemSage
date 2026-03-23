@@ -158,7 +158,12 @@ class QueryBuilder<T> {
     });
 
     const text = await response.text();
-    const json = text ? JSON.parse(text) : null;
+    let json = null;
+    try {
+      json = text ? JSON.parse(text) : null;
+    } catch (e) {
+      json = { message: text };
+    }
 
     if (!response.ok) {
       return { data: null, error: new Error(json?.message ?? json?.error_description ?? response.statusText) };
