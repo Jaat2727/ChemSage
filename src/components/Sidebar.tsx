@@ -13,19 +13,19 @@ export function Sidebar() {
   const { profile, signOut } = useAuth();
 
   return (
-    <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-slate-800 bg-[#0f172a] md:flex">
+    <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-slate-800/80 bg-slate-950/80 backdrop-blur-xl md:flex">
       <div className="p-6">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-blue-600 p-2 text-white shadow-lg">
-            <Hexagon size={24} className="fill-current" />
+          <div className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 text-white shadow-lg shadow-blue-500/25">
+            <Hexagon size={22} className="fill-current" />
           </div>
           <div>
-            <h1 className="text-[22px] font-bold tracking-tight text-white leading-tight">ChemSAGE</h1>
-            <p className="text-[13px] font-medium text-slate-400">Chemistry workspace</p>
+            <h1 className="text-xl font-extrabold tracking-tight text-white leading-tight">ChemSAGE</h1>
+            <p className="text-[12px] font-medium text-slate-500">Chemistry workspace</p>
           </div>
         </div>
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -33,21 +33,27 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-r-lg border-l-[3px] px-3 py-3 transition-all duration-200",
+                "flex items-center gap-3 rounded-xl px-3.5 py-3 transition-all duration-200",
                 isActive
-                  ? "border-blue-500 bg-blue-500/10 font-medium text-blue-400"
-                  : "border-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200",
+                  ? "bg-blue-500/10 font-semibold text-blue-400 shadow-sm shadow-blue-500/5"
+                  : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
               )}
             >
-              <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-              <span className="text-[15px]">{item.name}</span>
+              <div className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
+                isActive ? "bg-blue-500/15 text-blue-400" : "text-slate-500",
+              )}>
+                <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+              </div>
+              <span className="text-[14px]">{item.name}</span>
+              {isActive && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-400 shadow-sm shadow-blue-400/50" />}
             </Link>
           );
         })}
       </nav>
-      <div className="border-t border-slate-800 p-4">
+      <div className="border-t border-slate-800/80 p-3">
         {profile?.role === "admin" ? (
-          <Link href="/admin" className="mb-3 flex items-center gap-2 rounded-2xl bg-slate-800/80 px-3 py-3 text-sm font-semibold text-slate-200 transition hover:bg-slate-800">
+          <Link href="/admin" className="mb-2 flex items-center gap-2.5 rounded-xl bg-red-500/[0.08] px-3.5 py-3 text-sm font-semibold text-red-300 transition-all duration-200 hover:bg-red-500/[0.12]">
             <Shield size={16} /> Admin panel
           </Link>
         ) : null}
@@ -56,7 +62,7 @@ export function Sidebar() {
             await signOut();
             router.replace("/login");
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-700 px-3 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-600 hover:bg-slate-800/80"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-800 px-3 py-3 text-sm font-semibold text-slate-400 transition-all duration-200 hover:border-slate-700 hover:bg-white/[0.03] hover:text-slate-200 active:scale-[0.98]"
         >
           <LogOut size={16} /> Sign out
         </button>

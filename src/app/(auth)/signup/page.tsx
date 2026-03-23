@@ -20,21 +20,21 @@ export default function SignupPage() {
 
   if (successState) {
     return (
-      <div className="mx-auto w-full max-w-sm rounded-2xl border border-slate-100 bg-white p-8 text-center text-slate-900 shadow-xl">
+      <div className="mx-auto w-full max-w-sm animate-scale-in rounded-3xl glass-light glass-border p-8 text-center shadow-2xl shadow-blue-950/20">
         <div className="mb-6 flex justify-center">
-          <div className="rounded-full bg-green-100 p-4 text-green-600">
+          <div className="animate-scale-in rounded-full bg-green-100 p-4 text-green-600">
             <CheckCircle2 size={48} strokeWidth={2.5} />
           </div>
         </div>
-        <h2 className="mb-2 text-2xl font-bold tracking-tight text-[#0f172a]">
+        <h2 className="mb-2 text-2xl font-extrabold tracking-tight text-slate-900">
           {successState === "pending" ? "Account pending approval" : "Account activated"}
         </h2>
         <p className="mb-8 leading-relaxed text-slate-500">
           {successState === "pending"
-            ? "Your profile was created and is waiting for admin approval. We’ll notify you on your smail email once approved."
+            ? "Your profile was created and is waiting for admin approval. We'll notify you on your smail email once approved."
             : "Your profile is active because your roll number was already registered. You can sign in immediately."}
         </p>
-        <Link href="/login" className="block w-full rounded-xl bg-[#0f172a] py-3.5 font-semibold text-white shadow-md transition-colors hover:bg-slate-800">
+        <Link href="/login" className="block w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 active:scale-[0.98]">
           Back to Login
         </Link>
       </div>
@@ -96,14 +96,16 @@ export default function SignupPage() {
     }
   };
 
+  const inputClasses = "w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-slate-900 transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30";
+
   return (
-    <div className="relative my-8 w-full max-w-sm rounded-2xl border border-slate-100 bg-white px-8 pb-6 pt-12 text-slate-900 shadow-xl">
-      <Link href="/login" className="absolute left-6 top-6 flex items-center gap-1.5 text-sm font-semibold text-slate-400 transition-colors hover:text-[#0f172a]">
+    <div className="relative my-8 w-full max-w-sm animate-scale-in rounded-3xl glass-light glass-border px-8 pb-6 pt-12 shadow-2xl shadow-blue-950/20">
+      <Link href="/login" className="absolute left-6 top-6 flex items-center gap-1.5 text-sm font-semibold text-slate-400 transition-colors hover:text-slate-900">
         <ArrowLeft size={16} /> Back
       </Link>
 
       <div className="mb-8 mt-2 flex flex-col items-center">
-        <h1 className="text-2xl font-bold tracking-tight text-[#0f172a]">Create Account</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Create Account</h1>
         <p className="text-sm font-medium tracking-wide text-slate-500">Join ChemSAGE</p>
       </div>
 
@@ -116,7 +118,7 @@ export default function SignupPage() {
             onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))}
             placeholder="John Doe"
             required
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={inputClasses}
           />
         </div>
 
@@ -128,9 +130,9 @@ export default function SignupPage() {
             onChange={(e) => setForm((current) => ({ ...current, email: e.target.value }))}
             placeholder="rollno@smail.iitm.ac.in"
             required
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={inputClasses}
           />
-          <p className="mt-1 inline-block rounded bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600">
+          <p className="mt-1 inline-block rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
             Only @smail.iitm.ac.in emails are allowed
           </p>
         </div>
@@ -144,9 +146,9 @@ export default function SignupPage() {
               onChange={(e) => setForm((current) => ({ ...current, password: e.target.value }))}
               placeholder="••••••••"
               required
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`${inputClasses} pr-12`}
             />
-            <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+            <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600">
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
@@ -161,9 +163,9 @@ export default function SignupPage() {
               onChange={(e) => setForm((current) => ({ ...current, confirmPassword: e.target.value }))}
               placeholder="••••••••"
               required
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`${inputClasses} pr-12`}
             />
-            <button type="button" onClick={() => setShowConfirmPassword((value) => !value)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+            <button type="button" onClick={() => setShowConfirmPassword((value) => !value)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600">
               {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
@@ -172,7 +174,7 @@ export default function SignupPage() {
         <InlineAlert message={error} />
 
         <div className="pt-4">
-          <button type="submit" disabled={loading} className="w-full rounded-xl bg-[#0f172a] py-3.5 font-semibold text-white shadow-md transition-colors hover:bg-slate-800 disabled:opacity-60">
+          <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 hover:shadow-xl active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100">
             {loading ? "Creating account..." : "Sign up"}
           </button>
         </div>

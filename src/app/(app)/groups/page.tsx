@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Plus, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Plus, Users2 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState, InlineAlert, LoadingCard, LockedScreen } from "@/components/ui/Feedback";
 import { createClientComponentClient } from "@/lib/supabase";
@@ -12,123 +12,130 @@ import { useAuth } from "@/providers/AuthProvider";
 
 const supabase = createClientComponentClient();
 
-export default function GroupsPage() {
+export default function SynergyGroupsPage() {
   const { profile } = useAuth();
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [joinedIds, setJoinedIds] = useState<string[]>([]);
-  const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "" });
+  const [publicRooms, setPublicRooms] = useState<Room[]>([]);
+  const [joined, setJoined] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    if (!profile || profile.status !== "active") {
-      return;
-    }
-
+    if (!profile || profile.status !== "active") return;
     const load = async () => {
-      const [roomsResponse, joinedResponse] = await Promise.all([
+      const [{ data: rooms }, { data: members }] = await Promise.all([
         supabase.from<Room>("rooms").select("*").eq("is_public", true).order("created_at", { ascending: false }),
-        supabase.from<RoomMember>("room_members").select("room_id, user_id").eq("user_id", profile.id),
+        supabase.from<RoomMember>("room_members").select("room_id").eq("user_id", profile.id),
       ]);
-      if (roomsResponse.error) setError(roomsResponse.error.message);
-      if (joinedResponse.error) setError(joinedResponse.error.message);
-      setRooms(Array.isArray(roomsResponse.data) ? roomsResponse.data : []);
-      setJoinedIds((Array.isArray(joinedResponse.data) ? joinedResponse.data : []).map((item) => item.room_id));
+      setPublicRooms(Array.isArray(rooms) ? rooms : []);
+      setJoined(new Set((Array.isArray(members) ? members : []).map((m) => m.room_id)));
       setLoading(false);
     };
     void load();
   }, [profile]);
 
-  const yourGroups = useMemo(() => rooms.filter((room) => joinedIds.includes(room.id)), [joinedIds, rooms]);
-  const discoverGroups = useMemo(() => rooms.filter((room) => !joinedIds.includes(room.id)), [joinedIds, rooms]);
-
-  const joinRoom = async (roomId: string) => {
-    if (!profile) return;
-    const { error: joinError } = await supabase.from<RoomMember>("room_members").insert({ room_id: roomId, user_id: profile.id });
-    if (joinError) {
-      setError(joinError.message);
-      return;
-    }
-    setJoinedIds((current) => Array.from(new Set([...current, roomId])));
-  };
+  const myGroups = publicRooms.filter((room) => joined.has(room.id));
+  const discover = publicRooms.filter((room) => !joined.has(room.id));
 
   if (!profile) return <LoadingCard />;
-  if (profile.status !== "active") return <LockedScreen title="Synergy Groups locked" description="Only active users can discover and join study groups." />;
+  if (profile.status !== "active") return <LockedScreen title="Synergy Groups locked" description="Only active users can discover and join groups." />;
 
   return (
-    <div className="mx-auto max-w-6xl pb-12">
-      <PageHeader title="Synergy Groups" description="Public rooms, membership, and group chat are all wired to Supabase tables now." profile={profile} action={<button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-full bg-pink-600 px-4 py-2 text-sm font-semibold text-white"><Plus size={16} /> Create group</button>} />
+    <div className="mx-auto max-w-5xl pb-12">
+      <PageHeader title="Synergy Groups" description="Join topic-based rooms, each backed by a Supabase room row and associated messages." profile={profile} action={<button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pink-500/25 transition-all hover:from-pink-600 hover:to-rose-700 active:scale-[0.97]"><Plus size={16} /> Create group</button>} />
+
       <InlineAlert message={error} />
+
       {loading ? <LoadingCard title="Loading groups..." /> : null}
 
-      <section className="mb-10">
-        <div className="mb-4 flex items-center gap-2">
-          <Users size={18} className="text-pink-300" />
-          <h2 className="text-xl font-semibold text-white">Your groups</h2>
-        </div>
-        {!yourGroups.length ? <EmptyState title="You have not joined any groups yet" description="Join a public room below or create a new group for your cohort." /> : null}
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {yourGroups.map((room) => (
-            <article key={room.id} className="rounded-3xl border border-slate-800 bg-[#0f172a]/80 p-5">
-              <h3 className="text-xl font-semibold text-white">{room.name}</h3>
-              <p className="mt-2 text-sm text-slate-400">{room.description || "No description yet."}</p>
-              <Link href={`/groups/${room.id}`} className="mt-4 inline-flex items-center gap-2 rounded-full bg-pink-500/10 px-4 py-2 text-sm font-semibold text-pink-300 transition hover:bg-pink-500/20">
-                Open group <ArrowRight size={16} />
+      {/* My Groups */}
+      {myGroups.length > 0 ? (
+        <section className="mb-10 animate-slide-up">
+          <h2 className="mb-4 text-lg font-bold text-white">My Groups</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {myGroups.map((room) => (
+              <Link key={room.id} href={`/groups/${room.id}`} className="group flex animate-fade-in items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-pink-950/10">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-pink-400">
+                    <Users2 size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">{room.name}</h3>
+                    <p className="text-xs font-medium text-slate-400">Public room</p>
+                  </div>
+                </div>
+                <ArrowRight size={18} className="text-slate-500 transition-all group-hover:translate-x-1 group-hover:text-pink-400" />
               </Link>
-            </article>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-      <section>
-        <div className="mb-4 flex items-center gap-2">
-          <Users size={18} className="text-slate-300" />
-          <h2 className="text-xl font-semibold text-white">Discover</h2>
-        </div>
-        {!discoverGroups.length ? <EmptyState title="Nothing new to join" description="You are already a member of every public room in the directory." /> : null}
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {discoverGroups.map((room) => (
-            <article key={room.id} className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
-              <h3 className="text-xl font-semibold text-white">{room.name}</h3>
-              <p className="mt-2 text-sm text-slate-400">{room.description || "No description yet."}</p>
-              <button onClick={() => void joinRoom(room.id)} className="mt-4 rounded-full bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-700">Join group</button>
-            </article>
-          ))}
-        </div>
-      </section>
+      {/* Discover */}
+      {discover.length > 0 ? (
+        <section className="animate-slide-up delay-100">
+          <h2 className="mb-4 text-lg font-bold text-white">Discover</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {discover.map((room) => (
+              <div key={room.id} className="group animate-fade-in rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 hover:border-slate-700/50 hover:bg-slate-900/60">
+                <div className="mb-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-pink-400">
+                    <Users2 size={22} />
+                  </div>
+                  <h3 className="font-semibold text-white">{room.name}</h3>
+                </div>
+                <button onClick={async () => {
+                  const { error: joinError } = await supabase.from<RoomMember>("room_members").insert({ room_id: room.id, user_id: profile.id });
+                  if (joinError) setError(joinError.message);
+                  else setJoined((current) => new Set([...current, room.id]));
+                }} className="w-full rounded-xl bg-pink-500/10 px-4 py-2.5 text-sm font-semibold text-pink-300 transition-all hover:bg-pink-500/20">
+                  Join group
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : !loading && !myGroups.length ? (
+        <EmptyState title="No groups yet" description="Be the first to create a study group and invite your peers." />
+      ) : null}
 
+      {/* Create modal */}
       {showCreate ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 p-4">
-          <div className="w-full max-w-lg rounded-t-[32px] border border-slate-800 bg-slate-950 p-6 shadow-2xl">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-white">Create group</h2>
-              <button onClick={() => setShowCreate(false)} className="text-sm font-semibold text-slate-400 hover:text-white">Close</button>
-            </div>
-            <form className="space-y-4" onSubmit={async (event) => {
+        <div className="fixed inset-0 z-50 flex items-center justify-center animate-backdrop-enter bg-slate-950/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md animate-scale-in rounded-3xl border border-slate-800/60 bg-slate-950 p-6 shadow-2xl">
+            <h2 className="mb-6 text-xl font-bold text-white">Create a group</h2>
+            <form onSubmit={async (event) => {
               event.preventDefault();
               if (!profile) return;
+              setCreating(true);
               setError(null);
-              const roomId = slugify(form.name);
-              const { data: roomData, error: roomError } = await supabase.from<Room>("rooms").insert({ id: roomId, name: form.name, description: form.description, created_by: profile.id, is_public: true });
-              if (roomError) {
-                setError(roomError.message);
-                return;
+              const { data, error: insertError } = await supabase.from<Room>("rooms").insert({
+                id: slugify(newGroupName),
+                name: newGroupName,
+                created_by: profile.id,
+                is_public: true,
+              });
+              if (insertError) {
+                setError(insertError.message);
+              } else {
+                const inserted = Array.isArray(data) ? data[0] : null;
+                if (inserted) {
+                  setPublicRooms((current) => [inserted as Room, ...current]);
+                  setJoined((current) => new Set([...current, (inserted as Room).id]));
+                  await supabase.from<RoomMember>("room_members").insert({ room_id: (inserted as Room).id, user_id: profile.id });
+                }
+                setShowCreate(false);
+                setNewGroupName("");
               }
-              const { error: memberError } = await supabase.from<RoomMember>("room_members").insert({ room_id: roomId, user_id: profile.id });
-              if (memberError) {
-                setError(memberError.message);
-                return;
-              }
-              const inserted = Array.isArray(roomData) ? roomData[0] : null;
-              if (inserted) setRooms((current) => [inserted as Room, ...current]);
-              setJoinedIds((current) => Array.from(new Set([...current, roomId])));
-              setShowCreate(false);
-              setForm({ name: "", description: "" });
+              setCreating(false);
             }}>
-              <input value={form.name} onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))} placeholder="Group name" className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-white outline-none focus:border-pink-500" required />
-              <textarea value={form.description} onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))} placeholder="Describe the purpose of this group" className="min-h-32 w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-white outline-none focus:border-pink-500" />
-              <button type="submit" className="w-full rounded-2xl bg-pink-600 px-4 py-3 font-semibold text-white">Create and join group</button>
+              <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Group name" className="mb-4 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-white outline-none transition-all placeholder:text-slate-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/20" required />
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 rounded-xl border border-slate-700 py-3 text-sm font-semibold text-slate-300 transition-all hover:bg-slate-800">Cancel</button>
+                <button type="submit" disabled={creating} className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-500/20 transition-all hover:from-pink-600 hover:to-rose-700 active:scale-[0.98] disabled:opacity-60">{creating ? "Creating..." : "Create"}</button>
+              </div>
             </form>
           </div>
         </div>

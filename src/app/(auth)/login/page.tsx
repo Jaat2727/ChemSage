@@ -54,13 +54,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full max-w-sm overflow-hidden rounded-2xl border border-slate-100 bg-white text-slate-900 shadow-xl">
+    <div className="w-full max-w-sm animate-scale-in overflow-hidden rounded-3xl glass-light glass-border shadow-2xl shadow-blue-950/20">
       <div className="p-8">
         <div className="mb-8 flex flex-col items-center">
-          <div className="mb-4 rounded-xl bg-[#0f172a] p-3 text-white shadow-md">
-            <Hexagon size={28} className="fill-current text-blue-500" />
+          <div className="mb-4 animate-float rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-3.5 text-white shadow-lg shadow-blue-600/30">
+            <Hexagon size={28} className="fill-current" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#0f172a]">ChemSAGE</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">ChemSAGE</h1>
           <p className="text-sm font-medium tracking-wide text-slate-500">Chemistry workspace</p>
         </div>
 
@@ -72,7 +72,7 @@ export default function LoginPage() {
               placeholder="rollno@smail.iitm.ac.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-slate-900 transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
             />
             <p className="text-xs text-slate-500">We automatically convert a roll number like CY25B013 into its IITM smail email.</p>
           </div>
@@ -85,12 +85,12 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 pr-12 text-slate-900 transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((value) => !value)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -100,23 +100,23 @@ export default function LoginPage() {
           <InlineAlert message={error} />
 
           <div className="pt-2">
-            <button disabled={loading} className="w-full rounded-xl bg-[#0f172a] py-3.5 font-semibold text-white shadow-md transition-colors hover:bg-slate-800 disabled:opacity-60">
+            <button disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 hover:shadow-xl hover:shadow-slate-900/40 active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100">
               {loading ? "Signing in..." : "Login"}
             </button>
           </div>
 
-          <div className="pt-2 text-center">
+          <div className="flex items-center justify-between pt-2">
             <Link href="/forgot-password" className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-800">
               Forgot password?
             </Link>
-            <Link href="/signup" className="font-semibold text-slate-600 transition-colors hover:text-slate-900">
+            <Link href="/signup" className="text-sm font-semibold text-slate-600 transition-colors hover:text-slate-900">
               Create account
             </Link>
           </div>
         </form>
       </div>
 
-      <div className="border-t border-slate-100 bg-slate-50 p-6 text-center">
+      <div className="border-t border-slate-100 bg-slate-50/80 p-6 text-center">
         <p className="text-sm font-medium text-slate-600">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="font-semibold text-blue-600 transition-colors hover:text-blue-800">
