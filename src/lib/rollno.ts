@@ -1,7 +1,6 @@
 import type { Programme } from "@/lib/types";
 
 const ROLL_NO_PATTERN = /^CY(\d{2})([BSD])(\d{3})$/i;
-const SMAIL_DOMAIN = "@smail.iitm.ac.in";
 
 const programmeMap: Record<string, Programme> = {
   B: "BS",
@@ -29,39 +28,13 @@ export function parseRollNo(rollNo: string) {
 }
 
 export function isSmailEmail(email: string) {
-  return email.trim().toLowerCase().endsWith(SMAIL_DOMAIN);
+  return email.trim().toLowerCase().endsWith("@smail.iitm.ac.in");
 }
 
-export function rollNoToSmailEmail(rollNo: string) {
-  const { roll_no } = parseRollNo(rollNo);
-  return `${roll_no.toLowerCase()}${SMAIL_DOMAIN}`;
-}
-
-export function normalizeSmailIdentifier(value: string) {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    throw new Error("Enter your IITM smail email or roll number.");
+export function extractRollNo(email: string) {
+  if (!isSmailEmail(email)) {
+    throw new Error("Only @smail.iitm.ac.in email addresses are allowed.");
   }
 
-  if (trimmed.includes("@")) {
-    if (!isSmailEmail(trimmed)) {
-      throw new Error("Only @smail.iitm.ac.in email addresses are allowed.");
-    }
-    return trimmed.toLowerCase();
-  }
-
-  return rollNoToSmailEmail(trimmed);
-}
-
-export function extractRollNo(emailOrRollNo: string) {
-  if (emailOrRollNo.includes("@")) {
-    if (!isSmailEmail(emailOrRollNo)) {
-      throw new Error("Only @smail.iitm.ac.in email addresses are allowed.");
-    }
-
-    return emailOrRollNo.trim().split("@")[0].toUpperCase();
-  }
-
-  return parseRollNo(emailOrRollNo).roll_no;
+  return email.trim().split("@")[0].toUpperCase();
 }
