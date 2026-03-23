@@ -1,7 +1,14 @@
-import { Folder, FileText, Calendar, MessageSquare, Users, Bookmark, ChevronRight } from "lucide-react";
+"use client";
+
 import Link from "next/link";
+import { Bookmark, Calendar, ChevronRight, FileText, Folder, MessageSquare, Users } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
+import { LockedScreen, LoadingCard } from "@/components/ui/Feedback";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function DashboardPage() {
+  const { profile, loading } = useAuth();
+
   const modules = [
     {
       title: "Study Vault",
@@ -9,7 +16,7 @@ export default function DashboardPage() {
       icon: Folder,
       iconColor: "text-emerald-500",
       iconBg: "bg-emerald-500/10",
-      href: "/vault"
+      href: "/vault",
     },
     {
       title: "Exam Archive",
@@ -17,7 +24,7 @@ export default function DashboardPage() {
       icon: FileText,
       iconColor: "text-purple-500",
       iconBg: "bg-purple-500/10",
-      href: "/archive"
+      href: "/archive",
     },
     {
       title: "Schedule Manager",
@@ -25,7 +32,7 @@ export default function DashboardPage() {
       icon: Calendar,
       iconColor: "text-orange-500",
       iconBg: "bg-orange-500/10",
-      href: "/schedule"
+      href: "/schedule",
     },
     {
       title: "Network Hub",
@@ -33,7 +40,7 @@ export default function DashboardPage() {
       icon: MessageSquare,
       iconColor: "text-blue-500",
       iconBg: "bg-blue-500/10",
-      href: "/hub"
+      href: "/hub",
     },
     {
       title: "Synergy Groups",
@@ -41,7 +48,7 @@ export default function DashboardPage() {
       icon: Users,
       iconColor: "text-pink-500",
       iconBg: "bg-pink-500/10",
-      href: "/groups"
+      href: "/groups",
     },
     {
       title: "Task Terminal",
@@ -49,59 +56,41 @@ export default function DashboardPage() {
       icon: Bookmark,
       iconColor: "text-indigo-500",
       iconBg: "bg-indigo-500/10",
-      href: "/tasks"
-    }
+      href: "/tasks",
+    },
   ];
 
+  if (loading) return <LoadingCard />;
+  if (!profile) return <LockedScreen title="Profile missing" description="We couldn't load your ChemSAGE profile." />;
+  if (profile.status === "pending") {
+    return <LockedScreen title="Account pending approval" description="Your account has been created, but an administrator still needs to approve it before you can access the portal." />;
+  }
+  if (profile.status === "banned") {
+    return <LockedScreen title="Account disabled" description="This account is currently banned. Please contact the chemistry department admin for clarification." />;
+  }
+
   return (
-    <div className="w-full max-w-5xl mx-auto pb-12">
-      {/* Header Section */}
-      <div className="flex flex-row items-center justify-between mb-10">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Hey, John <span className="inline-block animate-wave origin-[70%_70%]">👋</span>
-          </h1>
-        </div>
-        <div className="px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20">
-          <span className="text-sm font-bold text-blue-700 dark:text-blue-400 tracking-wide">
-            BS • 2025
-          </span>
-        </div>
-      </div>
+    <div className="mx-auto w-full max-w-5xl pb-12">
+      <PageHeader title={`Hey, ${profile.name.split(" ")[0]} 👋`} description="Your chemistry workspace is now backed by live Supabase data and session-aware access control." profile={profile} />
 
-      {/* Modules Intro */}
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Modules</h2>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-          Quickly jump into the tools you use most.
-        </p>
+        <h2 className="text-xl font-bold text-slate-100">Modules</h2>
+        <p className="mt-1 text-sm text-slate-400">Quickly jump into the tools you use most.</p>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {modules.map((mod, idx) => (
-          <Link 
-            href={mod.href} 
-            key={idx}
-            className="group flex flex-col bg-white dark:bg-[#0f172a]/50 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-lg dark:hover:shadow-blue-900/5 transition-all duration-200"
-          >
-            <div className="p-6 flex-1">
-              <div className={`w-12 h-12 rounded-2xl ${mod.iconBg} flex items-center justify-center mb-5`}>
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {modules.map((mod) => (
+          <Link key={mod.title} href={mod.href} className="group flex flex-col overflow-hidden rounded-2xl border border-slate-800 bg-[#0f172a]/70 transition-all duration-200 hover:shadow-lg hover:shadow-blue-900/10">
+            <div className="flex-1 p-6">
+              <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl ${mod.iconBg}`}>
                 <mod.icon className={mod.iconColor} size={24} strokeWidth={2.5} />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-                {mod.title}
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                {mod.description}
-              </p>
+              <h3 className="mb-2 text-lg font-bold text-white">{mod.title}</h3>
+              <p className="text-sm font-medium leading-relaxed text-slate-400">{mod.description}</p>
             </div>
-            
-            <div className="border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30 group-hover:bg-slate-50 dark:group-hover:bg-slate-900/50 transition-colors">
-              <span className="text-[11px] font-bold tracking-wider text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
-                OPEN MODULE
-              </span>
-              <ChevronRight size={16} className="text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors transform group-hover:translate-x-1" />
+            <div className="flex items-center justify-between border-t border-slate-800 bg-slate-900/30 px-6 py-4 transition-colors group-hover:bg-slate-900/50">
+              <span className="text-[11px] font-bold tracking-wider text-slate-500 transition-colors group-hover:text-slate-300">OPEN MODULE</span>
+              <ChevronRight size={16} className="text-slate-500 transition-colors group-hover:translate-x-1 group-hover:text-slate-200" />
             </div>
           </Link>
         ))}
