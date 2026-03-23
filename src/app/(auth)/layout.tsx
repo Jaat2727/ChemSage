@@ -1,11 +1,9 @@
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import { AuthRouteGate } from "@/components/auth/RouteGate";
+
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex-1 w-full h-full overflow-y-auto flex items-center justify-center p-4">
-      {children}
-    </div>
+    <AuthRouteGate>
+      <div className="flex h-full w-full flex-1 items-center justify-center overflow-y-auto p-4">{children}</div>
+    </AuthRouteGate>
   );
 }
