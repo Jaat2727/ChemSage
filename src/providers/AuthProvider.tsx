@@ -21,7 +21,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshProfile = useCallback(async () => {
-    const authSession = session ?? (await supabase.auth.getSession()).data.session;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const authSession = sessionData.session;
     if (!authSession?.user?.id) {
       setProfile(null);
       return null;
@@ -40,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setProfile(data as Profile);
     return data as Profile;
-  }, [session]);
+  }, []);
 
   useEffect(() => {
     let active = true;
