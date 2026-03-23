@@ -47,6 +47,9 @@ export interface Room {
   id: string;
   name: string;
   description: string | null;
+  location?: string | null;
+  contact_info?: string | null;
+  invited_people?: string | null;
   created_by: string;
   is_public: boolean;
   created_at?: string;
@@ -64,6 +67,7 @@ export interface ResourceItem {
   category: "Notes" | "Lab Reports" | "Assignments" | "References";
   file_url: string;
   file_type: string;
+  file_size?: number | null;
   uploaded_by: string;
   created_at: string;
   room_id?: string | null;
@@ -76,6 +80,7 @@ export interface ExamPaper {
   year: number;
   semester: string;
   file_url: string;
+  file_size?: number | null;
   uploaded_by: string;
   created_at: string;
 }

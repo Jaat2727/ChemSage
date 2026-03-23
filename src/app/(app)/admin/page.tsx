@@ -234,7 +234,15 @@ export default function AdminPage() {
             {resources.length === 0 ? <EmptyState title="No resources uploaded" description="Upload files in the Study Vault." /> : null}
             <div className="space-y-2">
               {resources.map((item) => (
-                <div key={item.id} className="group flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all hover:bg-slate-900/60">
+                <div key={item.id} className="group relative flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all hover:bg-slate-900/60">
+                  {item.file_type?.startsWith("image/") ? (
+                    <div className="pointer-events-none absolute bottom-0 left-[250px] z-20 w-48 origin-left scale-95 opacity-0 shadow-2xl shadow-blue-900/20 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 xl:left-[300px]">
+                      <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-1">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.file_url} alt={item.title} className="aspect-video w-full rounded-lg object-cover" />
+                      </div>
+                    </div>
+                  ) : null}
                   <div>
                     <p className="font-semibold text-white">{item.title}</p>
                     <p className="text-xs font-medium text-slate-400">{item.category} • {formatDateTime(item.created_at)}</p>
@@ -255,7 +263,15 @@ export default function AdminPage() {
             {papers.length === 0 ? <EmptyState title="No papers uploaded" description="Upload files in the Exam Archive." /> : null}
             <div className="space-y-2">
               {papers.map((item) => (
-                <div key={item.id} className="group flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all hover:bg-slate-900/60">
+                <div key={item.id} className="group relative flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all hover:bg-slate-900/60">
+                  {item.file_url.match(/\.(jpg|jpeg|png|webp|gif|avif)$/i) ? (
+                    <div className="pointer-events-none absolute bottom-0 left-[250px] z-20 w-48 origin-left scale-95 opacity-0 shadow-2xl shadow-purple-900/20 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 xl:left-[300px]">
+                      <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-1">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={item.file_url} alt={item.subject} className="aspect-video w-full rounded-lg object-cover" />
+                      </div>
+                    </div>
+                  ) : null}
                   <div>
                     <p className="font-semibold text-white">{item.subject}</p>
                     <p className="text-xs font-medium text-slate-400">{item.exam_type} • {item.semester} {item.year} • {formatDateTime(item.created_at)}</p>

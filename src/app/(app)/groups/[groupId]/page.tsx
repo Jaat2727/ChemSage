@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, Users2 } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, Send, UserPlus, Users2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { createClientComponentClient } from "@/lib/supabase";
 import type { ChatMessage, Profile, Room, RoomMember } from "@/lib/types";
@@ -80,69 +80,115 @@ export default function GroupDetailPage() {
   if (loading || !profile) return <LoadingCard />;
 
   return (
-    <div className="mx-auto max-w-4xl pb-4">
-      {/* Header */}
-      <div className="mb-6 flex animate-slide-up items-center gap-4">
-        <Link href="/groups" className="rounded-xl bg-slate-800/60 p-2.5 text-slate-400 transition-all hover:bg-slate-700/60 hover:text-white">
-          <ArrowLeft size={20} />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-white">{room?.name || groupId}</h1>
-          <p className="text-sm font-medium text-slate-400">{members.length} members</p>
-        </div>
-      </div>
-
-      {/* Members */}
-      <section className="mb-6 animate-slide-up delay-100">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-slate-500">Members</h2>
-        <div className="flex flex-wrap gap-2">
-          {members.map((member) => (
-            <div key={member.id} className="flex items-center gap-2 rounded-full border border-slate-800/50 bg-slate-900/40 px-3.5 py-2 backdrop-blur-sm">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-[11px] font-bold text-pink-300">
-                {member.name?.[0]?.toUpperCase() || "?"}
-              </div>
-              <span className="text-sm font-semibold text-white">{member.name}</span>
-              <span className="text-[10px] font-semibold text-slate-500">{member.roll_no}</span>
+    <div className="mx-auto flex h-[calc(100vh-10rem)] w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/40 shadow-2xl backdrop-blur-sm">
+      {/* Main Chat Area */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Telegram Style Header */}
+        <div className="flex items-center justify-between border-b border-slate-800/50 bg-slate-900/90 px-4 py-3 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <Link href="/groups" className="rounded-full p-2 text-slate-400 transition-all hover:bg-slate-800 hover:text-white">
+              <ArrowLeft size={20} />
+            </Link>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/20 to-rose-500/20 text-pink-400">
+              <Users2 size={20} />
             </div>
-          ))}
+            <div>
+              <h1 className="text-base font-bold text-white">{room?.name || groupId}</h1>
+              <p className="text-xs font-medium text-slate-400">{members.length} members</p>
+            </div>
+          </div>
         </div>
-      </section>
 
-      {/* Chat */}
-      <section className="animate-slide-up delay-200 rounded-2xl border border-slate-800/50 bg-slate-900/30 backdrop-blur-sm">
-        <div className="flex items-center gap-2 border-b border-slate-800/50 px-5 py-3">
-          <Users2 size={16} className="text-pink-400" />
-          <h2 className="text-sm font-bold text-white">Group Chat</h2>
-        </div>
-        <div className="max-h-[400px] overflow-y-auto px-5 py-4 space-y-4">
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto bg-slate-950/40 p-4 space-y-4">
           {messages.map((message) => {
             const isMe = message.sender_id === profile.id;
             return (
-              <div key={message.id} className={`flex flex-col ${isMe ? "items-end animate-msg-right" : "items-start animate-msg-left"}`}>
-                <span className="mb-1 px-1 text-xs font-bold text-slate-500">{message.sender?.name || "Unknown"}</span>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${isMe ? "rounded-tr-sm bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-lg shadow-pink-600/20" : "rounded-tl-sm border border-slate-700/50 bg-slate-800/60 text-white"}`}>
-                  <p className="text-sm leading-snug">{message.content}</p>
+              <div key={message.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                <div className="mb-0.5 px-2 text-[11px] font-bold text-slate-500">{message.sender?.name || "Unknown"}</div>
+                <div className={`relative max-w-[85%] rounded-2xl px-3.5 py-2 ${isMe ? "rounded-br-sm bg-pink-600 text-white" : "rounded-bl-sm bg-slate-800 text-white"}`}>
+                  <p className="whitespace-pre-wrap break-words text-[15px] leading-snug">{message.content}</p>
+                  <div className={`mt-1 text-right text-[10px] ${isMe ? "text-pink-200" : "text-slate-400"}`}>
+                    {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </div>
                 </div>
-                <span className="mt-1 px-1 text-[10px] text-slate-500">{formatDateTime(message.created_at)}</span>
               </div>
             );
           })}
           <div ref={messagesEndRef} />
         </div>
-        <form className="flex items-center gap-2 border-t border-slate-800/50 p-3" onSubmit={async (event) => {
-          event.preventDefault();
-          if (!inputText.trim() || !profile.id) return;
-          setSending(true);
-          await supabase.from<ChatMessage>("messages").insert({ room_id: groupId, sender_id: profile.id, content: inputText.trim(), is_anon: false });
-          setInputText("");
-          setSending(false);
-        }}>
-          <input value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder="Message this group..." className="flex-1 rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/20" />
-          <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-lg shadow-pink-500/25 transition-all hover:from-pink-600 hover:to-rose-700 active:scale-95 disabled:opacity-50">
-            <Send size={18} />
-          </button>
-        </form>
-      </section>
+
+        {/* Input Box */}
+        <div className="border-t border-slate-800/50 bg-slate-900/90 p-3 backdrop-blur-md">
+          <form className="flex items-center gap-2" onSubmit={async (event) => {
+            event.preventDefault();
+            if (!inputText.trim() || !profile.id) return;
+            setSending(true);
+            await supabase.from<ChatMessage>("messages").insert({ room_id: groupId, sender_id: profile.id, content: inputText.trim(), is_anon: false });
+            setInputText("");
+            setSending(false);
+          }}>
+            <input value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder="Write a message..." className="flex-1 rounded-full border border-slate-700/60 bg-slate-800/50 px-5 py-3 text-[15px] text-white outline-none transition-all placeholder:text-slate-400 focus:border-pink-500/50 focus:bg-slate-800" />
+            <button type="submit" disabled={!inputText.trim() || sending} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-pink-600 text-white transition-all hover:bg-pink-500 active:scale-95 disabled:opacity-50 disabled:hover:bg-pink-600">
+              <Send size={18} className="translate-x-[2px] transition-transform" />
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Right Sidebar: Group Info */}
+      <div className="hidden w-80 flex-col overflow-y-auto border-l border-slate-800/50 bg-slate-900/90 md:flex">
+        <div className="p-6">
+          <div className="mb-6 flex flex-col items-center border-b border-slate-800/50 pb-6 text-center">
+            <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/20 to-rose-500/20 text-pink-400">
+              <Users2 size={36} />
+            </div>
+            <h2 className="text-xl font-bold text-white">{room?.name}</h2>
+            <p className="mt-1 text-sm font-medium text-slate-400">Public Synergy Group</p>
+          </div>
+          
+          {(room?.location || room?.contact_info || room?.invited_people) && (
+            <div className="mb-6 space-y-4 border-b border-slate-800/50 pb-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Group Info</h3>
+              {room?.location && (
+                <div className="flex gap-3 text-sm">
+                  <MapPin size={18} className="shrink-0 text-slate-400" />
+                  <div className="min-w-0"><div className="truncate font-medium text-white">{room.location}</div><div className="text-[11px] text-slate-500">Location</div></div>
+                </div>
+              )}
+              {room?.contact_info && (
+                <div className="flex gap-3 text-sm">
+                  <Phone size={18} className="shrink-0 text-slate-400" />
+                  <div className="min-w-0"><div className="truncate font-medium text-white">{room.contact_info}</div><div className="text-[11px] text-slate-500">Contact</div></div>
+                </div>
+              )}
+              {room?.invited_people && (
+                <div className="flex gap-3 text-sm">
+                  <UserPlus size={18} className="shrink-0 text-slate-400" />
+                  <div className="min-w-0"><div className="font-medium text-white break-words">{room.invited_people}</div><div className="text-[11px] text-slate-500">Invited Members</div></div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div>
+            <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">{members.length} Members</h3>
+            <div className="space-y-4">
+              {members.map((member) => (
+                <div key={member.id} className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-sm font-bold text-pink-300">
+                    {member.name?.[0]?.toUpperCase() || "?"}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-white">{member.name}</p>
+                    <p className="truncate text-[11px] text-slate-400">{member.roll_no}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

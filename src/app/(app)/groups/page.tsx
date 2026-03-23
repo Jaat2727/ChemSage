@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Plus, Users2 } from "lucide-react";
+import { ArrowRight, MapPin, Phone, Plus, UserPlus, Users2 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState, InlineAlert, LoadingCard, LockedScreen } from "@/components/ui/Feedback";
 import { createClientComponentClient } from "@/lib/supabase";
@@ -20,6 +20,9 @@ export default function SynergyGroupsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [newLocation, setNewLocation] = useState("");
+  const [newContactInfo, setNewContactInfo] = useState("");
+  const [newInvitedPeople, setNewInvitedPeople] = useState("");
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -58,15 +61,20 @@ export default function SynergyGroupsPage() {
             {myGroups.map((room) => (
               <Link key={room.id} href={`/groups/${room.id}`} className="group flex animate-fade-in items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-pink-950/10">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-pink-400">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-pink-400">
                     <Users2 size={22} />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-white">{room.name}</h3>
-                    <p className="text-xs font-medium text-slate-400">Public room</p>
+                  <div className="min-w-0">
+                    <h3 className="truncate font-semibold text-white">{room.name}</h3>
+                    <div className="mt-1 flex flex-wrap gap-2 text-xs font-medium text-slate-400">
+                      {room.location && <span className="flex items-center gap-1"><MapPin size={10} />{room.location}</span>}
+                      {room.contact_info && <span className="flex items-center gap-1"><Phone size={10} />{room.contact_info}</span>}
+                      {room.invited_people && <span className="flex items-center gap-1"><UserPlus size={10} />{room.invited_people}</span>}
+                      {!room.location && !room.contact_info && !room.invited_people && <span>Public room</span>}
+                    </div>
                   </div>
                 </div>
-                <ArrowRight size={18} className="text-slate-500 transition-all group-hover:translate-x-1 group-hover:text-pink-400" />
+                <ArrowRight size={18} className="shrink-0 text-slate-500 transition-all group-hover:translate-x-1 group-hover:text-pink-400" />
               </Link>
             ))}
           </div>
@@ -81,10 +89,17 @@ export default function SynergyGroupsPage() {
             {discover.map((room) => (
               <div key={room.id} className="group animate-fade-in rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 hover:border-slate-700/50 hover:bg-slate-900/60">
                 <div className="mb-4 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-pink-400">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-pink-400">
                     <Users2 size={22} />
                   </div>
-                  <h3 className="font-semibold text-white">{room.name}</h3>
+                  <div className="min-w-0">
+                    <h3 className="truncate font-semibold text-white">{room.name}</h3>
+                    <div className="mt-1 flex flex-col gap-1 text-[11px] font-medium text-slate-400">
+                      {room.location && <span className="flex items-center gap-1.5"><MapPin size={10} />{room.location}</span>}
+                      {room.contact_info && <span className="flex items-center gap-1.5"><Phone size={10} />{room.contact_info}</span>}
+                      {room.invited_people && <span className="flex items-center gap-1.5"><UserPlus size={10} />{room.invited_people}</span>}
+                    </div>
+                  </div>
                 </div>
                 <button onClick={async () => {
                   const { error: joinError } = await supabase.from<RoomMember>("room_members").insert({ room_id: room.id, user_id: profile.id });
@@ -114,6 +129,9 @@ export default function SynergyGroupsPage() {
               const { data, error: insertError } = await supabase.from<Room>("rooms").insert({
                 id: slugify(newGroupName),
                 name: newGroupName,
+                location: newLocation.trim() || null,
+                contact_info: newContactInfo.trim() || null,
+                invited_people: newInvitedPeople.trim() || null,
                 created_by: profile.id,
                 is_public: true,
               });
@@ -128,10 +146,16 @@ export default function SynergyGroupsPage() {
                 }
                 setShowCreate(false);
                 setNewGroupName("");
+                setNewLocation("");
+                setNewContactInfo("");
+                setNewInvitedPeople("");
               }
               setCreating(false);
             }}>
-              <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Group name" className="mb-4 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-white outline-none transition-all placeholder:text-slate-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/20" required />
+              <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Group name *" className="mb-3 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-white outline-none transition-all placeholder:text-slate-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/20" required />
+              <input value={newLocation} onChange={(e) => setNewLocation(e.target.value)} placeholder="Location (e.g. Library, Online, Campus)" className="mb-3 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-white outline-none transition-all placeholder:text-slate-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/20" />
+              <input value={newContactInfo} onChange={(e) => setNewContactInfo(e.target.value)} placeholder="Contact Info (e.g. John @ 9876543210)" className="mb-3 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-white outline-none transition-all placeholder:text-slate-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/20" />
+              <input value={newInvitedPeople} onChange={(e) => setNewInvitedPeople(e.target.value)} placeholder="Invited Members (e.g. Alice, Bob, Charlie)" className="mb-5 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-white outline-none transition-all placeholder:text-slate-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/20" />
               <div className="flex gap-3">
                 <button type="button" onClick={() => setShowCreate(false)} className="flex-1 rounded-xl border border-slate-700 py-3 text-sm font-semibold text-slate-300 transition-all hover:bg-slate-800">Cancel</button>
                 <button type="submit" disabled={creating} className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-500/20 transition-all hover:from-pink-600 hover:to-rose-700 active:scale-[0.98] disabled:opacity-60">{creating ? "Creating..." : "Create"}</button>

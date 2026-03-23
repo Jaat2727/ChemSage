@@ -184,7 +184,10 @@ class StorageBucket {
     ensureEnv();
     const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${this.bucket}/${path}`, {
       method: "POST",
-      headers: authHeaders(this.token, { "x-upsert": `${options?.upsert ?? false}` }),
+      headers: authHeaders(this.token, {
+        "Content-Type": file.type || "application/octet-stream",
+        "x-upsert": `${options?.upsert ?? false}`,
+      }),
       body: file,
     });
     const data = await response.json().catch(() => null);
