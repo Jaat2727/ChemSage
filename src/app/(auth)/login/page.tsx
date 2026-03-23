@@ -74,6 +74,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <p className="text-xs text-slate-500">We automatically convert a roll number like CY25B013 into its IITM smail email.</p>
           </div>
 
           <div className="relative space-y-1.5">
@@ -107,6 +108,9 @@ export default function LoginPage() {
           <div className="pt-2 text-center">
             <Link href="/forgot-password" className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-800">
               Forgot password?
+            </Link>
+            <Link href="/signup" className="font-semibold text-slate-600 transition-colors hover:text-slate-900">
+              Create account
             </Link>
           </div>
         </form>
