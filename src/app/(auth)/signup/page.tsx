@@ -72,7 +72,7 @@ export default function SignupPage() {
       if (signUpError) throw signUpError;
       const userId = authData?.user?.id ?? authData?.session?.user?.id;
       if (!userId) {
-        throw new Error("Supabase did not return a user id for the new account.");
+        throw new Error("Account with this email already exists. Please try logging in instead.");
       }
 
       const profile: Partial<Profile> = {
