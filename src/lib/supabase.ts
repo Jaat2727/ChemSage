@@ -161,7 +161,7 @@ class QueryBuilder<T> {
     let json = null;
     try {
       json = text ? JSON.parse(text) : null;
-    } catch (e) {
+    } catch {
       json = { message: text };
     }
 
