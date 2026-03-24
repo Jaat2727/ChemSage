@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download, FileText, Upload, X, CheckCircle2, AlertCircle, Search } from "lucide-react";
+import { Download, FileText, Upload, X, CheckCircle2, AlertCircle, Search, FileArchive, File as FileIcon } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState, InlineAlert, LoadingCard, LockedScreen } from "@/components/ui/Feedback";
 import { createClientComponentClient } from "@/lib/supabase";
@@ -323,11 +323,56 @@ export default function StudyVaultPage() {
             className="group animate-fade-in flex flex-col overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-blue-950/10"
           >
             {resource.file_type?.startsWith("image/") ? (
-              <div className="relative h-40 w-full shrink-0 overflow-hidden border-b border-slate-800/50 bg-slate-950/50">
+              <div className="relative flex-none h-40 w-full overflow-hidden border-b border-slate-800/50 bg-slate-950/50">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={resource.file_url} alt={resource.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
-            ) : null}
+            ) : resource.file_type?.includes("pdf") ? (
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-gradient-to-br from-red-500/10 to-rose-600/10 transition-all group-hover:from-red-500/20 group-hover:to-rose-600/20">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="rounded-xl bg-red-500/20 p-3 text-red-500 shadow-lg shadow-red-500/20">
+                    <FileText size={32} />
+                  </div>
+                  <span className="text-xs font-bold text-red-400">PDF Document</span>
+                </div>
+              </div>
+            ) : resource.file_type?.includes("word") || resource.file_type?.includes("docx") ? (
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-gradient-to-br from-blue-500/10 to-indigo-600/10 transition-all group-hover:from-blue-500/20 group-hover:to-indigo-600/20">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="rounded-xl bg-blue-500/20 p-3 text-blue-500 shadow-lg shadow-blue-500/20">
+                    <FileText size={32} />
+                  </div>
+                  <span className="text-xs font-bold text-blue-400">Word Document</span>
+                </div>
+              </div>
+            ) : resource.file_type?.includes("spreadsheet") || resource.file_type?.includes("xlsx") ? (
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-gradient-to-br from-emerald-500/10 to-green-600/10 transition-all group-hover:from-emerald-500/20 group-hover:to-green-600/20">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="rounded-xl bg-emerald-500/20 p-3 text-emerald-500 shadow-lg shadow-emerald-500/20">
+                    <FileText size={32} />
+                  </div>
+                  <span className="text-xs font-bold text-emerald-400">Spreadsheet</span>
+                </div>
+              </div>
+            ) : resource.file_type?.includes("zip") || resource.file_type?.includes("archive") ? (
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-gradient-to-br from-amber-500/10 to-orange-600/10 transition-all group-hover:from-amber-500/20 group-hover:to-orange-600/20">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="rounded-xl bg-amber-500/20 p-3 text-amber-500 shadow-lg shadow-amber-500/20">
+                    <FileArchive size={32} />
+                  </div>
+                  <span className="text-xs font-bold text-amber-500">Archive/Zip</span>
+                </div>
+              </div>
+            ) : (
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-slate-800/30 transition-all group-hover:bg-slate-800/50">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="rounded-xl bg-slate-700/50 p-3 text-slate-400 shadow-lg shadow-black/20">
+                    <FileIcon size={32} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-400">File Document</span>
+                </div>
+              </div>
+            )}
             <div className="flex flex-1 flex-col p-5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">

@@ -116,8 +116,12 @@ as $$
   );
 $$;
 
-create policy "profiles self read or admin" on public.profiles
-for select using (id = auth.uid() or public.is_admin());
+create policy "profiles select access" on public.profiles
+for select using (
+  id = auth.uid() 
+  or public.is_active_user() 
+  or public.is_admin()
+);
 
 create policy "profiles self update" on public.profiles
 for update using (id = auth.uid() or public.is_admin())
