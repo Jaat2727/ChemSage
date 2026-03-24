@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, MapPin, Phone, Send, UserPlus, Users2 } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, Send, Trash2, UserPlus, Users2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { createClientComponentClient } from "@/lib/supabase";
 import type { ChatMessage, Profile, Room, RoomMember } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
 import { LoadingCard } from "@/components/ui/Feedback";
+import { MessageDisplay } from "@/components/ui/MessageDisplay";
 import { useAuth } from "@/providers/AuthProvider";
 
 const supabase = createClientComponentClient();
@@ -22,6 +23,14 @@ export default function GroupDetailPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!profile?.id) return;
+    const { error: deleteError } = await supabase.from("messages").delete().eq("id", messageId).eq("sender_id", profile.id);
+    if (!deleteError) {
+      setMessages((current) => current.filter((msg) => msg.id !== messageId));
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,7 +56,13 @@ export default function GroupDetailPage() {
       const profiles: Profile[] = (Array.isArray(memberData) ? memberData : []).map((m) => (m as unknown as { profiles: Profile }).profiles).filter(Boolean);
       if (mounted) setMembers(profiles);
 
-      const { data: msgs } = await supabase.from<ChatMessage>("messages").select("*").eq("room_id", groupId).order("created_at", { ascending: true }).limit(50);
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: msgs } = await supabase.from<ChatMessage>("messages")
+        .select("*")
+        .eq("room_id", groupId)
+        .gte("created_at", twentyFourHoursAgo)
+        .order("created_at", { ascending: true })
+        .limit(50);
       const rows = Array.isArray(msgs) ? msgs : [];
       const senderIds = Array.from(new Set(rows.map((row) => row.sender_id)));
       const { data: senders } = senderIds.length ? await supabase.from<Profile>("profiles").select("id, name, roll_no, programme, batch_year").in("id", senderIds) : { data: [] };
@@ -107,9 +122,14 @@ export default function GroupDetailPage() {
               <div key={message.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                 <div className="mb-0.5 px-2 text-[11px] font-bold text-slate-500">{message.sender?.name || "Unknown"}</div>
                 <div className={`relative max-w-[85%] rounded-2xl px-3.5 py-2 ${isMe ? "rounded-br-sm bg-pink-600 text-white" : "rounded-bl-sm bg-slate-800 text-white"}`}>
-                  <p className="whitespace-pre-wrap break-words text-[15px] leading-snug">{message.content}</p>
-                  <div className={`mt-1 text-right text-[10px] ${isMe ? "text-pink-200" : "text-slate-400"}`}>
+                  <MessageDisplay content={message.content} />
+                  <div className={`mt-1 flex items-center justify-end gap-2 text-[10px] ${isMe ? "text-pink-200" : "text-slate-400"}`}>
                     {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {isMe && (
+                      <button onClick={() => handleDeleteMessage(message.id)} className="hover:text-white transition-colors" title="Delete message">
+                        <Trash2 size={12} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

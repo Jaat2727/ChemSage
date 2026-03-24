@@ -151,10 +151,6 @@ for delete using (created_by = auth.uid() or public.is_admin());
 create policy "room_members see joined rooms" on public.room_members
 for select using (
   public.is_active_user()
-  and exists (
-    select 1 from public.room_members rm
-    where rm.room_id = room_members.room_id and rm.user_id = auth.uid()
-  )
 );
 
 create policy "room_members self join" on public.room_members
@@ -196,3 +192,15 @@ for all using (public.is_admin()) with check (public.is_admin());
 
 create policy "schedule own CRUD" on public.schedule
 for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Enable realtime for messages
+alter publication supabase_realtime add table messages;
+
+-- Set up cron job to delete old synergy group messages
+create extension if not exists pg_cron;
+
+select cron.schedule(
+  'delete-old-messages',
+  '0 * * * *',
+  $$ delete from public.messages where room_id != 'global' and created_at < now() - interval '1 day'; $$
+);

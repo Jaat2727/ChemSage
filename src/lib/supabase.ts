@@ -94,6 +94,11 @@ class QueryBuilder<T> {
     return this;
   }
 
+  gte(column: string, value: QueryValue) {
+    this.filters.push([column, "gte", value]);
+    return this;
+  }
+
   neq(column: string, value: QueryValue) {
     this.filters.push([column, "neq", value]);
     return this;

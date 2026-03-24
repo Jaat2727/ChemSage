@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, MapPin, Phone, Plus, UserPlus, Users2 } from "lucide-react";
+import { ArrowRight, MapPin, Phone, Plus, Trash2, UserPlus, Users2 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState, InlineAlert, LoadingCard, LockedScreen } from "@/components/ui/Feedback";
 import { createClientComponentClient } from "@/lib/supabase";
@@ -29,7 +29,7 @@ export default function SynergyGroupsPage() {
     if (!profile || profile.status !== "active") return;
     const load = async () => {
       const [{ data: rooms }, { data: members }] = await Promise.all([
-        supabase.from<Room>("rooms").select("*").eq("is_public", true).order("created_at", { ascending: false }),
+        supabase.from<Room>("rooms").select("*").eq("is_public", true).neq("id", "global").order("created_at", { ascending: false }),
         supabase.from<RoomMember>("room_members").select("room_id").eq("user_id", profile.id),
       ]);
       setPublicRooms(Array.isArray(rooms) ? rooms : []);
@@ -38,6 +38,24 @@ export default function SynergyGroupsPage() {
     };
     void load();
   }, [profile]);
+
+  const handleDeleteRoom = async (roomId: string) => {
+    if (!profile?.id) return;
+    const confirmDelete = window.confirm("Are you sure you want to delete this group? All messages will be permanently lost.");
+    if (!confirmDelete) return;
+
+    const { error: deleteError } = await supabase.from("rooms").delete().eq("id", roomId).eq("created_by", profile.id);
+    if (!deleteError) {
+      setPublicRooms((current) => current.filter((r) => r.id !== roomId));
+      setJoined((current) => {
+        const next = new Set(current);
+        next.delete(roomId);
+        return next;
+      });
+    } else {
+      setError(deleteError.message);
+    }
+  };
 
   const myGroups = publicRooms.filter((room) => joined.has(room.id));
   const discover = publicRooms.filter((room) => !joined.has(room.id));
@@ -59,22 +77,39 @@ export default function SynergyGroupsPage() {
           <h2 className="mb-4 text-lg font-bold text-white">My Groups</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {myGroups.map((room) => (
-              <Link key={room.id} href={`/groups/${room.id}`} className="group flex animate-fade-in items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-pink-950/10">
-                <div className="flex items-center gap-4">
+              <Link key={room.id} href={`/groups/${room.id}`} className="group flex flex-col justify-between animate-fade-in rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-pink-950/10">
+                <div className="mb-4 flex items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-pink-400">
                     <Users2 size={22} />
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="truncate font-semibold text-white">{room.name}</h3>
-                    <div className="mt-1 flex flex-wrap gap-2 text-xs font-medium text-slate-400">
-                      {room.location && <span className="flex items-center gap-1"><MapPin size={10} />{room.location}</span>}
-                      {room.contact_info && <span className="flex items-center gap-1"><Phone size={10} />{room.contact_info}</span>}
-                      {room.invited_people && <span className="flex items-center gap-1"><UserPlus size={10} />{room.invited_people}</span>}
-                      {!room.location && !room.contact_info && !room.invited_people && <span>Public room</span>}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="line-clamp-2 font-semibold text-white leading-snug">{room.name}</h3>
+                      {room.created_by === profile.id && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            void handleDeleteRoom(room.id);
+                          }}
+                          className="shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-red-500/10 hover:text-red-500"
+                          title="Delete Group"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                    <div className="mt-2 flex flex-col gap-1.5 text-[11px] font-medium text-slate-400">
+                      {room.location && <span className="flex items-center gap-1.5"><MapPin size={10} className="shrink-0" /><span className="truncate">{room.location}</span></span>}
+                      {room.contact_info && <span className="flex items-center gap-1.5"><Phone size={10} className="shrink-0" /><span className="truncate">{room.contact_info}</span></span>}
+                      {room.invited_people && <span className="flex items-center gap-1.5"><UserPlus size={10} className="shrink-0" /><span className="line-clamp-1">{room.invited_people}</span></span>}
+                      {!room.location && !room.contact_info && !room.invited_people && <span>Public Synergy Group</span>}
                     </div>
                   </div>
                 </div>
-                <ArrowRight size={18} className="shrink-0 text-slate-500 transition-all group-hover:translate-x-1 group-hover:text-pink-400" />
+                <div className="flex items-center justify-between border-t border-slate-800/50 pt-3">
+                  <span className="text-xs font-semibold text-pink-400">Open Chat</span>
+                  <ArrowRight size={16} className="text-pink-500 transition-transform group-hover:translate-x-1" />
+                </div>
               </Link>
             ))}
           </div>
@@ -94,10 +129,11 @@ export default function SynergyGroupsPage() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="truncate font-semibold text-white">{room.name}</h3>
-                    <div className="mt-1 flex flex-col gap-1 text-[11px] font-medium text-slate-400">
-                      {room.location && <span className="flex items-center gap-1.5"><MapPin size={10} />{room.location}</span>}
-                      {room.contact_info && <span className="flex items-center gap-1.5"><Phone size={10} />{room.contact_info}</span>}
-                      {room.invited_people && <span className="flex items-center gap-1.5"><UserPlus size={10} />{room.invited_people}</span>}
+                    <div className="mt-2 flex flex-col gap-1.5 text-[11px] font-medium text-slate-400">
+                      {room.location && <span className="flex items-center gap-1.5"><MapPin size={10} className="shrink-0" /><span className="truncate">{room.location}</span></span>}
+                      {room.contact_info && <span className="flex items-center gap-1.5"><Phone size={10} className="shrink-0" /><span className="truncate">{room.contact_info}</span></span>}
+                      {room.invited_people && <span className="flex items-center gap-1.5"><UserPlus size={10} className="shrink-0" /><span className="line-clamp-1">{room.invited_people}</span></span>}
+                      {!room.location && !room.contact_info && !room.invited_people && <span>Public Synergy Group</span>}
                     </div>
                   </div>
                 </div>
