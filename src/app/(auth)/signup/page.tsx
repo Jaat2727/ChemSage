@@ -27,12 +27,10 @@ export default function SignupPage() {
           </div>
         </div>
         <h2 className="mb-2 text-2xl font-extrabold tracking-tight text-slate-900">
-          {successState === "pending" ? "Account pending approval" : "Account activated"}
+          Account created successfully
         </h2>
         <p className="mb-8 leading-relaxed text-slate-500">
-          {successState === "pending"
-            ? "Your profile was created and is waiting for admin approval. We'll notify you on your smail email once approved."
-            : "Your profile is active because your roll number was already registered. You can sign in immediately."}
+          Your profile is now active. You can sign in immediately to access your workspace.
         </p>
         <Link href="/login" className="block w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 active:scale-[0.98]">
           Back to Login
@@ -63,7 +61,7 @@ export default function SignupPage() {
       }
 
       const registered = (existingRollNo as RegisteredRollNo | null) ?? null;
-      const status = registered ? "active" : "pending";
+      const status = "active";
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: form.email.trim().toLowerCase(),
         password: form.password,
