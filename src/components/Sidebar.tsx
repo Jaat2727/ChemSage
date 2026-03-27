@@ -7,8 +7,33 @@ import { navItems } from "./navItems";
 import { useAuth } from "@/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 
-export function Sidebar() {
+function NavItem({ item }: { item: typeof navItems[0] }) {
   const pathname = usePathname();
+  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+  
+  return (
+    <Link
+      href={item.href}
+      className={cn(
+        "flex items-center gap-3 rounded-xl px-3.5 py-3 transition-all duration-200",
+        isActive
+          ? "bg-blue-500/10 font-semibold text-blue-400 shadow-sm shadow-blue-500/5"
+          : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
+      )}
+    >
+      <div className={cn(
+        "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
+        isActive ? "bg-blue-500/15 text-blue-400" : "text-slate-500",
+      )}>
+        <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+      </div>
+      <span className="text-[14px]">{item.name}</span>
+      {isActive && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-400 shadow-sm shadow-blue-400/50" />}
+    </Link>
+  );
+}
+
+export function Sidebar() {
   const router = useRouter();
   const { profile, signOut } = useAuth();
 
@@ -26,30 +51,9 @@ export function Sidebar() {
         </div>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-3.5 py-3 transition-all duration-200",
-                isActive
-                  ? "bg-blue-500/10 font-semibold text-blue-400 shadow-sm shadow-blue-500/5"
-                  : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
-              )}
-            >
-              <div className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
-                isActive ? "bg-blue-500/15 text-blue-400" : "text-slate-500",
-              )}>
-                <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-              </div>
-              <span className="text-[14px]">{item.name}</span>
-              {isActive && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-400 shadow-sm shadow-blue-400/50" />}
-            </Link>
-          );
-        })}
+        {navItems.map((item) => (
+          <NavItem key={item.name} item={item} />
+        ))}
       </nav>
       <div className="border-t border-slate-800/80 p-3">
         {profile?.role === "admin" ? (

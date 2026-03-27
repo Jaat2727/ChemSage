@@ -41,10 +41,12 @@ function writeSession(session: Session | null) {
   if (typeof window === "undefined") return;
   if (!session) {
     window.localStorage.removeItem(SESSION_KEY);
+    document.cookie = `${SESSION_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
     window.dispatchEvent(new CustomEvent("chemsage-auth", { detail: { event: "SIGNED_OUT", session: null } }));
     return;
   }
   window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  document.cookie = `${SESSION_KEY}=${encodeURIComponent(JSON.stringify(session))}; path=/; max-age=864000; SameSite=Lax`;
   window.dispatchEvent(new CustomEvent("chemsage-auth", { detail: { event: "SIGNED_IN", session } }));
 }
 

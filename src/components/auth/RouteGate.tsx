@@ -11,11 +11,8 @@ export function AppRouteGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (loading) return;
-    if (!session) {
-      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
-      return;
-    }
+    if (loading || !session) return;
+    
     // Pending/banned users can only see the root page (which shows LockedScreen)
     if (profile && (profile.status === "pending" || profile.status === "banned") && pathname !== "/") {
       router.replace("/");
@@ -26,8 +23,10 @@ export function AppRouteGate({ children }: { children: React.ReactNode }) {
     return <LoadingCard />;
   }
 
+  // Next.js Middleware handles unauth protection, 
+  // return null to prevent flash of content
   if (!session) {
-    return <LoadingCard title="Redirecting to login..." />;
+    return null;
   }
 
   return <>{children}</>;

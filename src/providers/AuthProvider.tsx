@@ -45,40 +45,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    const bootstrap = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        if (!active) return;
-        setSession(data.session);
-        if (data.session?.user?.id) {
-          try {
-            await refreshProfile();
-          } catch (err) {
-            console.error(err);
-          }
-        }
-      } catch (err) {
-        console.error("Bootstrap error:", err);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
 
-    void bootstrap();
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
       if (!active) return;
-      setSession(nextSession);
+      
       if (nextSession?.user?.id) {
         try {
-          await refreshProfile();
+          const { data, error } = await supabase
+            .from<Profile>("profiles")
+            .select("*")
+            .eq("id", nextSession.user.id)
+            .single();
+
+          if (!active) return;
+
+          if (error) {
+            setSession(nextSession);
+            setProfile(null);
+          } else {
+            setSession(nextSession);
+            setProfile(data as Profile);
+          }
         } catch (err) {
+          if (!active) return;
           console.error(err);
+          setSession(nextSession);
           setProfile(null);
         }
       } else {
+        setSession(null);
         setProfile(null);
       }
-      setLoading(false);
+      
+      if (active) setLoading(false);
     });
 
     return () => {
