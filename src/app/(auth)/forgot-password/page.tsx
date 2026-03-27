@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, CheckCircle2, KeyRound } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, CheckCircle2, KeyRound } from "lucide-react";
 import { createClientComponentClient } from "@/lib/supabase";
-import { isSmailEmail } from "@/lib/rollno";
+import { isSmailEmail, normalizeEmail } from "@/lib/rollno";
 import { InlineAlert } from "@/components/ui/Feedback";
 
 const supabase = createClientComponentClient();
@@ -17,6 +17,8 @@ export default function ForgotPasswordPage() {
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [timer, setTimer] = useState(60);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,10 +33,12 @@ export default function ForgotPasswordPage() {
   const otpValue = useMemo(() => otp.join(""), [otp]);
 
   const sendOtp = async () => {
-    if (!isSmailEmail(email)) {
-      throw new Error("Please enter your IITM smail address.");
+    const normalizedEmail = normalizeEmail(email);
+    if (!isSmailEmail(normalizedEmail)) {
+      throw new Error("Please enter your IITM smail address or a valid roll number.");
     }
-    const { error: otpError } = await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase() });
+    // Using signInWithOtp as a passwordless login to reset password
+    const { error: otpError } = await supabase.auth.signInWithOtp({ email: normalizedEmail });
     if (otpError) throw otpError;
   };
 
@@ -74,8 +78,8 @@ export default function ForgotPasswordPage() {
             }}
           >
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">Email Address</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="rollno@smail.iitm.ac.in" required className={inputClasses} />
+              <label className="text-sm font-semibold text-slate-700">Email or Roll Number</label>
+              <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="CY25B013 or rollno@smail.iitm.ac.in" required className={inputClasses} />
             </div>
 
             <InlineAlert message={error} />
@@ -104,7 +108,8 @@ export default function ForgotPasswordPage() {
                 if (otpValue.length !== 6) {
                   throw new Error("Please enter the full 6-digit OTP.");
                 }
-                const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: otpValue, type: "email" });
+                const normalizedEmail = normalizeEmail(email);
+                const { error: verifyError } = await supabase.auth.verifyOtp({ email: normalizedEmail, token: otpValue, type: "email" });
                 if (verifyError) throw verifyError;
                 setStep(3);
               } catch (caught) {
@@ -205,14 +210,46 @@ export default function ForgotPasswordPage() {
               }
             }}
           >
-            <div className="space-y-1.5">
+            <div className="relative space-y-1.5">
               <label className="text-sm font-semibold text-slate-700">New Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className={inputClasses} />
+              <div className="relative">
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  placeholder="••••••••" 
+                  required 
+                  className={`${inputClasses} pr-12`} 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="relative space-y-1.5">
               <label className="text-sm font-semibold text-slate-700">Confirm Password</label>
-              <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" required className={inputClasses} />
+              <div className="relative">
+                <input 
+                  type={showConfirmPassword ? "text" : "password"} 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  placeholder="••••••••" 
+                  required 
+                  className={`${inputClasses} pr-12`} 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((value) => !value)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
             <InlineAlert message={error} />

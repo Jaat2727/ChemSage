@@ -38,3 +38,19 @@ export function extractRollNo(email: string) {
 
   return email.trim().split("@")[0].toUpperCase();
 }
+
+export function normalizeEmail(input: string) {
+  const trimmed = input.trim().toLowerCase();
+  
+  if (trimmed.includes("@")) {
+    return trimmed;
+  }
+  
+  // If it's just a roll number, append the email domain
+  try {
+    const parsed = parseRollNo(trimmed);
+    return `${parsed.roll_no.toLowerCase()}@smail.iitm.ac.in`;
+  } catch {
+    return trimmed; // Let the caller handle the error
+  }
+}

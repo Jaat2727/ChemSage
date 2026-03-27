@@ -19,7 +19,7 @@ export function EmptyState({ title, description, action }: { title: string; desc
   );
 }
 
-export function InlineAlert({ tone = "error", message }: { tone?: "error" | "success" | "info"; message?: string | null }) {
+export function InlineAlert({ tone = "error", message }: { tone?: "error" | "success" | "info"; message?: React.ReactNode }) {
   if (!message) return null;
   return (
     <div

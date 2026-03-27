@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, Download, Shield, Trash2, Upload, X } from "lucide-react";
+import { Bell, Check, Download, Shield, Trash2, Upload, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState, InlineAlert, LoadingCard, LockedScreen } from "@/components/ui/Feedback";
 import { createClientComponentClient } from "@/lib/supabase";
@@ -14,12 +14,22 @@ const supabase = createClientComponentClient();
 const tabs = ["Users", "Pending", "Upload CSV", "Content"] as const;
 type Tab = (typeof tabs)[number];
 
+interface AdminNotification {
+  id: string;
+  type: string;
+  message: string;
+  related_user_id: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
 export default function AdminPage() {
   const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("Users");
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [papers, setPapers] = useState<ExamPaper[]>([]);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -27,31 +37,46 @@ export default function AdminPage() {
   const [filterProgramme, setFilterProgramme] = useState("All");
   const [csvData, setCsvData] = useState<RegisteredRollNo[]>([]);
 
+  const unreadCount = useMemo(() => notifications.filter((n) => !n.is_read).length, [notifications]);
+
   useEffect(() => {
     if (!profile || profile.role !== "admin") return;
     const load = async () => {
-      const [{ data: p }, { data: r }, { data: e }] = await Promise.all([
+      const [{ data: p }, { data: r }, { data: e }, { data: n }] = await Promise.all([
         supabase.from<Profile>("profiles").select("*"),
         supabase.from<ResourceItem>("resources").select("*").order("created_at", { ascending: false }),
         supabase.from<ExamPaper>("exam_papers").select("*").order("created_at", { ascending: false }),
+        supabase.from<AdminNotification>("admin_notifications").select("*").order("created_at", { ascending: false }),
       ]);
       setAllProfiles(Array.isArray(p) ? p : []);
       setResources(Array.isArray(r) ? r : []);
       setPapers(Array.isArray(e) ? e : []);
+      setNotifications(Array.isArray(n) ? n : []);
       setLoading(false);
     };
     void load();
   }, [profile]);
 
-  const activeUsers = useMemo(() => allProfiles.filter((p) => p.status === "active"), [allProfiles]);
+  const activeAndBannedUsers = useMemo(() => allProfiles.filter((p) => p.status === "active" || p.status === "banned"), [allProfiles]);
   const pendingUsers = useMemo(() => allProfiles.filter((p) => p.status === "pending"), [allProfiles]);
   const filteredUsers = useMemo(() => {
-    return activeUsers.filter((p) => {
+    return activeAndBannedUsers.filter((p) => {
       const matchProgramme = filterProgramme === "All" || p.programme === filterProgramme;
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || (p.roll_no || "").toLowerCase().includes(search.toLowerCase());
       return matchProgramme && matchSearch;
     });
-  }, [activeUsers, filterProgramme, search]);
+  }, [activeAndBannedUsers, filterProgramme, search]);
+
+  const markNotificationsRead = async (userId: string) => {
+    // Mark all notifications for this user as read
+    const related = notifications.filter((n) => n.related_user_id === userId && !n.is_read);
+    for (const n of related) {
+      await supabase.from<AdminNotification>("admin_notifications").update({ is_read: true }).eq("id", n.id);
+    }
+    setNotifications((current) =>
+      current.map((n) => (n.related_user_id === userId ? { ...n, is_read: true } : n))
+    );
+  };
 
   if (!profile) return <LoadingCard />;
   if (profile.role !== "admin") return <LockedScreen title="Admin only" description="This section is restricted to administrators." />;
@@ -67,11 +92,23 @@ export default function AdminPage() {
       {/* Tabs */}
       <div className="mb-8 flex flex-wrap gap-2 rounded-2xl border border-slate-800/50 bg-slate-900/40 p-2 backdrop-blur-sm">
         {tabs.map((tab) => (
-          <button key={tab} onClick={() => { setActiveTab(tab); setError(null); setSuccess(null); }} className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${activeTab === tab ? "bg-red-500/10 text-red-300 shadow-sm" : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"}`}>
+          <button key={tab} onClick={() => { setActiveTab(tab); setError(null); setSuccess(null); }} className={`relative rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${activeTab === tab ? "bg-red-500/10 text-red-300 shadow-sm" : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"}`}>
             {tab}
-            {tab === "Pending" && pendingUsers.length > 0 ? <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">{pendingUsers.length}</span> : null}
+            {tab === "Pending" && pendingUsers.length > 0 ? (
+              <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white animate-pulse">
+                {pendingUsers.length}
+              </span>
+            ) : null}
           </button>
         ))}
+
+        {/* Notification bell */}
+        {unreadCount > 0 ? (
+          <div className="ml-auto flex items-center gap-2 rounded-xl bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-300">
+            <Bell size={16} className="animate-bounce" />
+            <span>{unreadCount} new signup{unreadCount !== 1 ? "s" : ""}</span>
+          </div>
+        ) : null}
       </div>
 
       {/* Users Tab */}
@@ -87,6 +124,7 @@ export default function AdminPage() {
             </select>
           </div>
           <div className="space-y-2">
+            {filteredUsers.length === 0 ? <EmptyState title="No users found" description="Try adjusting your search or filter." /> : null}
             {filteredUsers.map((user) => (
               <div key={user.id} className="group flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all hover:bg-slate-900/60">
                 <div className="flex items-center gap-4">
@@ -99,16 +137,67 @@ export default function AdminPage() {
                 <div className="flex items-center gap-2">
                   {user.role === "admin" ? <span className="flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300"><Shield size={12} /> Admin</span> : null}
                   <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${user.status === "active" ? "bg-emerald-500/10 text-emerald-300" : user.status === "banned" ? "bg-red-500/10 text-red-300" : "bg-amber-500/10 text-amber-300"}`}>{user.status}</span>
+                  
                   {user.role !== "admin" ? (
+                    <>
+                      <button onClick={async () => {
+                        const { error: updateError } = await supabase.from<Profile>("profiles").update({ role: "admin" }).eq("id", user.id);
+                        if (updateError) setError(updateError.message);
+                        else {
+                          setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, role: "admin" } : p));
+                          setSuccess(`${user.name} is now an admin.`);
+                        }
+                      }} className="rounded-xl bg-blue-500/10 px-4 py-2 text-xs font-semibold text-blue-300 transition-all hover:bg-blue-500/20">
+                        Make Admin
+                      </button>
+
+                      <button onClick={async () => {
+                        const newStatus = user.status === "banned" ? "active" : "banned";
+                        const { error: updateError } = await supabase.from<Profile>("profiles").update({ status: newStatus }).eq("id", user.id);
+                        if (updateError) setError(updateError.message);
+                        else setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, status: newStatus } : p));
+                      }} className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${user.status === "banned" ? "bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20" : "bg-red-500/10 text-red-300 hover:bg-red-500/20"}`}>
+                        {user.status === "banned" ? "Unban" : "Ban"}
+                      </button>
+                    </>
+                  ) : (
+                    user.id !== profile.id && (
+                      <button onClick={async () => {
+                        const { error: updateError } = await supabase.from<Profile>("profiles").update({ role: "student" }).eq("id", user.id);
+                        if (updateError) setError(updateError.message);
+                        else {
+                          setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, role: "student" } : p));
+                          setSuccess(`${user.name} is no longer an admin.`);
+                        }
+                      }} className="rounded-xl bg-slate-500/10 px-4 py-2 text-xs font-semibold text-slate-300 transition-all hover:bg-slate-500/20">
+                        Revoke Admin
+                      </button>
+                    )
+                  )}
+
+                  {user.id !== profile.id && (
                     <button onClick={async () => {
-                      const newStatus = user.status === "banned" ? "active" : "banned";
-                      const { error: updateError } = await supabase.from<Profile>("profiles").update({ status: newStatus }).eq("id", user.id);
-                      if (updateError) setError(updateError.message);
-                      else setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, status: newStatus } : p));
-                    }} className={`rounded-xl px-4 py-2 text-xs font-semibold opacity-0 transition-all group-hover:opacity-100 ${user.status === "banned" ? "bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20" : "bg-red-500/10 text-red-300 hover:bg-red-500/20"}`}>
-                      {user.status === "banned" ? "Unban" : "Ban"}
+                      if (!confirm(`Are you sure you want to completely delete ${user.name} from the database? This cannot be undone.`)) return;
+                      // Delete profile first
+                      const { error: deleteError } = await supabase.from<Profile>("profiles").delete().eq("id", user.id);
+                      if (deleteError) { setError(deleteError.message); return; }
+                      
+                      // Attempt to delete auth user via edge function
+                      try {
+                        const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/delete-user`;
+                        await fetch(url, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}` },
+                          body: JSON.stringify({ user_id: user.id }),
+                        });
+                      } catch {}
+                      
+                      setAllProfiles((current) => current.filter((p) => p.id !== user.id));
+                      setSuccess(`${user.name} has been completely deleted.`);
+                    }} className="rounded-xl bg-red-600/10 px-4 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-600/20">
+                      Delete DB
                     </button>
-                  ) : null}
+                  )}
                 </div>
               </div>
             ))}
@@ -136,6 +225,7 @@ export default function AdminPage() {
                   else {
                     setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, status: "active" } : p));
                     setSuccess(`${user.name} approved successfully.`);
+                    await markNotificationsRead(user.id);
                   }
                 }} className="flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition-all hover:bg-emerald-500/20 active:scale-[0.97]">
                   <Check size={16} /> Approve
@@ -151,6 +241,7 @@ export default function AdminPage() {
                       body: JSON.stringify({ user_id: user.id }),
                     });
                   } catch {}
+                  await markNotificationsRead(user.id);
                   setAllProfiles((current) => current.filter((p) => p.id !== user.id));
                   setSuccess(`${user.name} rejected and removed.`);
                 }} className="flex items-center gap-1.5 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-300 transition-all hover:bg-red-500/20 active:scale-[0.97]">
