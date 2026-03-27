@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Download, FileText, Upload, X, CheckCircle2, AlertCircle, Search, FileArchive, File as FileIcon } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState, InlineAlert, LoadingCard, LockedScreen } from "@/components/ui/Feedback";
@@ -102,7 +102,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
     setProgress(100);
     setSuccess(true);
     setTimeout(() => { onSuccess(); onClose(); }, 1200);
-  }, [file, title, category, uploaderId, onSuccess, onClose]);
+  }, [file, title, category, tagsInput, uploaderId, onSuccess, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -110,7 +110,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Upload Resource</h2>
-          <button onClick={onClose} className="rounded-full p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white">
+          <button onClick={onClose} className="rounded-full p-1.5 text-slate-400 transition [@media(hover:hover)]:hover:bg-slate-800 [@media(hover:hover)]:hover:text-white active:bg-slate-800">
             <X size={18} />
           </button>
         </div>
@@ -122,7 +122,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
           onDragOver={(e) => e.preventDefault()}
           onClick={() => inputRef.current?.click()}
           className={`mb-5 flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-6 py-8 transition-all ${
-            file ? "border-blue-500/50 bg-blue-500/5" : "border-slate-700 bg-slate-800/40 hover:border-slate-500"
+            file ? "border-blue-500/50 bg-blue-500/5" : "border-slate-700 bg-slate-800/40 [@media(hover:hover)]:hover:border-slate-500 active:border-slate-500"
           }`}
         >
           {file ? (
@@ -162,7 +162,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
                 type="button"
                 onClick={() => setCategory(cat)}
                 className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
-                  category === cat ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  category === cat ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-300 [@media(hover:hover)]:hover:bg-slate-700 active:scale-95"
                 }`}
               >
                 {cat}
@@ -213,14 +213,14 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
         )}
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 rounded-xl border border-slate-700 bg-transparent px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-slate-800">
+        <div className="flex gap-3 mt-2">
+          <button onClick={onClose} className="flex-1 rounded-xl border border-slate-700 bg-transparent px-4 py-2.5 text-sm font-semibold text-slate-300 transition [@media(hover:hover)]:hover:bg-slate-800 active:bg-slate-800">
             Cancel
           </button>
           <button
             onClick={handleUpload}
             disabled={uploading || !file}
-            className="flex-1 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-600 hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.97]"
+            className="flex-1 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all [@media(hover:hover)]:hover:from-blue-600 [@media(hover:hover)]:hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.97]"
           >
             {uploading ? "Uploading…" : "Upload"}
           </button>
@@ -276,6 +276,7 @@ export default function StudyVaultPage() {
 
   useEffect(() => {
     if (!profile || profile.status !== "active") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [profile, load]);
 
@@ -307,7 +308,7 @@ export default function StudyVaultPage() {
           profile.status === "active" ? (
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-600 hover:to-blue-700 active:scale-[0.97]"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all [@media(hover:hover)]:hover:from-blue-600 [@media(hover:hover)]:hover:to-blue-700 active:scale-[0.97]"
             >
               <Upload size={16} /> Upload
             </button>
@@ -355,7 +356,7 @@ export default function StudyVaultPage() {
               key={item}
               onClick={() => setCategory(item)}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                category === item ? "bg-blue-600 text-white shadow-md shadow-blue-600/25" : "bg-slate-800/60 text-slate-300 hover:bg-slate-700/60"
+                category === item ? "bg-blue-600 text-white shadow-md shadow-blue-600/25" : "bg-slate-800/60 text-slate-300 [@media(hover:hover)]:hover:bg-slate-700/60 active:scale-95"
               }`}
             >
               {item}
@@ -384,7 +385,7 @@ export default function StudyVaultPage() {
         {resources.map((resource) => (
           <article
             key={resource.id}
-            className="group animate-fade-in flex flex-col overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-blue-950/10"
+            className="group animate-fade-in flex flex-col overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-slate-700/50 [@media(hover:hover)]:hover:bg-slate-900/60 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-blue-950/10 active:scale-[0.99] active:bg-slate-900/50"
           >
             {resource.file_type?.startsWith("image/") ? (
               <div className="relative flex-none h-40 w-full overflow-hidden border-b border-slate-800/50 bg-slate-950/50">
@@ -462,7 +463,7 @@ export default function StudyVaultPage() {
               href={resource.file_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300 transition-all hover:bg-emerald-500/20"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300 transition-all [@media(hover:hover)]:hover:bg-emerald-500/20 active:scale-95"
             >
               <Download size={15} /> Download
             </a>

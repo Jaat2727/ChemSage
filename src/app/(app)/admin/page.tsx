@@ -92,7 +92,7 @@ export default function AdminPage() {
       {/* Tabs */}
       <div className="mb-8 flex flex-wrap gap-2 rounded-2xl border border-slate-800/50 bg-slate-900/40 p-2 backdrop-blur-sm">
         {tabs.map((tab) => (
-          <button key={tab} onClick={() => { setActiveTab(tab); setError(null); setSuccess(null); }} className={`relative rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${activeTab === tab ? "bg-red-500/10 text-red-300 shadow-sm" : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"}`}>
+          <button key={tab} onClick={() => { setActiveTab(tab); setError(null); setSuccess(null); }} className={`relative rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${activeTab === tab ? "bg-red-500/10 text-red-300 shadow-sm" : "text-slate-400 [@media(hover:hover)]:hover:bg-white/[0.04] [@media(hover:hover)]:hover:text-slate-200 active:bg-white/[0.04]"}`}>
             {tab}
             {tab === "Pending" && pendingUsers.length > 0 ? (
               <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white animate-pulse">
@@ -126,7 +126,7 @@ export default function AdminPage() {
           <div className="space-y-2">
             {filteredUsers.length === 0 ? <EmptyState title="No users found" description="Try adjusting your search or filter." /> : null}
             {filteredUsers.map((user) => (
-              <div key={user.id} className="group flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all hover:bg-slate-900/60">
+              <div key={user.id} className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-slate-900/60 active:bg-slate-900/50">
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500/15 to-indigo-500/15 text-sm font-bold text-blue-300">{user.name?.[0]?.toUpperCase() || "?"}</div>
                   <div>
@@ -138,6 +138,7 @@ export default function AdminPage() {
                   {user.role === "admin" ? <span className="flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300"><Shield size={12} /> Admin</span> : null}
                   <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${user.status === "active" ? "bg-emerald-500/10 text-emerald-300" : user.status === "banned" ? "bg-red-500/10 text-red-300" : "bg-amber-500/10 text-amber-300"}`}>{user.status}</span>
                   
+                  <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
                   {user.role !== "admin" ? (
                     <>
                       <button onClick={async () => {
@@ -147,7 +148,7 @@ export default function AdminPage() {
                           setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, role: "admin" } : p));
                           setSuccess(`${user.name} is now an admin.`);
                         }
-                      }} className="rounded-xl bg-blue-500/10 px-4 py-2 text-xs font-semibold text-blue-300 transition-all hover:bg-blue-500/20">
+                      }} className="rounded-xl bg-blue-500/10 px-4 py-2 text-xs font-semibold text-blue-300 transition-all [@media(hover:hover)]:hover:bg-blue-500/20 active:scale-95">
                         Make Admin
                       </button>
 
@@ -156,7 +157,7 @@ export default function AdminPage() {
                         const { error: updateError } = await supabase.from<Profile>("profiles").update({ status: newStatus }).eq("id", user.id);
                         if (updateError) setError(updateError.message);
                         else setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, status: newStatus } : p));
-                      }} className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${user.status === "banned" ? "bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20" : "bg-red-500/10 text-red-300 hover:bg-red-500/20"}`}>
+                      }} className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all active:scale-95 ${user.status === "banned" ? "bg-emerald-500/10 text-emerald-300 [@media(hover:hover)]:hover:bg-emerald-500/20" : "bg-red-500/10 text-red-300 [@media(hover:hover)]:hover:bg-red-500/20"}`}>
                         {user.status === "banned" ? "Unban" : "Ban"}
                       </button>
                     </>
@@ -169,7 +170,7 @@ export default function AdminPage() {
                           setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, role: "student" } : p));
                           setSuccess(`${user.name} is no longer an admin.`);
                         }
-                      }} className="rounded-xl bg-slate-500/10 px-4 py-2 text-xs font-semibold text-slate-300 transition-all hover:bg-slate-500/20">
+                      }} className="rounded-xl bg-slate-500/10 px-4 py-2 text-xs font-semibold text-slate-300 transition-all [@media(hover:hover)]:hover:bg-slate-500/20 active:scale-95">
                         Revoke Admin
                       </button>
                     )
@@ -194,10 +195,11 @@ export default function AdminPage() {
                       
                       setAllProfiles((current) => current.filter((p) => p.id !== user.id));
                       setSuccess(`${user.name} has been completely deleted.`);
-                    }} className="rounded-xl bg-red-600/10 px-4 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-600/20">
+                    }} className="rounded-xl bg-red-600/10 px-4 py-2 text-xs font-semibold text-red-400 transition-all [@media(hover:hover)]:hover:bg-red-600/20 active:scale-95">
                       Delete DB
                     </button>
                   )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -210,7 +212,7 @@ export default function AdminPage() {
         <div className="animate-fade-in space-y-3">
           {pendingUsers.length === 0 ? <EmptyState title="No pending users" description="All sign-ups have been reviewed." /> : null}
           {pendingUsers.map((user) => (
-            <div key={user.id} className="flex items-center justify-between rounded-2xl border border-amber-500/20 bg-amber-500/[0.04] px-5 py-4 backdrop-blur-sm">
+            <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 rounded-2xl border border-amber-500/20 bg-amber-500/[0.04] px-5 py-4 backdrop-blur-sm">
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-sm font-bold text-amber-300">{user.name?.[0]?.toUpperCase() || "?"}</div>
                 <div>
@@ -227,7 +229,7 @@ export default function AdminPage() {
                     setSuccess(`${user.name} approved successfully.`);
                     await markNotificationsRead(user.id);
                   }
-                }} className="flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition-all hover:bg-emerald-500/20 active:scale-[0.97]">
+                }} className="flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition-all [@media(hover:hover)]:hover:bg-emerald-500/20 active:scale-[0.97]">
                   <Check size={16} /> Approve
                 </button>
                 <button onClick={async () => {
@@ -244,7 +246,7 @@ export default function AdminPage() {
                   await markNotificationsRead(user.id);
                   setAllProfiles((current) => current.filter((p) => p.id !== user.id));
                   setSuccess(`${user.name} rejected and removed.`);
-                }} className="flex items-center gap-1.5 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-300 transition-all hover:bg-red-500/20 active:scale-[0.97]">
+                }} className="flex items-center gap-1.5 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-300 transition-all [@media(hover:hover)]:hover:bg-red-500/20 active:scale-[0.97]">
                   <X size={16} /> Reject
                 </button>
               </div>
@@ -259,7 +261,7 @@ export default function AdminPage() {
           <div className="mb-6 rounded-2xl border border-dashed border-slate-700/60 bg-slate-900/30 p-8 text-center backdrop-blur-sm">
             <Upload size={32} className="mx-auto mb-3 text-slate-500" />
             <p className="mb-4 text-sm font-medium text-slate-400">Upload a CSV file with columns: roll_no, name</p>
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-600 hover:to-blue-700 active:scale-[0.97]">
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all [@media(hover:hover)]:hover:from-blue-600 [@media(hover:hover)]:hover:to-blue-700 active:scale-[0.97]">
               <Download size={16} /> Choose CSV
               <input type="file" accept=".csv" className="hidden" onChange={async (event) => {
                 const file = event.target.files?.[0];
@@ -289,7 +291,7 @@ export default function AdminPage() {
                     setSuccess(`${csvData.length} roll numbers imported successfully.`);
                     setCsvData([]);
                   }
-                }} className="rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all hover:from-emerald-600 hover:to-green-700 active:scale-[0.97]">
+                }} className="rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all [@media(hover:hover)]:hover:from-emerald-600 [@media(hover:hover)]:hover:to-green-700 active:scale-[0.97]">
                   Import all
                 </button>
               </div>
@@ -325,7 +327,7 @@ export default function AdminPage() {
             {resources.length === 0 ? <EmptyState title="No resources uploaded" description="Upload files in the Study Vault." /> : null}
             <div className="space-y-2">
               {resources.map((item) => (
-                <div key={item.id} className="group relative flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all hover:bg-slate-900/60">
+                <div key={item.id} className="group relative flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-slate-900/60 active:bg-slate-900/50">
                   {item.file_type?.startsWith("image/") ? (
                     <div className="pointer-events-none absolute bottom-0 left-[250px] z-20 w-48 origin-left scale-95 opacity-0 shadow-2xl shadow-blue-900/20 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 xl:left-[300px]">
                       <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-1">
@@ -342,7 +344,7 @@ export default function AdminPage() {
                     const { error: deleteError } = await supabase.from<ResourceItem>("resources").delete().eq("id", item.id);
                     if (deleteError) setError(deleteError.message);
                     else setResources((current) => current.filter((r) => r.id !== item.id));
-                  }} className="rounded-full bg-red-500/10 p-2.5 text-red-300 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/20 active:scale-90">
+                  }} className="rounded-full bg-red-500/10 p-2.5 text-red-300 opacity-100 md:opacity-0 transition-all group-hover:opacity-100 [@media(hover:hover)]:hover:bg-red-500/20 active:scale-90">
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -354,7 +356,7 @@ export default function AdminPage() {
             {papers.length === 0 ? <EmptyState title="No papers uploaded" description="Upload files in the Exam Archive." /> : null}
             <div className="space-y-2">
               {papers.map((item) => (
-                <div key={item.id} className="group relative flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all hover:bg-slate-900/60">
+                <div key={item.id} className="group relative flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-slate-900/60 active:bg-slate-900/50">
                   {item.file_url.match(/\.(jpg|jpeg|png|webp|gif|avif)$/i) ? (
                     <div className="pointer-events-none absolute bottom-0 left-[250px] z-20 w-48 origin-left scale-95 opacity-0 shadow-2xl shadow-purple-900/20 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 xl:left-[300px]">
                       <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-1">
@@ -371,7 +373,7 @@ export default function AdminPage() {
                     const { error: deleteError } = await supabase.from<ExamPaper>("exam_papers").delete().eq("id", item.id);
                     if (deleteError) setError(deleteError.message);
                     else setPapers((current) => current.filter((p) => p.id !== item.id));
-                  }} className="rounded-full bg-red-500/10 p-2.5 text-red-300 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/20 active:scale-90">
+                  }} className="rounded-full bg-red-500/10 p-2.5 text-red-300 opacity-100 md:opacity-0 transition-all group-hover:opacity-100 [@media(hover:hover)]:hover:bg-red-500/20 active:scale-90">
                     <Trash2 size={16} />
                   </button>
                 </div>

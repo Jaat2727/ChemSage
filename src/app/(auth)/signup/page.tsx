@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, CheckCircle2, Clock, Eye, EyeOff, Hexagon, UserPlus } from "lucide-react";
+import { ArrowLeft, Clock, Eye, EyeOff, UserPlus } from "lucide-react";
 import { createClientComponentClient } from "@/lib/supabase";
 import { extractRollNo, parseRollNo, normalizeEmail } from "@/lib/rollno";
-import type { Profile, RegisteredRollNo } from "@/lib/types";
+import type { RegisteredRollNo } from "@/lib/types";
 
 const supabase = createClientComponentClient();
 

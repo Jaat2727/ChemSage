@@ -65,7 +65,7 @@ export default function SynergyGroupsPage() {
 
   return (
     <div className="mx-auto max-w-5xl pb-12">
-      <PageHeader title="Synergy Groups" description="Join topic-based rooms, each backed by a Supabase room row and associated messages." profile={profile} action={<button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pink-500/25 transition-all hover:from-pink-600 hover:to-rose-700 active:scale-[0.97]"><Plus size={16} /> Create group</button>} />
+      <PageHeader title="Synergy Groups" description="Join topic-based rooms, each backed by a Supabase room row and associated messages." profile={profile} action={<button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pink-500/25 transition-all [@media(hover:hover)]:hover:from-pink-600 [@media(hover:hover)]:hover:to-rose-700 active:scale-[0.97]"><Plus size={16} /> Create group</button>} />
 
       <InlineAlert message={error} />
 
@@ -77,7 +77,7 @@ export default function SynergyGroupsPage() {
           <h2 className="mb-4 text-lg font-bold text-white">My Groups</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {myGroups.map((room) => (
-              <Link key={room.id} href={`/groups/${room.id}`} className="group flex flex-col justify-between animate-fade-in rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-pink-950/10">
+              <Link key={room.id} href={`/groups/${room.id}`} className="group flex flex-col justify-between animate-fade-in rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-slate-700/50 [@media(hover:hover)]:hover:bg-slate-900/60 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-pink-950/10 active:scale-[0.99] active:bg-slate-900/50">
                 <div className="mb-4 flex items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-pink-400">
                     <Users2 size={22} />
@@ -91,7 +91,7 @@ export default function SynergyGroupsPage() {
                             e.preventDefault();
                             void handleDeleteRoom(room.id);
                           }}
-                          className="shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-red-500/10 hover:text-red-500"
+                          className="shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors [@media(hover:hover)]:hover:bg-red-500/10 [@media(hover:hover)]:hover:text-red-500 active:bg-red-500/20 active:scale-95"
                           title="Delete Group"
                         >
                           <Trash2 size={16} />
@@ -108,7 +108,7 @@ export default function SynergyGroupsPage() {
                 </div>
                 <div className="flex items-center justify-between border-t border-slate-800/50 pt-3">
                   <span className="text-xs font-semibold text-pink-400">Open Chat</span>
-                  <ArrowRight size={16} className="text-pink-500 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight size={16} className="text-pink-500 transition-transform [@media(hover:hover)]:group-hover:translate-x-1" />
                 </div>
               </Link>
             ))}
@@ -122,7 +122,7 @@ export default function SynergyGroupsPage() {
           <h2 className="mb-4 text-lg font-bold text-white">Discover</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {discover.map((room) => (
-              <div key={room.id} className="group animate-fade-in rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 hover:border-slate-700/50 hover:bg-slate-900/60">
+              <div key={room.id} className="group animate-fade-in rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm transition-all duration-300 [@media(hover:hover)]:hover:border-slate-700/50 [@media(hover:hover)]:hover:bg-slate-900/60">
                 <div className="mb-4 flex items-center gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/15 to-rose-500/15 text-pink-400">
                     <Users2 size={22} />
@@ -141,7 +141,7 @@ export default function SynergyGroupsPage() {
                   const { error: joinError } = await supabase.from<RoomMember>("room_members").insert({ room_id: room.id, user_id: profile.id });
                   if (joinError) setError(joinError.message);
                   else setJoined((current) => new Set([...current, room.id]));
-                }} className="w-full rounded-xl bg-pink-500/10 px-4 py-2.5 text-sm font-semibold text-pink-300 transition-all hover:bg-pink-500/20">
+                }} className="w-full rounded-xl bg-pink-500/10 px-4 py-2.5 text-sm font-semibold text-pink-300 transition-all [@media(hover:hover)]:hover:bg-pink-500/20 active:scale-[0.98]">
                   Join group
                 </button>
               </div>
@@ -193,8 +193,8 @@ export default function SynergyGroupsPage() {
               <input value={newContactInfo} onChange={(e) => setNewContactInfo(e.target.value)} placeholder="Contact Info (e.g. John @ 9876543210)" className="mb-3 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-white outline-none transition-all placeholder:text-slate-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/20" />
               <input value={newInvitedPeople} onChange={(e) => setNewInvitedPeople(e.target.value)} placeholder="Invited Members (e.g. Alice, Bob, Charlie)" className="mb-5 w-full rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-white outline-none transition-all placeholder:text-slate-500 focus:border-pink-500/60 focus:ring-2 focus:ring-pink-500/20" />
               <div className="flex gap-3">
-                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 rounded-xl border border-slate-700 py-3 text-sm font-semibold text-slate-300 transition-all hover:bg-slate-800">Cancel</button>
-                <button type="submit" disabled={creating} className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-500/20 transition-all hover:from-pink-600 hover:to-rose-700 active:scale-[0.98] disabled:opacity-60">{creating ? "Creating..." : "Create"}</button>
+                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 rounded-xl border border-slate-700 py-3 text-sm font-semibold text-slate-300 transition-all [@media(hover:hover)]:hover:bg-slate-800 active:bg-slate-800">Cancel</button>
+                <button type="submit" disabled={creating} className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-500/20 transition-all [@media(hover:hover)]:hover:from-pink-600 [@media(hover:hover)]:hover:to-rose-700 active:scale-[0.98] disabled:opacity-60">{creating ? "Creating..." : "Create"}</button>
               </div>
             </form>
           </div>

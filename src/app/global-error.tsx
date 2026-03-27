@@ -3,7 +3,6 @@
 import { AlertTriangle, RefreshCcw } from "lucide-react";
 
 export default function GlobalError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };

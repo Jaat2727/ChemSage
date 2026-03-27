@@ -260,6 +260,7 @@ export default function ExamArchivePage() {
 
   useEffect(() => {
     if (!profile || profile.status !== "active") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [profile, load]);
 

@@ -32,7 +32,7 @@ export function MobileTabBar() {
                     onClick={() => setMenuOpen(false)}
                     className={cn(
                       "flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200",
-                      isActive ? "bg-blue-500/10 text-blue-400" : "text-slate-300 hover:bg-white/[0.04]",
+                      isActive ? "bg-blue-500/10 text-blue-400" : "text-slate-300 [@media(hover:hover)]:hover:bg-white/[0.04] active:bg-white/[0.1]",
                     )}
                   >
                     <item.icon size={18} strokeWidth={isActive ? 2.4 : 2} />
@@ -55,7 +55,7 @@ export function MobileTabBar() {
                 href={item.href}
                 className={cn(
                   "flex h-full w-full flex-col items-center justify-center gap-1 transition-all duration-200",
-                  isActive ? "text-blue-400" : "text-slate-500 hover:text-slate-300 active:scale-95",
+                  isActive ? "text-blue-400" : "text-slate-500 [@media(hover:hover)]:hover:text-slate-300 active:scale-95",
                 )}
               >
                 <div className="relative">
@@ -76,7 +76,7 @@ export function MobileTabBar() {
               "flex h-full w-full flex-col items-center justify-center gap-1 transition-all duration-200",
               menuOpen || moreItems.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
                 ? "text-blue-400"
-                : "text-slate-500 hover:text-slate-300 active:scale-95",
+                : "text-slate-500 [@media(hover:hover)]:hover:text-slate-300 active:scale-95",
             )}
           >
             <div className="relative">

@@ -85,18 +85,18 @@ export default function DashboardPage() {
           <Link
             key={mod.title}
             href={mod.href}
-            className={`group flex animate-slide-up flex-col overflow-hidden rounded-2xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-700/60 hover:bg-slate-900/60 hover:shadow-xl hover:shadow-blue-950/20 ${delays[index] || ""}`}
+            className={`group flex animate-slide-up flex-col overflow-hidden rounded-2xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:border-slate-700/60 [@media(hover:hover)]:hover:bg-slate-900/60 [@media(hover:hover)]:hover:shadow-xl [@media(hover:hover)]:hover:shadow-blue-950/20 active:scale-[0.98] ${delays[index] || ""}`}
           >
             <div className="flex-1 p-6">
-              <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${mod.gradient} text-white shadow-lg ${mod.shadowColor} transition-transform duration-300 group-hover:scale-110`}>
+              <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${mod.gradient} text-white shadow-lg ${mod.shadowColor} transition-transform duration-300 [@media(hover:hover)]:group-hover:scale-110`}>
                 <mod.icon size={22} strokeWidth={2} />
               </div>
               <h3 className="mb-2 text-lg font-bold text-white">{mod.title}</h3>
               <p className="text-sm font-medium leading-relaxed text-slate-400">{mod.description}</p>
             </div>
-            <div className="flex items-center justify-between border-t border-slate-800/50 bg-white/[0.02] px-6 py-4 transition-colors group-hover:bg-white/[0.04]">
-              <span className="text-[11px] font-bold tracking-wider text-slate-500 transition-colors group-hover:text-slate-300">OPEN MODULE</span>
-              <ChevronRight size={16} className="text-slate-500 transition-all duration-300 group-hover:translate-x-1 group-hover:text-blue-400" />
+            <div className="flex items-center justify-between border-t border-slate-800/50 bg-white/[0.02] px-6 py-4 transition-colors [@media(hover:hover)]:group-hover:bg-white/[0.04]">
+              <span className="text-[11px] font-bold tracking-wider text-slate-500 transition-colors [@media(hover:hover)]:group-hover:text-slate-300">OPEN MODULE</span>
+              <ChevronRight size={16} className="text-slate-500 transition-all duration-300 [@media(hover:hover)]:group-hover:translate-x-1 [@media(hover:hover)]:group-hover:text-blue-400" />
             </div>
           </Link>
         ))}

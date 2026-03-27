@@ -15,7 +15,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <h1 className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-xl font-extrabold tracking-tight text-transparent">ChemSAGE</h1>
           <NotificationBell />
         </header>
-        <div className="mb-16 mt-16 flex-1 overflow-y-auto p-5 md:mb-0 md:mt-0 md:p-8">{children}</div>
+        <div className="mb-16 mt-16 flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-5 md:mb-0 md:mt-0 md:p-8 pb-safe">{children}</div>
       </main>
       <MobileTabBar />
     </AppRouteGate>

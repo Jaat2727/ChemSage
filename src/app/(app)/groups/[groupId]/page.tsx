@@ -6,7 +6,6 @@ import { ArrowLeft, MapPin, Phone, Send, Trash2, UserPlus, Users2 } from "lucide
 import { useParams } from "next/navigation";
 import { createClientComponentClient } from "@/lib/supabase";
 import type { ChatMessage, Profile, Room, RoomMember } from "@/lib/types";
-import { formatDateTime } from "@/lib/utils";
 import { LoadingCard } from "@/components/ui/Feedback";
 import { MessageDisplay } from "@/components/ui/MessageDisplay";
 import { useAuth } from "@/providers/AuthProvider";
@@ -95,13 +94,13 @@ export default function GroupDetailPage() {
   if (loading || !profile) return <LoadingCard />;
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-10rem)] w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/40 shadow-2xl backdrop-blur-sm">
+    <div className="mx-auto flex h-[calc(100dvh-12rem)] md:h-[calc(100vh-10rem)] w-full max-w-6xl overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/40 shadow-2xl backdrop-blur-sm">
       {/* Main Chat Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Telegram Style Header */}
         <div className="flex items-center justify-between border-b border-slate-800/50 bg-slate-900/90 px-4 py-3 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <Link href="/groups" className="rounded-full p-2 text-slate-400 transition-all hover:bg-slate-800 hover:text-white">
+            <Link href="/groups" className="rounded-full p-2 text-slate-400 transition-all [@media(hover:hover)]:hover:bg-slate-800 [@media(hover:hover)]:hover:text-white active:scale-95 active:bg-slate-800">
               <ArrowLeft size={20} />
             </Link>
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/20 to-rose-500/20 text-pink-400">
@@ -126,7 +125,7 @@ export default function GroupDetailPage() {
                   <div className={`mt-1 flex items-center justify-end gap-2 text-[10px] ${isMe ? "text-pink-200" : "text-slate-400"}`}>
                     {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     {isMe && (
-                      <button onClick={() => handleDeleteMessage(message.id)} className="hover:text-white transition-colors" title="Delete message">
+                      <button onClick={() => handleDeleteMessage(message.id)} className="p-1.5 -m-1.5 rounded-full transition-all [@media(hover:hover)]:hover:bg-black/20 [@media(hover:hover)]:hover:text-white active:bg-black/20 active:scale-90" title="Delete message">
                         <Trash2 size={12} />
                       </button>
                     )}
@@ -149,7 +148,7 @@ export default function GroupDetailPage() {
             setSending(false);
           }}>
             <input value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder="Write a message..." className="flex-1 rounded-full border border-slate-700/60 bg-slate-800/50 px-5 py-3 text-[15px] text-white outline-none transition-all placeholder:text-slate-400 focus:border-pink-500/50 focus:bg-slate-800" />
-            <button type="submit" disabled={!inputText.trim() || sending} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-pink-600 text-white transition-all hover:bg-pink-500 active:scale-95 disabled:opacity-50 disabled:hover:bg-pink-600">
+            <button type="submit" disabled={!inputText.trim() || sending} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-pink-600 text-white transition-all [@media(hover:hover)]:hover:bg-pink-500 active:scale-95 disabled:opacity-50 disabled:active:scale-100 disabled:[@media(hover:hover)]:hover:bg-pink-600">
               <Send size={18} className="translate-x-[2px] transition-transform" />
             </button>
           </form>
