@@ -111,6 +111,16 @@ class QueryBuilder<T> {
     return this;
   }
 
+  contains(column: string, value: QueryValue[]) {
+    this.filters.push([column, "cs", `{${value.join(",")}}`]);
+    return this;
+  }
+
+  textSearch(column: string, query: string) {
+    this.filters.push([column, "wfts", query]);
+    return this;
+  }
+
   order(column: string, options?: { ascending?: boolean }) {
     this.orderBy = { column, ascending: options?.ascending ?? true };
     return this;

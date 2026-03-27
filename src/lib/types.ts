@@ -71,6 +71,7 @@ export interface ResourceItem {
   uploaded_by: string;
   created_at: string;
   room_id?: string | null;
+  tags?: string[];
 }
 
 export interface ExamPaper {

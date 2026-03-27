@@ -17,11 +17,23 @@ type UploadCategory = (typeof uploadCategories)[number];
 const MAX_FILE_SIZE_MB = 50;
 const supabase = createClientComponentClient();
 
-async function fetchResources() {
-  const { data, error } = await supabase
+async function fetchResources(search: string, category: Category, tags: string[]) {
+  let query = supabase
     .from<ResourceItem>("resources")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (category !== "All") {
+    query = query.eq("category", category);
+  }
+  if (search.trim()) {
+    query = query.textSearch("title", search.trim());
+  }
+  if (tags.length > 0) {
+    query = query.contains("tags", tags);
+  }
+
+  const { data, error } = await query;
   return { data: Array.isArray(data) ? data : [], error };
 }
 
@@ -36,6 +48,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<UploadCategory>("Notes");
+  const [tagsInput, setTagsInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +86,8 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
     const { data: publicUrlData } = supabase.storage.from("study-vault").getPublicUrl(path);
     setProgress(70);
 
+    const tagsArray = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
+
     const { error: insertError } = await supabase.from<ResourceItem>("resources").insert({
       title: title.trim(),
       category: category as ResourceItem["category"],
@@ -80,6 +95,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
       file_type: file.type || "application/octet-stream",
       file_size: file.size,
       uploaded_by: uploaderId,
+      tags: tagsArray,
     });
 
     if (insertError) { setError(insertError.message); setUploading(false); setProgress(0); return; }
@@ -137,7 +153,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
         </div>
 
         {/* Category */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Category</label>
           <div className="flex flex-wrap gap-2">
             {uploadCategories.map((cat) => (
@@ -153,6 +169,17 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Tags */}
+        <div className="mb-6">
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Tags (comma separated)</label>
+          <input
+            value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
+            placeholder="e.g. organic, chemistry, exam2"
+            className="w-full rounded-xl border border-slate-700/60 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+          />
         </div>
 
         {/* Progress Bar */}
@@ -227,31 +254,45 @@ export default function StudyVaultPage() {
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<Category>("All");
+  const [tagsInputFilter, setTagsInputFilter] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error: e } = await fetchResources();
+    const { data, error: e } = await fetchResources(debouncedSearch, category, selectedTags);
     if (e) setError(e.message);
-    setResources(data);
+    setResources(data || []);
     setLoading(false);
-  }, []);
+  }, [debouncedSearch, category, selectedTags]);
 
   useEffect(() => {
     if (!profile || profile.status !== "active") return;
     void load();
   }, [profile, load]);
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return resources.filter((r) => {
-      const catMatch = category === "All" || r.category === category;
-      const searchMatch = !q || r.title.toLowerCase().includes(q) || r.category.toLowerCase().includes(q);
-      return catMatch && searchMatch;
-    });
-  }, [resources, search, category]);
+  const handleAddTagFilter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && tagsInputFilter.trim()) {
+      e.preventDefault();
+      const newTag = tagsInputFilter.trim().toLowerCase();
+      if (!selectedTags.includes(newTag)) {
+        setSelectedTags((prev) => [...prev, newTag]);
+      }
+      setTagsInputFilter("");
+    }
+  };
+
+  const removeTagFilter = (tagToRemove: string) => {
+    setSelectedTags((prev) => prev.filter((t) => t !== tagToRemove));
+  };
 
   if (!profile) return <LoadingCard />;
   if (profile.status !== "active") return <LockedScreen title="Study Vault locked" description="Only active users can browse the shared study vault." />;
@@ -276,16 +317,39 @@ export default function StudyVaultPage() {
 
       {/* Filters */}
       <div className="mb-6 grid gap-4 rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm md:grid-cols-[1fr_auto]">
-        <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by title or category…"
-            className="w-full rounded-xl border border-slate-700/60 bg-slate-950/80 py-3 pl-10 pr-4 text-sm text-white outline-none ring-0 transition-all placeholder:text-slate-500 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
-          />
+        <div className="flex flex-col gap-3">
+          <div className="relative">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by title..."
+              className="w-full rounded-xl border border-slate-700/60 bg-slate-950/80 py-3 pl-10 pr-4 text-sm text-white outline-none ring-0 transition-all placeholder:text-slate-500 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+            />
+          </div>
+          <div className="relative">
+            <input
+              value={tagsInputFilter}
+              onChange={(e) => setTagsInputFilter(e.target.value)}
+              onKeyDown={handleAddTagFilter}
+              placeholder="Add tag filter and press Enter..."
+              className="w-full rounded-xl border border-slate-700/60 bg-slate-950/80 px-4 py-2 text-sm text-white outline-none ring-0 transition-all placeholder:text-slate-500 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+            />
+          </div>
+          {selectedTags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedTags.map((tag) => (
+                <span key={tag} className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-300">
+                  {tag}
+                  <button onClick={() => removeTagFilter(tag)} className="text-indigo-400 hover:text-indigo-200">
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-start gap-2">
           {categories.map((item) => (
             <button
               key={item}
@@ -303,11 +367,11 @@ export default function StudyVaultPage() {
       <InlineAlert tone="error" message={error} />
 
       {loading ? <LoadingCard title="Loading resources…" /> : null}
-      {!loading && !filtered.length ? (
+      {!loading && !resources.length ? (
         <EmptyState
           title="No resources found"
           description={
-            search || category !== "All"
+            search || category !== "All" || selectedTags.length > 0
               ? "Try a different search term or category filter."
               : profile.role === "admin"
               ? "Click Upload to add the first resource."
@@ -317,7 +381,7 @@ export default function StudyVaultPage() {
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {filtered.map((resource) => (
+        {resources.map((resource) => (
           <article
             key={resource.id}
             className="group animate-fade-in flex flex-col overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-blue-950/10"
@@ -376,8 +440,15 @@ export default function StudyVaultPage() {
             <div className="flex flex-1 flex-col p-5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-300">{resource.category}</span>
-                  <h3 className="mt-2.5 truncate text-base font-semibold text-white" title={resource.title}>{resource.title}</h3>
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                    <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-300 border border-blue-500/20">{resource.category}</span>
+                    {resource.tags?.map((tag) => (
+                      <span key={tag} className="rounded-full bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400 border border-slate-700/50">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                  <h3 className="truncate text-base font-semibold text-white" title={resource.title}>{resource.title}</h3>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1.5">
                   <span className="rounded-full bg-slate-800/60 px-3 py-1 text-[11px] font-semibold text-slate-400">
