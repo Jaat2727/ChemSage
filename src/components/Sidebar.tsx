@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Hexagon, LogOut, Shield } from "lucide-react";
 import { navItems } from "./navItems";
 import { useAuth } from "@/providers/AuthProvider";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { cn } from "@/lib/utils";
 
 function NavItem({ item }: { item: typeof navItems[0] }) {
@@ -39,7 +40,7 @@ export function Sidebar() {
 
   return (
     <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-slate-800/80 bg-slate-950/80 backdrop-blur-xl md:flex">
-      <div className="p-6">
+      <div className="p-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 text-white shadow-lg shadow-blue-500/25">
             <Hexagon size={22} className="fill-current" />
@@ -49,6 +50,7 @@ export function Sidebar() {
             <p className="text-[12px] font-medium text-slate-500">Chemistry workspace</p>
           </div>
         </div>
+        <NotificationBell />
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {navItems.map((item) => (
