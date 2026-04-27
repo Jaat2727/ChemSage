@@ -13,15 +13,15 @@ export function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-8 flex animate-slide-up flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div className="mb-6 flex animate-slide-up flex-col gap-3 md:flex-row md:items-end md:justify-between">
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.3em] text-blue-400/80">ChemSAGE</p>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white">{title}</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">{description}</p>
+        <p className="mb-1 text-[11px] uppercase tracking-[0.18em] text-slate-500">ChemSAGE</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-100 md:text-3xl">{title}</h1>
+        <p className="mt-2 max-w-2xl text-sm text-slate-400">{description}</p>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {profile ? (
-          <div className="rounded-full border border-blue-500/20 bg-blue-500/[0.08] px-4 py-2 text-sm font-semibold text-blue-300 backdrop-blur-sm">
+          <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-300">
             {formatBadge(profile.programme, profile.batch_year)}
           </div>
         ) : null}

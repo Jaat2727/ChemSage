@@ -9,7 +9,7 @@ import { InlineAlert } from "@/components/ui/Feedback";
 
 const supabase = createClientComponentClient();
 
-const inputClasses = "w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-slate-900 transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30";
+const inputClasses = "w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none";
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="relative my-8 w-full max-w-sm animate-scale-in rounded-3xl glass-light glass-border px-8 pb-8 pt-12 shadow-2xl shadow-blue-950/20">
       {step < 4 ? (
-        <button onClick={() => (step === 1 ? window.history.back() : setStep((value) => (value - 1) as 1 | 2 | 3))} className="absolute left-6 top-6 flex items-center gap-1.5 text-sm font-semibold text-slate-400 transition-colors hover:text-slate-900">
+        <button onClick={() => (step === 1 ? window.history.back() : setStep((value) => (value - 1) as 1 | 2 | 3))} className="absolute left-6 top-6 flex items-center gap-1.5 text-sm font-semibold text-slate-400 transition-colors hover:text-slate-200">
           <ArrowLeft size={16} /> Back
         </button>
       ) : null}
@@ -53,11 +53,11 @@ export default function ForgotPasswordPage() {
       {step === 1 ? (
         <div className="animate-slide-up">
           <div className="mb-8 mt-2 flex flex-col items-center text-center">
-            <div className="mb-4 rounded-full bg-blue-50 p-4 text-blue-600 shadow-lg shadow-blue-100/50">
+            <div className="mb-4 rounded-full border border-slate-700 bg-slate-900 p-4 text-slate-200">
               <KeyRound size={28} />
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Forgot Password</h1>
-            <p className="mt-2 text-sm font-medium tracking-wide text-slate-500">Enter your registered smail address to receive an OTP.</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-100">Forgot Password</h1>
+            <p className="mt-2 text-sm tracking-wide text-slate-400">Enter your registered smail address to receive an OTP.</p>
           </div>
 
           <form
@@ -78,13 +78,13 @@ export default function ForgotPasswordPage() {
             }}
           >
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">Email or Roll Number</label>
+              <label className="text-sm font-medium text-slate-300">Email or Roll Number</label>
               <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="CY25B013 or rollno@smail.iitm.ac.in" required className={inputClasses} />
             </div>
 
             <InlineAlert message={error} />
 
-            <button disabled={loading} type="submit" className="w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100">
+            <button disabled={loading} type="submit" className="w-full rounded-xl bg-slate-100 py-3 text-sm font-semibold text-slate-900 disabled:opacity-60">
               {loading ? "Sending OTP..." : "Send OTP"}
             </button>
           </form>
@@ -94,8 +94,8 @@ export default function ForgotPasswordPage() {
       {step === 2 ? (
         <div className="animate-slide-up">
           <div className="mb-8 mt-2 flex flex-col items-center text-center">
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Verify OTP</h1>
-            <p className="mt-2 px-4 text-sm font-medium tracking-wide text-slate-500">We&apos;ve sent a 6-digit code to your email.</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-100">Verify OTP</h1>
+            <p className="mt-2 px-4 text-sm tracking-wide text-slate-400">We&apos;ve sent a 6-digit code to your email.</p>
           </div>
 
           <form
@@ -141,7 +141,7 @@ export default function ForgotPasswordPage() {
                       inputsRef.current[index - 1]?.focus();
                     }
                   }}
-                  className="h-14 w-12 rounded-xl border border-slate-200 bg-slate-50/80 text-center text-xl font-bold text-slate-900 transition-all duration-200 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                  className="h-14 w-12 rounded-xl border border-slate-700 bg-slate-900 text-center text-xl font-bold text-slate-100 focus:border-slate-500 focus:outline-none"
                   placeholder="0"
                   required
                 />
@@ -169,14 +169,14 @@ export default function ForgotPasswordPage() {
                       setLoading(false);
                     }
                   }}
-                  className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-800"
+                  className="text-sm font-medium text-slate-300 hover:text-slate-100"
                 >
                   Resend OTP
                 </button>
               )}
             </div>
 
-            <button disabled={loading} type="submit" className="w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100">
+            <button disabled={loading} type="submit" className="w-full rounded-xl bg-slate-100 py-3 text-sm font-semibold text-slate-900 disabled:opacity-60">
               {loading ? "Verifying..." : "Verify"}
             </button>
           </form>
@@ -186,8 +186,8 @@ export default function ForgotPasswordPage() {
       {step === 3 ? (
         <div className="animate-slide-up">
           <div className="mb-8 mt-2 flex flex-col items-center text-center">
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Reset Password</h1>
-            <p className="mt-2 text-sm font-medium tracking-wide text-slate-500">Create a strong new password for your account.</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-100">Reset Password</h1>
+            <p className="mt-2 text-sm tracking-wide text-slate-400">Create a strong new password for your account.</p>
           </div>
 
           <form
@@ -211,7 +211,7 @@ export default function ForgotPasswordPage() {
             }}
           >
             <div className="relative space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">New Password</label>
+              <label className="text-sm font-medium text-slate-300">New Password</label>
               <div className="relative">
                 <input 
                   type={showPassword ? "text" : "password"} 
@@ -232,7 +232,7 @@ export default function ForgotPasswordPage() {
             </div>
 
             <div className="relative space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">Confirm Password</label>
+              <label className="text-sm font-medium text-slate-300">Confirm Password</label>
               <div className="relative">
                 <input 
                   type={showConfirmPassword ? "text" : "password"} 
@@ -254,7 +254,7 @@ export default function ForgotPasswordPage() {
 
             <InlineAlert message={error} />
 
-            <button disabled={loading} type="submit" className="mt-4 w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100">
+            <button disabled={loading} type="submit" className="mt-4 w-full rounded-xl bg-slate-100 py-3 text-sm font-semibold text-slate-900 disabled:opacity-60">
               {loading ? "Updating password..." : "Update Password"}
             </button>
           </form>
@@ -264,13 +264,13 @@ export default function ForgotPasswordPage() {
       {step === 4 ? (
         <div className="animate-scale-in py-6 text-center">
           <div className="mb-6 flex justify-center">
-            <div className="rounded-full bg-green-100 p-4 text-green-600 shadow-lg shadow-green-100/50">
+            <div className="rounded-full border border-emerald-900 bg-emerald-950/30 p-4 text-emerald-300">
               <CheckCircle2 size={48} strokeWidth={2.5} />
             </div>
           </div>
-          <h2 className="mb-2 text-2xl font-extrabold tracking-tight text-slate-900">Password Updated</h2>
-          <p className="mb-8 leading-relaxed text-slate-500">Your password has been successfully reset. You can now login.</p>
-          <Link href="/login" className="block w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 active:scale-[0.98]">
+          <h2 className="mb-2 text-2xl font-semibold tracking-tight text-slate-100">Password Updated</h2>
+          <p className="mb-8 leading-relaxed text-slate-400">Your password has been successfully reset. You can now login.</p>
+          <Link href="/login" className="block w-full rounded-xl bg-slate-100 py-3 text-sm font-semibold text-slate-900">
             Go to Login
           </Link>
         </div>
