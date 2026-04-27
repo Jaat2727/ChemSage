@@ -152,7 +152,7 @@ export default function GlobalHubPage() {
         </Link>
 
         <div className="text-center">
-          <h1 className="text-sm font-semibold text-slate-100">Community Chat</h1>
+          <h1 className="text-sm font-semibold text-slate-100">Global Hub</h1>
           <p className="text-[11px] text-slate-500">{onlineCount || 1} active in feed</p>
         </div>
 
