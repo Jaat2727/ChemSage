@@ -10,6 +10,9 @@ import { normalizeEmail } from "@/lib/rollno";
 
 const supabase = createClientComponentClient();
 
+const inputClasses =
+  "w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none";
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -22,49 +25,25 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const { refreshProfile } = useAuth();
 
-  // Show pending screen
-  if (pendingMessage) {
+  if (pendingMessage || bannedMessage) {
     return (
-      <div className="w-full max-w-sm animate-scale-in rounded-3xl glass-light glass-border p-8 text-center shadow-2xl shadow-blue-950/20">
-        <div className="mb-6 flex justify-center">
-          <div className="animate-scale-in rounded-full bg-amber-100 p-4 text-amber-600">
-            <Clock size={48} strokeWidth={2.5} />
-          </div>
+      <div className="glass-light glass-border animate-scale-in rounded-2xl p-6 text-center">
+        <div className="mx-auto mb-4 w-fit rounded-full border border-slate-700 bg-slate-900 p-3 text-slate-200">
+          {pendingMessage ? <Clock size={26} /> : <ShieldX size={26} />}
         </div>
-        <h2 className="mb-2 text-2xl font-extrabold tracking-tight text-slate-900">
-          Pending Approval
-        </h2>
-        <p className="mb-8 leading-relaxed text-slate-500">
-          Your account has been created but is still <span className="font-bold text-amber-600">waiting for admin approval</span>. You&apos;ll be able to log in once an administrator approves your account.
+        <h2 className="text-xl font-semibold text-slate-100">{pendingMessage ? "Pending Approval" : "Account Banned"}</h2>
+        <p className="mt-2 text-sm text-slate-400">
+          {pendingMessage
+            ? "Your account is waiting for admin approval."
+            : "This account was banned by an administrator."}
         </p>
         <button
-          onClick={() => { setPendingMessage(false); setError(null); }}
-          className="block w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 active:scale-[0.98]"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
-  // Show banned screen
-  if (bannedMessage) {
-    return (
-      <div className="w-full max-w-sm animate-scale-in rounded-3xl glass-light glass-border p-8 text-center shadow-2xl shadow-blue-950/20">
-        <div className="mb-6 flex justify-center">
-          <div className="animate-scale-in rounded-full bg-red-100 p-4 text-red-600">
-            <ShieldX size={48} strokeWidth={2.5} />
-          </div>
-        </div>
-        <h2 className="mb-2 text-2xl font-extrabold tracking-tight text-slate-900">
-          Account Banned
-        </h2>
-        <p className="mb-8 leading-relaxed text-slate-500">
-          This account has been <span className="font-bold text-red-600">banned by an administrator</span>. Please contact the chemistry department admin if you believe this is an error.
-        </p>
-        <button
-          onClick={() => { setBannedMessage(false); setError(null); }}
-          className="block w-full rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 py-3.5 font-semibold text-white shadow-lg shadow-slate-900/30 transition-all duration-200 hover:from-slate-700 hover:to-slate-800 active:scale-[0.98]"
+          onClick={() => {
+            setPendingMessage(false);
+            setBannedMessage(false);
+            setError(null);
+          }}
+          className="mt-5 w-full rounded-xl border border-slate-600 bg-slate-900 py-2.5 text-sm text-slate-100"
         >
           Try Again
         </button>
@@ -78,17 +57,14 @@ export default function LoginPage() {
     setError(null);
 
     const normalizedEmail = normalizeEmail(email);
-
     const { error: signInError } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+
     if (signInError) {
       if (signInError.message.toLowerCase().includes("invalid login credentials")) {
         setError(
           <span>
-            Invalid email or password.{" "}
-            <Link href="/signup" className="font-bold underline hover:text-red-900 transition-colors">
-              Create an account
-            </Link>
-          </span>
+            Invalid email or password. <Link href="/signup" className="underline">Create an account</Link>
+          </span>,
         );
       } else {
         setError(signInError.message);
@@ -123,98 +99,63 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full max-w-sm animate-scale-in overflow-hidden rounded-3xl glass-light glass-border shadow-2xl shadow-blue-950/20">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 px-8 py-8">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-white/20 p-2.5 backdrop-blur-sm">
-            <Hexagon size={28} className="fill-current text-white" />
+    <div className="glass-light glass-border animate-scale-in overflow-hidden rounded-2xl">
+      <div className="border-b border-slate-800 px-6 py-5">
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-lg border border-slate-700 bg-slate-900 p-2 text-slate-100">
+            <Hexagon size={20} className="fill-current" />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">ChemSAGE</h1>
-            <p className="text-sm font-medium text-white/70">Chemistry workspace</p>
+            <h1 className="text-lg font-semibold text-slate-100">ChemSAGE</h1>
+            <p className="text-xs text-slate-500">Sign in to continue</p>
           </div>
         </div>
       </div>
 
-      {/* Form */}
-      <div className="p-8">
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">Email or Roll Number</label>
+      <div className="p-6">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label className="mb-1.5 block text-sm text-slate-300">Email or Roll Number</label>
             <input
               type="text"
               placeholder="CY25B013 or rollno@smail.iitm.ac.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-slate-900 transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              className={inputClasses}
             />
-            <p className="text-xs text-slate-500">We automatically convert a roll number into its IITM smail email.</p>
           </div>
 
-          <div className="relative space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700">Password</label>
+          <div>
+            <label className="mb-1.5 block text-sm text-slate-300">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 pr-12 text-slate-900 transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                className={`${inputClasses} pr-11`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((value) => !value)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          {error ? (
-            <div className="animate-slide-down rounded-xl border border-red-200/80 bg-red-50/90 px-4 py-3 text-sm font-medium text-red-700 backdrop-blur-sm">
-              {error}
-            </div>
-          ) : null}
+          {error ? <div className="rounded-xl border border-rose-900 bg-rose-950/40 px-3 py-2 text-sm text-rose-200">{error}</div> : null}
 
-          <div className="pt-2">
-            <button
-              disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 py-3.5 font-semibold text-white shadow-lg shadow-blue-600/30 transition-all duration-200 hover:from-blue-500 hover:to-indigo-600 hover:shadow-xl active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Signing in...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <LogIn size={18} />
-                  Login
-                </span>
-              )}
-            </button>
-          </div>
+          <button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-900 disabled:opacity-60">
+            {loading ? "Signing in..." : <><LogIn size={16} /> Login</>}
+          </button>
 
-          <div className="flex items-center justify-between pt-2">
-            <Link href="/forgot-password" className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-800">
-              Forgot password?
-            </Link>
-            <Link href="/signup" className="text-sm font-semibold text-slate-600 transition-colors hover:text-slate-900">
-              Create account
-            </Link>
+          <div className="flex items-center justify-between text-sm">
+            <Link href="/forgot-password" className="text-slate-400 hover:text-slate-200">Forgot password?</Link>
+            <Link href="/signup" className="text-slate-300 hover:text-slate-100">Create account</Link>
           </div>
         </form>
-      </div>
-
-      <div className="border-t border-slate-100 bg-slate-50/80 p-6 text-center">
-        <p className="text-sm font-medium text-slate-600">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-semibold text-blue-600 transition-colors hover:text-blue-800">
-            Sign up
-          </Link>
-        </p>
       </div>
     </div>
   );

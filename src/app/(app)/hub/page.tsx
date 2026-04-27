@@ -20,91 +20,63 @@ export default function HubDirectoryPage() {
   useEffect(() => {
     if (!profile || profile.status !== "active") return;
     const load = async () => {
-      const { data } = await supabase
-        .from<Profile>("profiles")
-        .select("*")
-        .neq("id", profile.id)
-        .order("name", { ascending: true });
-      if (data) setUsers(data as Profile[]);
+      const { data } = await supabase.from<Profile>("profiles").select("*").neq("id", profile.id).order("name", { ascending: true });
+      setUsers(Array.isArray(data) ? (data as Profile[]) : []);
       setLoading(false);
     };
     void load();
   }, [profile]);
 
   if (!profile) return <LoadingCard />;
-  if (profile.status !== "active") {
-    return <LockedScreen title="Network Hub locked" description="Only active users can access the directory." />;
-  }
+  if (profile.status !== "active") return <LockedScreen title="Network Hub locked" description="Only active users can access the directory." />;
 
-  const filteredUsers = users.filter((u) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      (u.name && u.name.toLowerCase().includes(q)) ||
-      (u.roll_no && u.roll_no.toLowerCase().includes(q)) ||
-      (u.programme && u.programme.toLowerCase().includes(q))
-    );
-  });
+  const q = searchQuery.toLowerCase();
+  const filteredUsers = users.filter((u) => [u.name, u.roll_no, u.programme].some((value) => value?.toLowerCase().includes(q)));
 
   return (
     <div className="mx-auto max-w-5xl pb-12">
       <PageHeader
         title="Network Hub"
-        description="Search for peers in the BS, MSc, and PhD programmes and start a conversation."
+        description="Find peers and jump into direct or global chats instantly."
         profile={profile}
         action={
-          <Link
-            href="/hub/global"
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-600 hover:to-indigo-700 active:scale-[0.97]"
-          >
-            <Globe size={16} />
-            Global Hub
+          <Link href="/hub/global" className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900">
+            <Globe size={14} /> Global Hub
           </Link>
         }
       />
 
-      {/* Search Bar */}
-      <div className="mb-8 relative max-w-xl mx-auto md:mx-0">
-        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-          <Search size={18} className="text-slate-400" />
-        </div>
+      <div className="relative mb-6 max-w-xl">
+        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by name, roll no, or programme..."
-          className="w-full rounded-2xl border border-slate-700/60 bg-slate-900/40 py-3.5 pl-11 pr-4 text-white placeholder-slate-400 outline-none transition-all focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-4 focus:ring-blue-500/10"
+          placeholder="Search name, roll no, or programme"
+          className="w-full rounded-xl border border-slate-700 bg-slate-900 py-2.5 pl-10 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
         />
       </div>
 
-      {loading ? (
-        <LoadingCard title="Loading directory..." />
-      ) : filteredUsers.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {loading ? <LoadingCard title="Loading directory..." /> : null}
+
+      {!loading && filteredUsers.length > 0 ? (
+        <div className="grid gap-3 md:grid-cols-2">
           {filteredUsers.map((u) => (
-            <Link
-              key={u.id}
-              href={`/hub/${u.id}`}
-              className="group flex animate-fade-in items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-blue-950/20"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/15 to-indigo-500/15 text-blue-400">
-                  <UserIcon size={22} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="truncate font-semibold text-white">{u.name || "Unknown User"}</h3>
-                  <div className="mt-1 flex flex-wrap gap-2 text-[11px] font-medium text-slate-400">
-                    <span className="rounded bg-slate-800/80 px-1.5 py-0.5">{u.programme} {u.batch_year?.toString().slice(-2)}</span>
-                    <span className="truncate py-0.5">{u.roll_no}</span>
-                  </div>
+            <Link key={u.id} href={`/hub/${u.id}`} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/70 p-3 hover:border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg border border-slate-700 p-2 text-slate-300"><UserIcon size={16} /></div>
+                <div>
+                  <p className="text-sm font-medium text-slate-100">{u.name || "Unknown"}</p>
+                  <p className="text-xs text-slate-500">{u.programme} {u.batch_year?.toString().slice(-2)} · {u.roll_no}</p>
                 </div>
               </div>
-              <ArrowRight size={18} className="shrink-0 text-slate-500 transition-all group-hover:translate-x-1 group-hover:text-blue-400" />
+              <ArrowRight size={15} className="text-slate-500" />
             </Link>
           ))}
         </div>
-      ) : (
-        <EmptyState title="No users found" description="Try adjusting your search criteria." />
-      )}
+      ) : null}
+
+      {!loading && filteredUsers.length === 0 ? <EmptyState title="No users found" description="Try a different search term." /> : null}
     </div>
   );
 }
