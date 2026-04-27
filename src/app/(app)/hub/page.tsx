@@ -36,8 +36,8 @@ export default function HubDirectoryPage() {
   return (
     <div className="mx-auto max-w-5xl pb-12">
       <PageHeader
-        title="Network Hub"
-        description="Find peers and jump into direct or global chats instantly."
+        title="Direct Chats"
+        description="Find classmates quickly and start one-to-one conversations or join the community feed."
         profile={profile}
         action={
           <Link href="/hub/global" className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900">

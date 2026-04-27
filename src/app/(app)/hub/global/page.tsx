@@ -201,7 +201,7 @@ export default function GlobalHubPage() {
                 void handleSendMessage(e);
               }
             }}
-            placeholder="Message the global feed"
+            placeholder="Message the community chat"
             className="min-h-[42px] w-full resize-none rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
             rows={1}
           />

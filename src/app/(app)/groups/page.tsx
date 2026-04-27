@@ -66,8 +66,8 @@ export default function SynergyGroupsPage() {
   return (
     <div className="mx-auto max-w-5xl pb-12">
       <PageHeader
-        title="Synergy Groups"
-        description="Create or join focused group rooms with synced chat history."
+        title="Study Circles"
+        description="Join topic-focused group spaces with synced live chat and simple coordination."
         profile={profile}
         action={<button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900"><Plus size={14} /> Create</button>}
       />

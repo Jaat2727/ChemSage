@@ -1,66 +1,52 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark, Calendar, ChevronRight, FileText, Folder, MessageSquare, Users } from "lucide-react";
+import { ArrowRight, Bookmark, Calendar, FileText, Folder, MessageSquare, Users } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { LockedScreen, LoadingCard } from "@/components/ui/Feedback";
 import { useAuth } from "@/providers/AuthProvider";
 
-const delays = ["delay-0", "delay-75", "delay-100", "delay-150", "delay-200", "delay-300"];
+const workspaceCards = [
+  {
+    title: "Resource Vault",
+    description: "Notes, lab references, and curated study material in one place.",
+    href: "/vault",
+    icon: Folder,
+  },
+  {
+    title: "Past Papers",
+    description: "Browse previous exam papers and revision-oriented archives.",
+    href: "/archive",
+    icon: FileText,
+  },
+  {
+    title: "Class Planner",
+    description: "Keep weekly class timings and lab slots organized.",
+    href: "/schedule",
+    icon: Calendar,
+  },
+  {
+    title: "Direct Chats",
+    description: "One-to-one messaging and community chat with peers.",
+    href: "/hub",
+    icon: MessageSquare,
+  },
+  {
+    title: "Study Circles",
+    description: "Join focused group rooms for discussions and planning.",
+    href: "/groups",
+    icon: Users,
+  },
+  {
+    title: "Task Board",
+    description: "Track assignments and keep your work queue clean.",
+    href: "/tasks",
+    icon: Bookmark,
+  },
+];
 
 export default function DashboardPage() {
   const { profile, loading } = useAuth();
-
-  const modules = [
-    {
-      title: "Study Vault",
-      description: "Access curated notes, premium assets, and laboratory resources",
-      icon: Folder,
-      gradient: "from-emerald-500 to-teal-600",
-      shadowColor: "shadow-emerald-500/20",
-      href: "/vault",
-    },
-    {
-      title: "Exam Archive",
-      description: "Review historic question papers and high-yield assessment materials",
-      icon: FileText,
-      gradient: "from-purple-500 to-violet-600",
-      shadowColor: "shadow-purple-500/20",
-      href: "/archive",
-    },
-    {
-      title: "Schedule Manager",
-      description: "Track class timings and monitor your academic sessions",
-      icon: Calendar,
-      gradient: "from-orange-500 to-amber-600",
-      shadowColor: "shadow-orange-500/20",
-      href: "/schedule",
-    },
-    {
-      title: "Network Hub",
-      description: "Collaborate and synchronize with your academic peer group in real-time",
-      icon: MessageSquare,
-      gradient: "from-blue-500 to-indigo-600",
-      shadowColor: "shadow-blue-500/20",
-      href: "/hub",
-    },
-    {
-      title: "Synergy Groups",
-      description: "Coordinate advanced study sessions and group projects",
-      icon: Users,
-      gradient: "from-pink-500 to-rose-600",
-      shadowColor: "shadow-pink-500/20",
-      href: "/groups",
-    },
-    {
-      title: "Task Terminal",
-      description: "Optimize your workflow with prioritized assignment tracking",
-      icon: Bookmark,
-      gradient: "from-indigo-500 to-blue-600",
-      shadowColor: "shadow-indigo-500/20",
-      href: "/tasks",
-    },
-  ];
 
   if (loading) return <LoadingCard />;
   if (!profile) return <LockedScreen title="Profile missing" description="We couldn't load your ChemSAGE profile." />;
@@ -72,35 +58,55 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl pb-12">
-      <PageHeader title={`Hey, ${profile.name.split(" ")[0]} 👋`} description="Your chemistry workspace is now backed by live Supabase data and session-aware access control." profile={profile} />
+    <div className="mx-auto w-full max-w-6xl pb-12">
+      <PageHeader
+        title={`Welcome back, ${profile.name.split(" ")[0]}`}
+        description="Everything you need for chemistry coursework, collaboration, and planning lives here."
+        profile={profile}
+      />
 
-      <div className="mb-6 animate-slide-up delay-100">
-        <h2 className="text-xl font-bold text-slate-100">Modules</h2>
-        <p className="mt-1 text-sm text-slate-400">Quickly jump into the tools you use most.</p>
-      </div>
+      <section className="mb-6 grid gap-3 md:grid-cols-3">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+          <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Programme</p>
+          <p className="mt-1 text-lg font-semibold text-slate-100">{profile.programme}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+          <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Batch</p>
+          <p className="mt-1 text-lg font-semibold text-slate-100">{profile.batch_year}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+          <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Status</p>
+          <p className="mt-1 text-lg font-semibold text-emerald-300">Active workspace</p>
+        </div>
+      </section>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {modules.map((mod, index) => (
-          <Link
-            key={mod.title}
-            href={mod.href}
-            className={`group flex animate-slide-up flex-col overflow-hidden rounded-2xl border border-slate-800/60 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:border-slate-700/60 [@media(hover:hover)]:hover:bg-slate-900/60 [@media(hover:hover)]:hover:shadow-xl [@media(hover:hover)]:hover:shadow-blue-950/20 active:scale-[0.98] ${delays[index] || ""}`}
-          >
-            <div className="flex-1 p-6">
-              <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${mod.gradient} text-white shadow-lg ${mod.shadowColor} transition-transform duration-300 [@media(hover:hover)]:group-hover:scale-110`}>
-                <mod.icon size={22} strokeWidth={2} />
+      <section>
+        <div className="mb-4 flex items-end justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-100">Workspace sections</h2>
+            <p className="text-sm text-slate-400">Tap a section to continue where you left off.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {workspaceCards.map((card) => (
+            <Link
+              key={card.title}
+              href={card.href}
+              className="group rounded-2xl border border-slate-800 bg-slate-900/70 p-4 transition hover:border-slate-700 hover:bg-slate-900"
+            >
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-slate-950 text-slate-200">
+                <card.icon size={18} />
               </div>
-              <h3 className="mb-2 text-lg font-bold text-white">{mod.title}</h3>
-              <p className="text-sm font-medium leading-relaxed text-slate-400">{mod.description}</p>
-            </div>
-            <div className="flex items-center justify-between border-t border-slate-800/50 bg-white/[0.02] px-6 py-4 transition-colors [@media(hover:hover)]:group-hover:bg-white/[0.04]">
-              <span className="text-[11px] font-bold tracking-wider text-slate-500 transition-colors [@media(hover:hover)]:group-hover:text-slate-300">OPEN MODULE</span>
-              <ChevronRight size={16} className="text-slate-500 transition-all duration-300 [@media(hover:hover)]:group-hover:translate-x-1 [@media(hover:hover)]:group-hover:text-blue-400" />
-            </div>
-          </Link>
-        ))}
-      </div>
+              <h3 className="text-base font-semibold text-slate-100">{card.title}</h3>
+              <p className="mt-1 text-sm text-slate-400">{card.description}</p>
+              <div className="mt-4 flex items-center gap-1 text-xs font-medium text-slate-300">
+                Open section <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
