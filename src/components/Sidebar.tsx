@@ -31,8 +31,8 @@ export function Sidebar() {
   const { profile, signOut } = useAuth();
 
   return (
-    <aside className="glass glass-border hidden h-screen w-64 shrink-0 flex-col p-3 md:flex">
-      <div className="mb-2 flex items-center justify-between rounded-xl px-2 py-3">
+    <aside className="glass glass-border hidden h-screen w-72 shrink-0 flex-col overflow-visible p-4 md:flex">
+      <div className="mb-2 flex items-center justify-between rounded-xl px-1 py-2">
         <div className="flex items-center gap-2.5">
           <div className="rounded-lg border border-slate-700 bg-slate-900 p-1.5 text-slate-100">
             <Hexagon size={18} className="fill-current" />
@@ -45,7 +45,7 @@ export function Sidebar() {
         <NotificationBell />
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-1 py-2">
+      <nav className="flex-1 space-y-1.5 overflow-y-auto px-1 py-2">
         {navItems.map((item) => (
           <NavItem key={item.name} item={item} />
         ))}
