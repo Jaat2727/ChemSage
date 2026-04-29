@@ -8,28 +8,20 @@ import { useAuth } from "@/providers/AuthProvider";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { cn } from "@/lib/utils";
 
-function NavItem({ item }: { item: typeof navItems[0] }) {
+function NavItem({ item }: { item: (typeof navItems)[0] }) {
   const pathname = usePathname();
   const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-  
+
   return (
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 rounded-xl px-3.5 py-3 transition-all duration-200",
-        isActive
-          ? "bg-blue-500/10 font-semibold text-blue-400 shadow-sm shadow-blue-500/5"
-          : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
+        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+        isActive ? "bg-slate-800 text-slate-100" : "text-slate-400 hover:bg-slate-900 hover:text-slate-200",
       )}
     >
-      <div className={cn(
-        "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
-        isActive ? "bg-blue-500/15 text-blue-400" : "text-slate-500",
-      )}>
-        <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-      </div>
-      <span className="text-[14px]">{item.name}</span>
-      {isActive && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-400 shadow-sm shadow-blue-400/50" />}
+      <item.icon size={17} strokeWidth={isActive ? 2.3 : 2} />
+      <span className="font-medium">{item.name}</span>
     </Link>
   );
 }
@@ -39,38 +31,44 @@ export function Sidebar() {
   const { profile, signOut } = useAuth();
 
   return (
-    <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-slate-800/80 bg-slate-950/80 backdrop-blur-xl md:flex">
-      <div className="p-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 text-white shadow-lg shadow-blue-500/25">
-            <Hexagon size={22} className="fill-current" />
+    <aside className="glass glass-border hidden h-screen w-72 shrink-0 flex-col overflow-visible p-4 md:flex">
+      <div className="mb-2 flex items-center justify-between rounded-xl px-1 py-2">
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-lg border border-slate-700 bg-slate-900 p-1.5 text-slate-100">
+            <Hexagon size={18} className="fill-current" />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-white leading-tight">ChemSAGE</h1>
-            <p className="text-[12px] font-medium text-slate-500">Chemistry workspace</p>
+            <h1 className="text-sm font-semibold tracking-[0.16em] text-slate-100">CHEMSAGE</h1>
+            <p className="text-xs text-slate-500">Workspace</p>
           </div>
         </div>
         <NotificationBell />
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+
+      <nav className="flex-1 space-y-1.5 overflow-y-auto px-1 py-2">
         {navItems.map((item) => (
           <NavItem key={item.name} item={item} />
         ))}
       </nav>
-      <div className="border-t border-slate-800/80 p-3">
+
+      <div className="space-y-2 border-t border-slate-800 px-1 pt-3">
         {profile?.role === "admin" ? (
-          <Link href="/admin" className="mb-2 flex items-center gap-2.5 rounded-xl bg-red-500/[0.08] px-3.5 py-3 text-sm font-semibold text-red-300 transition-all duration-200 hover:bg-red-500/[0.12]">
-            <Shield size={16} /> Admin panel
+          <Link
+            href="/admin"
+            className="flex items-center gap-2 rounded-xl border border-rose-900/60 bg-rose-950/40 px-3 py-2 text-sm text-rose-200 hover:bg-rose-950/60"
+          >
+            <Shield size={14} /> Admin panel
           </Link>
         ) : null}
+
         <button
           onClick={async () => {
             await signOut();
             router.replace("/login");
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-800 px-3 py-3 text-sm font-semibold text-slate-400 transition-all duration-200 hover:border-slate-700 hover:bg-white/[0.03] hover:text-slate-200 active:scale-[0.98]"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:bg-slate-900"
         >
-          <LogOut size={16} /> Sign out
+          <LogOut size={15} /> Sign out
         </button>
       </div>
     </aside>

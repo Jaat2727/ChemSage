@@ -9,11 +9,11 @@ import {
 } from "lucide-react";
 
 export const navItems = [
-  { name: "Dashboard", href: "/", icon: Activity },
-  { name: "Study Vault", href: "/vault", icon: Folder },
-  { name: "Exam Archive", href: "/archive", icon: FileText },
-  { name: "Schedule Manager", href: "/schedule", icon: Calendar },
-  { name: "Network Hub", href: "/hub", icon: MessageSquare },
-  { name: "Synergy Groups", href: "/groups", icon: Users },
-  { name: "Task Terminal", href: "/tasks", icon: Bookmark },
+  { name: "Home", href: "/", icon: Activity },
+  { name: "Resource Vault", href: "/vault", icon: Folder },
+  { name: "Past Papers", href: "/archive", icon: FileText },
+  { name: "Class Planner", href: "/schedule", icon: Calendar },
+  { name: "Direct Chats", href: "/hub", icon: MessageSquare },
+  { name: "Study Circles", href: "/groups", icon: Users },
+  { name: "Task Board", href: "/tasks", icon: Bookmark },
 ];

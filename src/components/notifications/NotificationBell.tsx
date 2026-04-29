@@ -53,7 +53,11 @@ export function NotificationBell() {
           filter: `user_id=eq.${profile.id}`,
         },
         (payload) => {
-          setNotifications((prev) => [(payload.new as unknown) as Notification, ...prev]);
+          setNotifications((prev) => {
+            const incoming = (payload.new as unknown) as Notification;
+            if (prev.some((item) => item.id === incoming.id)) return prev;
+            return [incoming, ...prev];
+          });
         }
       )
       .subscribe();
@@ -74,6 +78,18 @@ export function NotificationBell() {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscape);
+    }
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen]);
 
   const markAsRead = async (id: string, e: React.MouseEvent) => {
@@ -98,10 +114,12 @@ export function NotificationBell() {
   if (!profile) return null;
 
   return (
-    <div className="relative" ref={panelRef}>
+    <div className="relative flex items-center" ref={panelRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:bg-slate-800/50 active:scale-95 text-slate-400 hover:text-white"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-slate-400 transition-all duration-200 hover:border-slate-700 hover:bg-slate-800/60 hover:text-white active:scale-95"
+        aria-label="Open notifications"
+        aria-expanded={isOpen}
       >
         {unreadCount > 0 ? (
           <>
@@ -114,8 +132,8 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 md:left-auto md:right-0 mt-2 w-80 lg:w-96 origin-top md:origin-top-right animate-scale-in rounded-2xl border border-slate-800/80 bg-slate-950/95 p-2 shadow-2xl backdrop-blur-xl z-50">
-          <div className="flex items-center justify-between px-3 pb-2 pt-2 border-b border-slate-800/50 mb-2">
+        <div className="absolute left-0 top-full z-[80] mt-2 w-[min(22rem,calc(100vw-2rem))] origin-top animate-scale-in rounded-2xl border border-slate-800/80 bg-slate-950/95 p-2 shadow-2xl backdrop-blur-xl md:left-auto md:right-0 md:w-[24rem]">
+          <div className="mb-2 flex items-center justify-between border-b border-slate-800/50 px-3 pb-2 pt-2">
             <h3 className="text-sm font-semibold text-white">Notifications</h3>
             {unreadCount > 0 && (
               <button
@@ -127,7 +145,7 @@ export function NotificationBell() {
             )}
           </div>
 
-          <div className="max-h-[350px] overflow-y-auto pr-1 space-y-1 mt-2 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+          <div className="mt-2 max-h-[22rem] space-y-1 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
             {notifications.length === 0 ? (
               <div className="py-8 text-center text-sm font-medium text-slate-500">
                 You have no notifications.
@@ -137,8 +155,10 @@ export function NotificationBell() {
                 <div
                   key={n.id}
                   className={cn(
-                    "group relative flex flex-col gap-1 rounded-xl p-3 text-sm transition-all",
-                    n.read ? "opacity-70 hover:opacity-100 hover:bg-slate-800/30" : "bg-blue-500/10 border border-blue-500/20"
+                    "group relative flex flex-col gap-1 rounded-xl border p-3 text-sm transition-all",
+                    n.read
+                      ? "border-transparent bg-transparent opacity-80 hover:bg-slate-800/30 hover:opacity-100"
+                      : "border-blue-500/20 bg-blue-500/10"
                   )}
                 >
                   <p className={cn("pr-6 leading-relaxed line-clamp-3", n.read ? "text-slate-400" : "text-slate-200 font-medium")}>

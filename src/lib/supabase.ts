@@ -237,40 +237,88 @@ class StorageBucket {
   }
 }
 
-class RealtimeChannel {
-  private config?: { table: string; filter?: string; callback: (payload: { new: Record<string, unknown> }) => void };
-  private intervalId?: number;
-  private lastSeen?: string;
+type RealtimeEvent = "INSERT" | "DELETE";
+type RealtimePayload = { new?: Record<string, unknown>; old?: Record<string, unknown> };
 
-  on(_type: "postgres_changes", config: { event: "INSERT"; schema: string; table: string; filter?: string }, callback: (payload: { new: Record<string, unknown> }) => void) {
-    this.config = { table: config.table, filter: config.filter, callback };
+class RealtimeChannel {
+  private listeners: Array<{ event: RealtimeEvent; table: string; filter?: string; callback: (payload: RealtimePayload) => void }> = [];
+  private intervalId?: number;
+  private lastSeenByTable = new Map<string, string>();
+  private knownIdsByTable = new Map<string, Set<string>>();
+
+  on(
+    _type: "postgres_changes",
+    config: { event: RealtimeEvent; schema: string; table: string; filter?: string },
+    callback: (payload: RealtimePayload) => void,
+  ) {
+    void config.schema;
+    this.listeners.push({ event: config.event, table: config.table, filter: config.filter, callback });
     return this;
   }
 
-  subscribe() {
-    if (typeof window === "undefined" || !this.config) return this;
+  subscribe(statusCallback?: (status: "SUBSCRIBED") => void) {
+    if (typeof window === "undefined" || this.listeners.length === 0) return this;
     const session = readSession();
-    const poll = async () => {
-      const builder = new QueryBuilder<Record<string, unknown>>(this.config!.table, session?.access_token).select("*").order("created_at", { ascending: true });
-      if (this.config?.filter) {
-        const [column, clause] = this.config.filter.split("=eq.");
+
+    const pollTable = async (table: string, filter?: string) => {
+      const builder = new QueryBuilder<Record<string, unknown>>(table, session?.access_token).select("*").order("created_at", { ascending: true });
+      if (filter) {
+        const [column, clause] = filter.split("=eq.");
         if (column && clause) builder.eq(column, clause);
       }
-      if (this.lastSeen) {
-        builder.neq("created_at", this.lastSeen);
-      }
+
       const { data } = await builder;
       const rows = Array.isArray(data) ? data : [];
+      const currentIds = new Set(
+        rows
+          .map((row) => (typeof row.id === "string" ? row.id : null))
+          .filter((id): id is string => Boolean(id)),
+      );
+
+      const key = `${table}::${filter ?? ""}`;
+      const prevIds = this.knownIdsByTable.get(key) ?? new Set<string>();
+      const lastSeen = this.lastSeenByTable.get(key);
+
       for (const row of rows) {
+        const rowId = typeof row.id === "string" ? row.id : "";
         const createdAt = typeof row.created_at === "string" ? row.created_at : undefined;
-        if (createdAt && (!this.lastSeen || createdAt > this.lastSeen)) {
-          this.lastSeen = createdAt;
-          this.config?.callback({ new: row });
+        if (!rowId || prevIds.has(rowId)) continue;
+
+        if (!lastSeen || (createdAt && createdAt >= lastSeen)) {
+          this.listeners
+            .filter((listener) => listener.table === table && listener.filter === filter && listener.event === "INSERT")
+            .forEach((listener) => listener.callback({ new: row }));
+        }
+
+        if (createdAt && (!lastSeen || createdAt > lastSeen)) {
+          this.lastSeenByTable.set(key, createdAt);
         }
       }
+
+      prevIds.forEach((id) => {
+        if (!currentIds.has(id)) {
+          this.listeners
+            .filter((listener) => listener.table === table && listener.filter === filter && listener.event === "DELETE")
+            .forEach((listener) => listener.callback({ old: { id } }));
+        }
+      });
+
+      this.knownIdsByTable.set(key, currentIds);
     };
+
+    const poll = async () => {
+      const combos = new Map<string, { table: string; filter?: string }>();
+      this.listeners.forEach((listener) => {
+        const key = `${listener.table}::${listener.filter ?? ""}`;
+        combos.set(key, { table: listener.table, filter: listener.filter });
+      });
+
+      await Promise.all(Array.from(combos.values()).map((combo) => pollTable(combo.table, combo.filter)));
+    };
+
+    statusCallback?.("SUBSCRIBED");
     void poll();
-    this.intervalId = window.setInterval(poll, 4000);
+    this.intervalId = window.setInterval(poll, 2500);
     return this;
   }
 
