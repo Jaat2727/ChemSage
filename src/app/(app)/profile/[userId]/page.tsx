@@ -1,131 +1,189 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft, MessageSquare, GraduationCap, Calendar, Mail, ShieldAlert } from "lucide-react";
+import { 
+  User, Database, FileText, Bookmark, Activity, 
+  Settings, Shield, ChevronLeft, MapPin
+} from "lucide-react";
+import Link from "next/link";
 import { createClientComponentClient } from "@/lib/supabase";
-import type { Profile } from "@/lib/types";
+import { useAuth } from "@/providers/AuthProvider";
 import { LoadingCard, LockedScreen } from "@/components/ui/Feedback";
+import type { Profile } from "@/lib/types";
 
-const supabase = createClientComponentClient();
+// Import tabs
+import OverviewTab from "./components/OverviewTab";
+import ActivityTab from "./components/ActivityTab";
+import ContentTab from "./components/ContentTab";
+import BookmarksTab from "./components/BookmarksTab";
+import SettingsTab from "./components/SettingsTab";
+import AdminTab from "./components/AdminTab";
+
+type Tab = "Overview" | "Activity" | "Resources" | "Papers" | "Bookmarks" | "Settings" | "Admin";
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
-  const [userProfile, setUserProfile] = useState<Profile | null>(null);
+  const { profile: currentUser } = useAuth();
+  const supabase = createClientComponentClient();
+
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("Overview");
+
+  const isOwner = currentUser?.id === userId;
+  const isAdmin = currentUser?.role === "admin";
 
   useEffect(() => {
     let mounted = true;
-
-    const loadProfile = async () => {
-      setLoading(true);
-      setError(null);
-      
-      const { data, error: fetchError } = await supabase
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .single();
-        
-      if (fetchError) {
-        if (mounted) setError(fetchError.message);
-      } else if (mounted) {
-        setUserProfile(data as Profile);
+
+      if (mounted) {
+        if (!error && data) setProfile(data as Profile);
+        setLoading(false);
       }
-      
-      if (mounted) setLoading(false);
     };
 
-    void loadProfile();
-
-    return () => {
-      mounted = false;
-    };
+    void fetchProfile();
+    return () => { mounted = false; };
   }, [userId]);
 
-  if (loading) return <LoadingCard />;
-  
-  if (error || !userProfile) {
-    return <LockedScreen title="Profile Not Found" description="The user profile you are looking for does not exist or you do not have permission to view it." />;
-  }
+  if (loading) return <LoadingCard title="> loading profile..." />;
+  if (!profile) return <LockedScreen title="Profile Not Found" description="This user does not exist or you lack permission to view." />;
 
-  const initials = userProfile.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+  // Calculate profile completion percentage
+  const calculateCompletion = () => {
+    let score = 0;
+    const fields = [
+      profile.avatar_url,
+      profile.banner_url,
+      profile.bio,
+      profile.academic_interests?.length,
+      profile.preferred_subjects?.length
+    ];
+    fields.forEach(f => { if (f) score += 20; });
+    return score;
+  };
+  const completion = calculateCompletion();
+
+  const TABS = [
+    { id: "Overview", icon: User, label: "Overview" },
+    { id: "Activity", icon: Activity, label: "Activity" },
+    { id: "Resources", icon: Database, label: "Resources" },
+    { id: "Papers", icon: FileText, label: "Past Papers" },
+    { id: "Bookmarks", icon: Bookmark, label: "Saved" },
+    ...(isOwner ? [{ id: "Settings", icon: Settings, label: "Settings" }] : []),
+    ...(isAdmin ? [{ id: "Admin", icon: Shield, label: "Moderation" }] : []),
+  ] as const;
+
+  const initials = profile.name.substring(0, 2).toUpperCase();
 
   return (
-    <div className="mx-auto w-full max-w-3xl pb-12 pt-6">
-      <Link href="/hub/global" className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[var(--muted)] hover:text-white transition-colors">
-        <ArrowLeft size={16} />
-        Back to Community Hub
+    <div className="mx-auto w-full max-w-5xl pb-12">
+      <Link href="/hub/global" className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--muted)] hover:text-white transition-colors">
+        <ChevronLeft size={16} />
+        Back to Community
       </Link>
-      
-      <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--background)] shadow-2xl">
+
+      {/* Header Profile Card */}
+      <div className="relative mb-8 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
         {/* Banner */}
-        <div className="h-32 w-full bg-gradient-to-r from-[var(--surface-soft)] to-[var(--surface)] relative overflow-hidden">
-           <div className="absolute inset-0 bg-[var(--accent)]/5 backdrop-blur-md" />
-           <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[var(--accent)]/10 blur-3xl" />
+        <div 
+          className="h-40 w-full bg-[var(--surface-soft)] relative overflow-hidden bg-cover bg-center"
+          style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : {}}
+        >
+          {!profile.banner_url && (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)]/10 to-transparent backdrop-blur-3xl" />
+              <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[var(--accent)]/20 blur-3xl" />
+            </>
+          )}
         </div>
-        
-        {/* Profile Content */}
-        <div className="px-6 sm:px-10 pb-10">
-          <div className="relative flex justify-between items-end -mt-16 mb-6">
-            <div className="flex h-32 w-32 items-center justify-center rounded-2xl border-4 border-[var(--background)] bg-[var(--surface)] text-4xl font-bold text-[var(--accent)] shadow-xl relative overflow-hidden">
-               {initials}
-               <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent" />
+
+        <div className="px-6 pb-6 sm:px-8">
+          <div className="relative flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-16 sm:-mt-12">
+            <div className="flex items-end gap-6">
+              {/* Avatar */}
+              <div className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-[var(--surface)] bg-[var(--background)] shadow-xl">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt={profile.name} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-4xl font-extrabold text-[var(--accent)]">{initials}</span>
+                )}
+              </div>
+              
+              <div className="mb-1">
+                <h1 className="text-2xl font-bold text-white sm:text-3xl">{profile.name}</h1>
+                <p className="text-sm font-mono text-[var(--muted)] mt-1">{profile.roll_no} • {profile.programme} '{profile.batch_year.toString().slice(2)}</p>
+              </div>
             </div>
-            
-            <Link 
-              href={`/hub/${userProfile.id}`}
-              className="flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-black transition-transform hover:scale-105 hover:bg-[#bce600] shadow-lg shadow-[var(--accent)]/20"
-            >
-              <MessageSquare size={16} />
-              Message
-            </Link>
+
+            {/* Profile Completion / Badges */}
+            {isOwner && (
+              <div className="flex flex-col items-end gap-2 bg-[var(--background)] p-3 rounded-xl border border-[var(--border)]">
+                <div className="flex justify-between w-full gap-4 text-xs font-bold text-white">
+                  <span>Profile Setup</span>
+                  <span className="text-[var(--accent)]">{completion}%</span>
+                </div>
+                <div className="h-1.5 w-40 rounded-full bg-[var(--surface-soft)] overflow-hidden">
+                  <div className="h-full bg-[var(--accent)] transition-all" style={{ width: `${completion}%` }} />
+                </div>
+              </div>
+            )}
           </div>
-          
-          <div className="mb-8">
-            <h1 className="text-3xl font-extrabold text-white md:text-4xl">{userProfile.name}</h1>
-            <p className="mt-1 text-lg text-[var(--muted)] font-mono">{userProfile.roll_no}</p>
-          </div>
-          
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-colors hover:border-[var(--accent)]/30">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
-                <GraduationCap size={20} />
-              </div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Programme</p>
-              <p className="mt-1 font-bold text-white text-lg">{userProfile.programme}</p>
-            </div>
-            
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-colors hover:border-[var(--accent)]/30">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400">
-                <Calendar size={20} />
-              </div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Batch Year</p>
-              <p className="mt-1 font-bold text-white text-lg">{userProfile.batch_year}</p>
-            </div>
-            
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:col-span-2 flex items-center justify-between transition-colors hover:border-[var(--accent)]/30">
-              <div className="flex items-center gap-4">
-                 <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${userProfile.status === 'active' ? 'bg-[var(--accent)]/10 text-[var(--accent)]' : 'bg-red-500/10 text-red-400'}`}>
-                   {userProfile.status === 'active' ? <Mail size={20} /> : <ShieldAlert size={20} />}
-                 </div>
-                 <div>
-                   <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Status</p>
-                   <p className="mt-1 font-bold text-white capitalize">{userProfile.status}</p>
-                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                 <span className="relative flex h-3 w-3">
-                    {userProfile.status === 'active' && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent)] opacity-75"></span>}
-                    <span className={`relative inline-flex h-3 w-3 rounded-full ${userProfile.status === 'active' ? 'bg-[var(--accent)]' : 'bg-red-500'}`}></span>
-                 </span>
-              </div>
+
+          {/* Bio & Details */}
+          <div className="mt-6 max-w-2xl">
+            <p className="text-sm leading-relaxed text-gray-300">
+              {profile.bio || (isOwner ? "Add a bio in Settings to tell the community about yourself." : "No bio provided.")}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium text-[var(--muted)]">
+              <span className="flex items-center gap-1.5"><User size={14} /> {profile.role === "admin" ? "Administrator" : "Student"}</span>
+              <span className="flex items-center gap-1.5"><MapPin size={14} /> IIT Madras BS Chemistry</span>
+              <span className="flex items-center gap-1.5"><Activity size={14} /> Joined {new Date(profile.created_at || "").getFullYear()}</span>
             </div>
           </div>
-          
         </div>
+      </div>
+
+      {/* Tabs Navigation */}
+      <div className="sticky top-0 z-10 -mx-4 mb-8 overflow-x-auto bg-[var(--background)] px-4 py-2 sm:mx-0 sm:px-0">
+        <nav className="flex gap-2 min-w-max border-b border-[var(--border)] pb-px">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as Tab)}
+                className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-bold transition-all ${
+                  isActive 
+                    ? "border-[var(--accent)] text-white" 
+                    : "border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:text-gray-300"
+                }`}
+              >
+                <Icon size={16} className={isActive ? "text-[var(--accent)]" : ""} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      <div className="animate-fade-in">
+        {activeTab === "Overview" && <OverviewTab profile={profile} />}
+        {activeTab === "Activity" && <ActivityTab profile={profile} />}
+        {activeTab === "Resources" && <ContentTab profile={profile} type="resource" isOwner={isOwner} isAdmin={isAdmin} />}
+        {activeTab === "Papers" && <ContentTab profile={profile} type="paper" isOwner={isOwner} isAdmin={isAdmin} />}
+        {activeTab === "Bookmarks" && <BookmarksTab profile={profile} />}
+        {activeTab === "Settings" && isOwner && <SettingsTab profile={profile} setProfile={setProfile} />}
+        {activeTab === "Admin" && isAdmin && <AdminTab profile={profile} />}
       </div>
     </div>
   );

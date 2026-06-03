@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Shield, Terminal } from "lucide-react";
+import { LogOut, Shield, Terminal, User } from "lucide-react";
 import { navItems } from "./navItems";
 import { useAuth } from "@/providers/AuthProvider";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -67,12 +67,21 @@ export function Sidebar() {
           </Link>
         ) : null}
 
+        {profile && (
+          <Link
+            href={`/profile/${profile.id}`}
+            className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--surface-soft)]"
+          >
+            <User size={16} /> My Profile
+          </Link>
+        )}
+
         <button
           onClick={async () => {
             await signOut();
             router.push("/");
           }}
-          className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--surface-soft)]"
+          className="flex w-full items-center gap-2 rounded-lg border border-red-900/30 bg-red-950/20 px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-900/40"
         >
           <LogOut size={16} /> Sign Out
         </button>

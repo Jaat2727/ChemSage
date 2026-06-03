@@ -32,6 +32,13 @@ export interface Profile {
   status: ProfileStatus;
   role: ProfileRole;
   created_at?: string;
+  avatar_url?: string;
+  banner_url?: string;
+  bio?: string;
+  academic_interests?: string[];
+  preferred_subjects?: string[];
+  last_active?: string;
+  reputation_score?: number;
 }
 
 export interface MessageRow {
@@ -158,6 +165,7 @@ export interface StarRecord {
   user_id: string;
   resource_id?: string;
   paper_id?: string;
+  room_id?: string;
   created_at: string;
 }
 
@@ -170,4 +178,16 @@ export interface AdminAuditLog {
   details?: any;
   created_at: string;
   admin?: Pick<Profile, "id" | "name" | "roll_no">;
+}
+
+export type NotificationCategory = "Resources" | "Past Papers" | "Study Circles" | "Tasks" | "Messages" | "Admin" | "System";
+
+export interface AppNotification {
+  id: string;
+  user_id: string;
+  type: NotificationCategory | string;
+  message: string;
+  read: boolean;
+  created_at: string;
+  link?: string;
 }

@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { navItems } from "./navItems";
+import { useAuth } from "@/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 
 export function MobileTabBar() {
   const pathname = usePathname();
+  const { profile } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const primaryItems = useMemo(() => navItems.slice(0, 4), []);
   const moreItems = useMemo(() => navItems.slice(4), []);
@@ -42,6 +44,19 @@ export function MobileTabBar() {
                   </Link>
                 );
               })}
+              
+              {profile && (
+                <div className="border-t border-[var(--border)] mt-2 pt-2">
+                  <Link
+                    href={`/profile/${profile.id}`}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-white"
+                  >
+                    <User size={18} strokeWidth={1.8} />
+                    My Profile
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
