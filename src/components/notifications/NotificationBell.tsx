@@ -26,10 +26,9 @@ export function NotificationBell() {
   useEffect(() => {
     if (!profile?.id) return;
 
-    // Fetch initial notifications
     const fetchNotifications = async () => {
       const { data, error } = await supabase
-        .from<Notification>("notifications")
+        .from("notifications")
         .select("*")
         .eq("user_id", profile.id)
         .order("created_at", { ascending: false })
@@ -42,8 +41,16 @@ export function NotificationBell() {
 
     void fetchNotifications();
 
-    // Subscribe to realtime updates
-    const channel = supabase.channel(`notifications:user_id=eq.${profile.id}`)
+    // Remove any existing channel with the same name first
+    // (handles React Strict Mode double-mount and hot reload)
+    const channelName = `user-notif-${profile.id}`;
+    const existing = supabase.getChannels().find((ch) => ch.topic === `realtime:${channelName}`);
+    if (existing) {
+      supabase.removeChannel(existing);
+    }
+
+    const channel = supabase
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
@@ -67,7 +74,6 @@ export function NotificationBell() {
     };
   }, [profile?.id]);
 
-  // Click outside to close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
@@ -94,20 +100,18 @@ export function NotificationBell() {
 
   const markAsRead = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    // Optimistic update
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    await supabase.from("notifications").update({ read: true }).eq("id", id).execute();
+    await supabase.from("notifications").update({ read: true }).eq("id", id);
   };
 
   const markAllAsRead = async () => {
     const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
     if (!unreadIds.length) return;
-    
+
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    
-    // Process sequentially for simplicity with custom DB client
+
     for (const id of unreadIds) {
-       await supabase.from("notifications").update({ read: true }).eq("id", id).execute();
+       await supabase.from("notifications").update({ read: true }).eq("id", id);
     }
   };
 
@@ -117,14 +121,14 @@ export function NotificationBell() {
     <div className="relative flex items-center" ref={panelRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-slate-400 transition-all duration-200 hover:border-slate-700 hover:bg-slate-800/60 hover:text-white active:scale-95"
+        className="relative flex h-9 w-9 items-center justify-center border border-transparent text-[var(--muted)] transition-all hover:border-[var(--border)] hover:text-white active:scale-95"
         aria-label="Open notifications"
         aria-expanded={isOpen}
       >
         {unreadCount > 0 ? (
           <>
-            <BellDot size={20} className="text-blue-400" />
-            <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-blue-500 ring-2 ring-slate-950 animate-pulse" />
+            <BellDot size={20} className="text-[var(--accent)]" />
+            <span className="absolute right-1 top-1 h-2.5 w-2.5 bg-[var(--accent)] animate-pulse" />
           </>
         ) : (
           <Bell size={20} />
@@ -132,39 +136,39 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-[80] mt-2 w-[min(22rem,calc(100vw-2rem))] origin-top animate-scale-in rounded-2xl border border-slate-800/80 bg-slate-950/95 p-2 shadow-2xl backdrop-blur-xl md:left-auto md:right-0 md:w-[24rem]">
-          <div className="mb-2 flex items-center justify-between border-b border-slate-800/50 px-3 pb-2 pt-2">
-            <h3 className="text-sm font-semibold text-white">Notifications</h3>
+        <div className="absolute left-0 top-full z-[80] mt-2 w-[min(22rem,calc(100vw-2rem))] origin-top animate-scale-in border border-[var(--border)] bg-[var(--background)] p-2 shadow-2xl md:left-auto md:right-0 md:w-[24rem]">
+          <div className="mb-2 flex items-center justify-between border-b border-[var(--border)] px-3 pb-2 pt-2">
+            <h3 className="font-mono text-sm font-bold text-white">{`> notifications`}</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                className="font-mono text-xs text-[var(--accent)] hover:underline"
               >
-                Mark all read
+                markAllRead()
               </button>
             )}
           </div>
 
-          <div className="mt-2 max-h-[22rem] space-y-1 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+          <div className="mt-2 max-h-[22rem] space-y-1 overflow-y-auto pr-1">
             {notifications.length === 0 ? (
-              <div className="py-8 text-center text-sm font-medium text-slate-500">
-                You have no notifications.
+              <div className="py-8 text-center font-mono text-sm text-[var(--muted)]">
+                {`> no notifications`}
               </div>
             ) : (
               notifications.map((n) => (
                 <div
                   key={n.id}
                   className={cn(
-                    "group relative flex flex-col gap-1 rounded-xl border p-3 text-sm transition-all",
+                    "group relative flex flex-col gap-1 border p-3 text-sm transition-all",
                     n.read
-                      ? "border-transparent bg-transparent opacity-80 hover:bg-slate-800/30 hover:opacity-100"
-                      : "border-blue-500/20 bg-blue-500/10"
+                      ? "border-transparent bg-transparent opacity-80 hover:bg-[var(--surface)]"
+                      : "border-[var(--accent)]/20 bg-[var(--accent)]/5"
                   )}
                 >
-                  <p className={cn("pr-6 leading-relaxed line-clamp-3", n.read ? "text-slate-400" : "text-slate-200 font-medium")}>
+                  <p className={cn("pr-6 leading-relaxed line-clamp-3", n.read ? "text-[var(--muted)]" : "text-white font-mono")}>
                     {n.message}
                   </p>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--muted)] mt-1">
                     {new Date(n.created_at).toLocaleDateString(undefined, {
                       month: "short",
                       day: "numeric",
@@ -176,17 +180,16 @@ export function NotificationBell() {
                   {!n.read && (
                     <button
                       onClick={(e) => markAsRead(n.id, e)}
-                      className="absolute right-3 top-3 rounded-full bg-blue-500/20 p-1 text-blue-400 opacity-0 transition-all hover:bg-blue-500 hover:text-white md:group-hover:opacity-100"
+                      className="absolute right-3 top-3 p-1 text-[var(--accent)] opacity-0 transition-all hover:text-white md:group-hover:opacity-100"
                       title="Mark as read"
                     >
                       <Check size={14} />
                     </button>
                   )}
-                  {/* Always visible on touch devices */}
                   {!n.read && (
                     <button
                       onClick={(e) => markAsRead(n.id, e)}
-                      className="absolute right-3 top-3 rounded-full bg-blue-500/20 p-1 text-blue-400 transition-all active:bg-blue-500 active:text-white md:hidden"
+                      className="absolute right-3 top-3 p-1 text-[var(--accent)] transition-all active:text-white md:hidden"
                       title="Mark as read"
                     >
                       <Check size={14} />

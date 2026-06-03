@@ -8,7 +8,7 @@ import { extractRollNo, parseRollNo, normalizeEmail } from "@/lib/rollno";
 import type { RegisteredRollNo } from "@/lib/types";
 
 const supabase = createClientComponentClient();
-const inputClasses = "w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none";
+const inputClasses = "w-full border border-[var(--border)] bg-[var(--surface)] px-4 py-3 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none";
 
 export default function SignupPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
@@ -20,11 +20,11 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="glass-light glass-border animate-scale-in rounded-2xl p-6 text-center">
-        <div className="mx-auto mb-4 w-fit rounded-full border border-slate-700 bg-slate-900 p-3 text-slate-200"><Clock size={24} /></div>
-        <h2 className="text-xl font-semibold text-slate-100">Account Created</h2>
-        <p className="mt-2 text-sm text-slate-400">Your account is pending admin approval.</p>
-        <Link href="/login" className="mt-5 block rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-900">Back to Login</Link>
+      <div className="animate-scale-in border border-[var(--border)] bg-[var(--surface)] p-6 text-center">
+        <div className="mx-auto mb-4 w-fit border border-[var(--border)] bg-[var(--background)] p-3 text-[var(--muted)]"><Clock size={24} /></div>
+        <h2 className="font-mono text-xl font-bold text-white">account_created</h2>
+        <p className="mt-2 text-sm text-[var(--muted)]">Your account is pending admin approval.</p>
+        <Link href="/login" className="mt-5 block border border-[var(--accent)] bg-[var(--accent)] py-2.5 font-mono text-sm font-bold text-black">backToLogin()</Link>
       </div>
     );
   }
@@ -43,7 +43,7 @@ export default function SignupPage() {
       const parsed = parseRollNo(rollNo);
 
       const { data: existingRollNo, error: rollError } = await supabase
-        .from<RegisteredRollNo>("registered_rollnos")
+        .from("registered_rollnos")
         .select("roll_no, name, programme, batch_year")
         .eq("roll_no", rollNo)
         .single();
@@ -68,7 +68,7 @@ export default function SignupPage() {
 
       if (!res.ok) {
         if (data.error?.toLowerCase().includes("already registered") || data.error?.toLowerCase().includes("already exists")) {
-          setError(<span>Account already exists. <Link href="/login" className="underline">Log in instead?</Link></span>);
+          setError(<span>Account already exists. <Link href="/login" className="text-[var(--accent)] underline">Log in instead?</Link></span>);
           setLoading(false);
           return;
         }
@@ -85,32 +85,59 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="glass-light glass-border animate-scale-in rounded-2xl p-6">
-      <Link href="/login" className="mb-4 inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-200"><ArrowLeft size={15} /> Back</Link>
-      <h1 className="text-xl font-semibold text-slate-100">Create account</h1>
-      <p className="mb-5 mt-1 text-sm text-slate-500">Minimal, secure onboarding.</p>
-
-      <form className="space-y-3.5" onSubmit={handleSubmit}>
-        <input type="text" value={form.name} onChange={(e) => setForm((c) => ({ ...c, name: e.target.value }))} placeholder="Full name" required className={inputClasses} />
-        <input type="text" value={form.email} onChange={(e) => setForm((c) => ({ ...c, email: e.target.value }))} placeholder="Email or roll number" required className={inputClasses} />
-
-        <div className="relative">
-          <input type={showPassword ? "text" : "password"} value={form.password} onChange={(e) => setForm((c) => ({ ...c, password: e.target.value }))} placeholder="Password" required minLength={6} className={`${inputClasses} pr-11`} />
-          <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+    <div className="animate-scale-in border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
+      {/* MacOS-style window header */}
+      <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full bg-red-500" />
+          <span className="h-3 w-3 rounded-full bg-yellow-500" />
+          <span className="h-3 w-3 rounded-full bg-green-500" />
         </div>
+        <span className="font-mono text-xs text-[var(--muted)]">chemsage_register.ts</span>
+        <div className="w-12" />
+      </div>
 
-        <div className="relative">
-          <input type={showConfirmPassword ? "text" : "password"} value={form.confirmPassword} onChange={(e) => setForm((c) => ({ ...c, confirmPassword: e.target.value }))} placeholder="Confirm password" required minLength={6} className={`${inputClasses} pr-11`} />
-          <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">{showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
-        </div>
+      <div className="p-6">
+        <Link href="/login" className="mb-4 inline-flex items-center gap-1.5 font-mono text-sm text-[var(--muted)] hover:text-white">
+          <ArrowLeft size={15} /> {`< back`}
+        </Link>
+        <h1 className="font-mono text-xl font-bold text-white">createAccount()</h1>
+        <p className="mb-5 mt-1 font-mono text-xs text-[var(--muted)]">{`// Minimal, secure onboarding.`}</p>
 
-        <div className="rounded-xl border border-amber-900 bg-amber-950/30 px-3 py-2 text-xs text-amber-200">After signup, admin approval is required before login.</div>
-        {error ? <div className="rounded-xl border border-rose-900 bg-rose-950/40 px-3 py-2 text-sm text-rose-200">{error}</div> : null}
+        <form className="space-y-3.5" onSubmit={handleSubmit}>
+          <div>
+            <label className="mb-1 block font-mono text-xs text-[var(--muted)]">FULL_NAME</label>
+            <input type="text" value={form.name} onChange={(e) => setForm((c) => ({ ...c, name: e.target.value }))} placeholder="Your full name" required className={inputClasses} />
+          </div>
+          <div>
+            <label className="mb-1 block font-mono text-xs text-[var(--muted)]">EMAIL</label>
+            <input type="text" value={form.email} onChange={(e) => setForm((c) => ({ ...c, email: e.target.value }))} placeholder="Email or roll number" required className={inputClasses} />
+          </div>
 
-        <button type="submit" disabled={loading} className="w-full rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-900 disabled:opacity-60">{loading ? "Creating account..." : "Sign up"}</button>
-      </form>
+          <div>
+            <label className="mb-1 block font-mono text-xs text-[var(--muted)]">PASSWORD</label>
+            <div className="relative">
+              <input type={showPassword ? "text" : "password"} value={form.password} onChange={(e) => setForm((c) => ({ ...c, password: e.target.value }))} placeholder="Min 6 characters" required minLength={6} className={`${inputClasses} pr-11`} />
+              <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-white">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+            </div>
+          </div>
 
-      <p className="mt-5 text-center text-sm text-slate-400">Already have an account? <Link href="/login" className="text-slate-200">Sign in</Link></p>
+          <div>
+            <label className="mb-1 block font-mono text-xs text-[var(--muted)]">CONFIRM_PASSWORD</label>
+            <div className="relative">
+              <input type={showConfirmPassword ? "text" : "password"} value={form.confirmPassword} onChange={(e) => setForm((c) => ({ ...c, confirmPassword: e.target.value }))} placeholder="Confirm password" required minLength={6} className={`${inputClasses} pr-11`} />
+              <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-white">{showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+            </div>
+          </div>
+
+          <div className="border border-amber-800 bg-amber-950/40 px-3 py-2 font-mono text-xs text-amber-300">{`> After signup, admin approval is required before login.`}</div>
+          {error ? <div className="border border-red-800 bg-red-950/50 px-3 py-2 font-mono text-sm text-red-300">{`> `}{error}</div> : null}
+
+          <button type="submit" disabled={loading} className="w-full border border-[var(--accent)] bg-[var(--accent)] py-2.5 font-mono text-sm font-bold text-black disabled:opacity-60">{loading ? "creating_account..." : "await signUp()"}</button>
+        </form>
+
+        <p className="mt-5 text-center font-mono text-sm text-[var(--muted)]">Already have an account? <Link href="/login" className="text-[var(--accent)]">signIn()</Link></p>
+      </div>
     </div>
   );
 }

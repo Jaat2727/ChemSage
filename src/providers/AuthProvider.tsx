@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const { data, error } = await supabase
-      .from<Profile>("profiles")
+      .from("profiles")
       .select("*")
       .eq("id", authSession.user.id)
       .single();
@@ -46,13 +46,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let active = true;
 
+    // Fetch initial session and profile
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      if (initialSession && active) {
+        setSession(initialSession as unknown as Session);
+        refreshProfile().then(() => {
+          if (active) setLoading(false);
+        });
+      } else {
+        if (active) setLoading(false);
+      }
+    });
+
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
       if (!active) return;
       
       if (nextSession?.user?.id) {
         try {
           const { data, error } = await supabase
-            .from<Profile>("profiles")
+            .from("profiles")
             .select("*")
             .eq("id", nextSession.user.id)
             .single();
@@ -60,24 +72,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!active) return;
 
           if (error) {
-            setSession(nextSession);
+            setSession(nextSession as unknown as Session);
             setProfile(null);
           } else {
-            setSession(nextSession);
+            setSession(nextSession as unknown as Session);
             setProfile(data as Profile);
           }
         } catch (err) {
           if (!active) return;
           console.error(err);
-          setSession(nextSession);
+          setSession(nextSession as unknown as Session);
           setProfile(null);
         }
       } else {
         setSession(null);
         setProfile(null);
       }
-      
-      if (active) setLoading(false);
     });
 
     return () => {

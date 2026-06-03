@@ -19,7 +19,7 @@ const supabase = createClientComponentClient();
 
 async function fetchResources(search: string, category: Category, tags: string[]) {
   let query = supabase
-    .from<ResourceItem>("resources")
+    .from("resources")
     .select("*")
     .order("created_at", { ascending: false });
 
@@ -88,7 +88,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
 
     const tagsArray = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
 
-    const { error: insertError } = await supabase.from<ResourceItem>("resources").insert({
+    const { error: insertError } = await supabase.from("resources").insert({
       title: title.trim(),
       category: category as ResourceItem["category"],
       file_url: publicUrlData.publicUrl,
@@ -105,12 +105,12 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
   }, [file, title, category, tagsInput, uploaderId, onSuccess, onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-md animate-scale-in rounded-3xl border border-slate-700/60 bg-slate-900 p-7 shadow-2xl shadow-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 ">
+      <div className="relative w-full max-w-md animate-scale-in  border border-[var(--border)] bg-[var(--surface)] p-7 shadow-2xl shadow-black/40">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Upload Resource</h2>
-          <button onClick={onClose} className="rounded-full p-1.5 text-slate-400 transition [@media(hover:hover)]:hover:bg-slate-800 [@media(hover:hover)]:hover:text-white active:bg-slate-800">
+          <button onClick={onClose} className=" p-1.5 text-[var(--muted)] transition [@media(hover:hover)]:hover:bg-[var(--surface)] [@media(hover:hover)]:hover:text-white active:bg-[var(--surface)]">
             <X size={18} />
           </button>
         </div>
@@ -121,21 +121,21 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           onClick={() => inputRef.current?.click()}
-          className={`mb-5 flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-6 py-8 transition-all ${
-            file ? "border-blue-500/50 bg-blue-500/5" : "border-slate-700 bg-slate-800/40 [@media(hover:hover)]:hover:border-slate-500 active:border-slate-500"
+          className={`mb-5 flex cursor-pointer flex-col items-center gap-2  border-2 border-dashed px-6 py-8 transition-all ${
+            file ? "border-[var(--accent)]/50 bg-[var(--accent)]/5" : "border-[var(--border)] bg-[var(--surface)] [@media(hover:hover)]:hover:border-[var(--accent)] active:border-[var(--accent)]"
           }`}
         >
           {file ? (
             <>
-              <FileText size={32} className="text-blue-400" />
+              <FileText size={32} className="text-[var(--accent)]" />
               <p className="text-sm font-semibold text-white">{file.name}</p>
-              <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              <p className="text-xs text-[var(--muted)]">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </>
           ) : (
             <>
-              <Upload size={32} className="text-slate-500" />
-              <p className="text-sm font-medium text-slate-400">Drop file here or <span className="text-blue-400">browse</span></p>
-              <p className="text-xs text-slate-600">Max {MAX_FILE_SIZE_MB} MB</p>
+              <Upload size={32} className="text-[var(--muted)]" />
+              <p className="text-sm font-medium text-[var(--muted)]">Drop file here or <span className="text-[var(--accent)]">browse</span></p>
+              <p className="text-xs text-[var(--muted)]">Max {MAX_FILE_SIZE_MB} MB</p>
             </>
           )}
           <input ref={inputRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) pickFile(f); }} />
@@ -143,26 +143,26 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
 
         {/* Title */}
         <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Title</label>
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Title</label>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Thermodynamics Notes Unit 2"
-            className="w-full rounded-xl border border-slate-700/60 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+            className="w-full  border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
           />
         </div>
 
         {/* Category */}
         <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Category</label>
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Category</label>
           <div className="flex flex-wrap gap-2">
             {uploadCategories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setCategory(cat)}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
-                  category === cat ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-300 [@media(hover:hover)]:hover:bg-slate-700 active:scale-95"
+                className={` px-4 py-1.5 text-sm font-semibold transition-all ${
+                  category === cat ? "bg-[var(--accent)] text-white" : "bg-[var(--surface)] text-[var(--muted)] [@media(hover:hover)]:hover:bg-[var(--surface-soft)] active:scale-95"
                 }`}
               >
                 {cat}
@@ -173,25 +173,25 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
 
         {/* Tags */}
         <div className="mb-6">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Tags (comma separated)</label>
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Tags (comma separated)</label>
           <input
             value={tagsInput}
             onChange={(e) => setTagsInput(e.target.value)}
             placeholder="e.g. organic, chemistry, exam2"
-            className="w-full rounded-xl border border-slate-700/60 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+            className="w-full  border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
           />
         </div>
 
         {/* Progress Bar */}
         {uploading && (
           <div className="mb-4">
-            <div className="mb-1.5 flex justify-between text-xs text-slate-400">
+            <div className="mb-1.5 flex justify-between text-xs text-[var(--muted)]">
               <span>{success ? "Upload complete!" : "Uploading…"}</span>
               <span>{progress}%</span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+            <div className="h-2 w-full overflow-hidden  bg-[var(--surface)]">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-500"
+                className="h-full  bg-[var(--accent)] transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -200,27 +200,27 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
 
         {/* Success */}
         {success && (
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-sm font-medium text-emerald-400">
+          <div className="mb-4 flex items-center gap-2  bg-emerald-950/40 border border-emerald-800 px-4 py-2.5 text-sm font-medium text-emerald-400">
             <CheckCircle2 size={16} /> Resource uploaded successfully!
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400">
+          <div className="mb-4 flex items-center gap-2  bg-red-950/40 border border-red-800 px-4 py-2.5 text-sm font-medium text-red-400">
             <AlertCircle size={16} /> {error}
           </div>
         )}
 
         {/* Actions */}
         <div className="flex gap-3 mt-2">
-          <button onClick={onClose} className="flex-1 rounded-xl border border-slate-700 bg-transparent px-4 py-2.5 text-sm font-semibold text-slate-300 transition [@media(hover:hover)]:hover:bg-slate-800 active:bg-slate-800">
+          <button onClick={onClose} className="flex-1  border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--muted)] transition [@media(hover:hover)]:hover:bg-[var(--surface)] active:bg-[var(--surface)]">
             Cancel
           </button>
           <button
             onClick={handleUpload}
             disabled={uploading || !file}
-            className="flex-1 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all [@media(hover:hover)]:hover:from-blue-600 [@media(hover:hover)]:hover:to-blue-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.97]"
+            className="flex-1  border border-[var(--accent)] bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white  transition-all [@media(hover:hover)]: [@media(hover:hover)]: disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.97]"
           >
             {uploading ? "Uploading…" : "Upload"}
           </button>
@@ -308,7 +308,7 @@ export default function StudyVaultPage() {
           profile.status === "active" ? (
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all [@media(hover:hover)]:hover:from-blue-600 [@media(hover:hover)]:hover:to-blue-700 active:scale-[0.97]"
+              className="inline-flex cursor-pointer items-center gap-2  border border-[var(--accent)] bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white  transition-all [@media(hover:hover)]: [@media(hover:hover)]: active:scale-[0.97]"
             >
               <Upload size={16} /> Upload
             </button>
@@ -317,15 +317,15 @@ export default function StudyVaultPage() {
       />
 
       {/* Filters */}
-      <div className="mb-6 grid gap-4 rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm md:grid-cols-[1fr_auto]">
+      <div className="mb-6 grid gap-4  border border-[var(--border)] bg-[var(--surface)] p-5  md:grid-cols-[1fr_auto]">
         <div className="flex flex-col gap-3">
           <div className="relative">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by title..."
-              className="w-full rounded-xl border border-slate-700/60 bg-slate-950/80 py-3 pl-10 pr-4 text-sm text-white outline-none ring-0 transition-all placeholder:text-slate-500 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+              className="w-full  border border-[var(--border)] bg-[var(--background)] py-3 pl-10 pr-4 text-sm text-white outline-none ring-0 transition-all placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
             />
           </div>
           <div className="relative">
@@ -334,15 +334,15 @@ export default function StudyVaultPage() {
               onChange={(e) => setTagsInputFilter(e.target.value)}
               onKeyDown={handleAddTagFilter}
               placeholder="Add tag filter and press Enter..."
-              className="w-full rounded-xl border border-slate-700/60 bg-slate-950/80 px-4 py-2 text-sm text-white outline-none ring-0 transition-all placeholder:text-slate-500 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
+              className="w-full  border border-[var(--border)] bg-[var(--background)] px-4 py-2 text-sm text-white outline-none ring-0 transition-all placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
             />
           </div>
           {selectedTags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {selectedTags.map((tag) => (
-                <span key={tag} className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-300">
+                <span key={tag} className="inline-flex items-center gap-1.5  bg-[var(--accent)]/20 px-3 py-1 text-xs font-semibold text-[var(--accent)]">
                   {tag}
-                  <button onClick={() => removeTagFilter(tag)} className="text-indigo-400 hover:text-indigo-200">
+                  <button onClick={() => removeTagFilter(tag)} className="text-[var(--accent)] hover:text-[var(--accent)]">
                     <X size={12} />
                   </button>
                 </span>
@@ -355,8 +355,8 @@ export default function StudyVaultPage() {
             <button
               key={item}
               onClick={() => setCategory(item)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                category === item ? "bg-blue-600 text-white shadow-md shadow-blue-600/25" : "bg-slate-800/60 text-slate-300 [@media(hover:hover)]:hover:bg-slate-700/60 active:scale-95"
+              className={` px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                category === item ? "bg-[var(--accent)] text-white shadow-md shadow-blue-600/25" : "bg-[var(--surface)] text-[var(--muted)] [@media(hover:hover)]:hover:bg-[var(--surface-soft)]/60 active:scale-95"
               }`}
             >
               {item}
@@ -385,56 +385,56 @@ export default function StudyVaultPage() {
         {resources.map((resource) => (
           <article
             key={resource.id}
-            className="group animate-fade-in flex flex-col overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-slate-700/50 [@media(hover:hover)]:hover:bg-slate-900/60 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-blue-950/10 active:scale-[0.99] active:bg-slate-900/50"
+            className="group animate-fade-in flex flex-col overflow-hidden  border border-[var(--border)] bg-[var(--surface)]  transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-[var(--border)]/50 [@media(hover:hover)]:hover:bg-[var(--surface)]/60 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-blue-950/10 active:scale-[0.99] active:bg-[var(--surface)]/50"
           >
             {resource.file_type?.startsWith("image/") ? (
-              <div className="relative flex-none h-40 w-full overflow-hidden border-b border-slate-800/50 bg-slate-950/50">
+              <div className="relative flex-none h-40 w-full overflow-hidden border-b border-[var(--border)] bg-[var(--background)]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={resource.file_url} alt={resource.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
             ) : resource.file_type?.includes("pdf") ? (
-              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-gradient-to-br from-red-500/10 to-rose-600/10 transition-all group-hover:from-red-500/20 group-hover:to-rose-600/20">
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-[var(--border)] bg-red-950/30 transition-all group-hover:from-red-500/20 group-hover:to-rose-600/20">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="rounded-xl bg-red-500/20 p-3 text-red-500 shadow-lg shadow-red-500/20">
+                  <div className=" bg-red-500/20 p-3 text-red-500 ">
                     <FileText size={32} />
                   </div>
                   <span className="text-xs font-bold text-red-400">PDF Document</span>
                 </div>
               </div>
             ) : resource.file_type?.includes("word") || resource.file_type?.includes("docx") ? (
-              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-gradient-to-br from-blue-500/10 to-indigo-600/10 transition-all group-hover:from-blue-500/20 group-hover:to-indigo-600/20">
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-[var(--border)] bg-blue-950/30 transition-all group-hover:from-blue-500/20 group-hover:to-indigo-600/20">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="rounded-xl bg-blue-500/20 p-3 text-blue-500 shadow-lg shadow-blue-500/20">
+                  <div className=" bg-blue-500/20 p-3 text-blue-500 ">
                     <FileText size={32} />
                   </div>
-                  <span className="text-xs font-bold text-blue-400">Word Document</span>
+                  <span className="text-xs font-bold text-[var(--accent)]">Word Document</span>
                 </div>
               </div>
             ) : resource.file_type?.includes("spreadsheet") || resource.file_type?.includes("xlsx") ? (
-              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-gradient-to-br from-emerald-500/10 to-green-600/10 transition-all group-hover:from-emerald-500/20 group-hover:to-green-600/20">
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-[var(--border)] bg-emerald-950/30 transition-all group-hover:from-emerald-500/20 group-hover:to-green-600/20">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="rounded-xl bg-emerald-500/20 p-3 text-emerald-500 shadow-lg shadow-emerald-500/20">
+                  <div className=" bg-emerald-500/20 p-3 text-emerald-500 shadow-lg shadow-emerald-500/20">
                     <FileText size={32} />
                   </div>
                   <span className="text-xs font-bold text-emerald-400">Spreadsheet</span>
                 </div>
               </div>
             ) : resource.file_type?.includes("zip") || resource.file_type?.includes("archive") ? (
-              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-gradient-to-br from-amber-500/10 to-orange-600/10 transition-all group-hover:from-amber-500/20 group-hover:to-orange-600/20">
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-[var(--border)] bg-amber-950/30 transition-all group-hover:from-amber-500/20 group-hover:to-orange-600/20">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="rounded-xl bg-amber-500/20 p-3 text-amber-500 shadow-lg shadow-amber-500/20">
+                  <div className=" bg-amber-500/20 p-3 text-amber-500 shadow-lg shadow-amber-500/20">
                     <FileArchive size={32} />
                   </div>
                   <span className="text-xs font-bold text-amber-500">Archive/Zip</span>
                 </div>
               </div>
             ) : (
-              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-slate-800/50 bg-slate-800/30 transition-all group-hover:bg-slate-800/50">
+              <div className="relative flex flex-none h-40 w-full items-center justify-center border-b border-[var(--border)] bg-[var(--surface)] transition-all group-hover:bg-[var(--surface)]/50">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="rounded-xl bg-slate-700/50 p-3 text-slate-400 shadow-lg shadow-black/20">
+                  <div className=" bg-[var(--surface)] p-3 text-[var(--muted)] ">
                     <FileIcon size={32} />
                   </div>
-                  <span className="text-xs font-bold text-slate-400">File Document</span>
+                  <span className="text-xs font-bold text-[var(--muted)]">File Document</span>
                 </div>
               </div>
             )}
@@ -442,9 +442,9 @@ export default function StudyVaultPage() {
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-                    <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-300 border border-blue-500/20">{resource.category}</span>
+                    <span className=" bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-[var(--accent)] border border-blue-500/20">{resource.category}</span>
                     {resource.tags?.map((tag) => (
-                      <span key={tag} className="rounded-full bg-slate-800/80 px-2 py-0.5 text-[10px] font-medium text-slate-400 border border-slate-700/50">
+                      <span key={tag} className=" bg-[var(--surface)] px-2 py-0.5 text-[10px] font-medium text-[var(--muted)] border border-[var(--border)]/50">
                         #{tag}
                       </span>
                     ))}
@@ -452,18 +452,18 @@ export default function StudyVaultPage() {
                   <h3 className="truncate text-base font-semibold text-white" title={resource.title}>{resource.title}</h3>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1.5">
-                  <span className="rounded-full bg-slate-800/60 px-3 py-1 text-[11px] font-semibold text-slate-400">
+                  <span className=" bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-[var(--muted)]">
                     {fileLabel(resource.file_type)}
                   </span>
-                  {resource.file_size ? <span className="text-[10px] font-medium text-slate-500">{formatBytes(resource.file_size)}</span> : null}
+                  {resource.file_size ? <span className="text-[10px] font-medium text-[var(--muted)]">{formatBytes(resource.file_size)}</span> : null}
                 </div>
               </div>
-              <p className="mt-auto mb-4 text-xs text-slate-500">Uploaded {formatDateTime(resource.created_at)}</p>
+              <p className="mt-auto mb-4 text-xs text-[var(--muted)]">Uploaded {formatDateTime(resource.created_at)}</p>
             <a
               href={resource.file_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300 transition-all [@media(hover:hover)]:hover:bg-emerald-500/20 active:scale-95"
+              className="inline-flex items-center gap-2  bg-emerald-950/40 border border-emerald-800 px-4 py-2 text-sm font-semibold text-emerald-300 transition-all [@media(hover:hover)]:hover:bg-emerald-500/20 active:scale-95"
             >
               <Download size={15} /> Download
             </a>

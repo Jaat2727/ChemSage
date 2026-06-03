@@ -39,7 +39,7 @@ export default function DirectMessagePage() {
       setLoading(true);
       setError(null);
 
-      const { data: userProfile } = await supabase.from<Profile>("profiles").select("*").eq("id", otherUserId).single();
+      const { data: userProfile } = await supabase.from("profiles").select("*").eq("id", otherUserId).single();
       if (mounted) setOtherUser((userProfile as Profile) ?? null);
 
       await supabase.from("rooms").insert({ id: roomId, name: `DM_${roomId}`, is_public: false, created_by: profile.id });
@@ -47,7 +47,7 @@ export default function DirectMessagePage() {
       await supabase.from("room_members").insert({ room_id: roomId, user_id: otherUserId });
 
       const { data: msgs, error: msgError } = await supabase
-        .from<ChatMessage>("messages")
+        .from("messages")
         .select("*")
         .eq("room_id", roomId)
         .order("created_at", { ascending: true })
@@ -64,8 +64,13 @@ export default function DirectMessagePage() {
 
     void load();
 
+    // Clean up any stale channel (React Strict Mode / HMR)
+    const channelName = `dm-${roomId}`;
+    const stale = supabase.getChannels().find((ch) => ch.topic === `realtime:${channelName}`);
+    if (stale) supabase.removeChannel(stale);
+
     const channel = supabase
-      .channel(`messages:${roomId}`)
+      .channel(channelName)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `room_id=eq.${roomId}` }, (payload) => {
         const row = payload.new as unknown as ChatMessage;
         setMessages((current) => {
@@ -97,29 +102,29 @@ export default function DirectMessagePage() {
   if (loading || !profile) return <LoadingCard />;
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-10rem)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60">
-      <header className="flex items-center justify-between border-b border-slate-800 bg-slate-950/95 px-3 py-2.5">
-        <Link href="/hub" className="rounded-lg p-2 text-slate-400 hover:bg-slate-900 hover:text-slate-100">
+    <div className="mx-auto flex h-[calc(100dvh-10rem)] w-full max-w-5xl flex-col overflow-hidden border border-[var(--border)] bg-[var(--background)]">
+      <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)] px-3 py-2.5">
+        <Link href="/hub" className="p-2 text-[var(--muted)] hover:bg-[var(--surface)] hover:text-white">
           <ArrowLeft size={18} />
         </Link>
 
         <div className="text-center">
-          <h1 className="text-sm font-semibold text-slate-100">{otherUser?.name || "Direct chat"}</h1>
-          <p className="text-[11px] text-slate-500">{otherUser?.roll_no || "one-to-one room"}</p>
+          <h1 className="font-mono text-sm font-bold text-white">{otherUser?.name || "Direct chat"}</h1>
+          <p className="font-mono text-[11px] text-[var(--muted)]">{otherUser?.roll_no || "one-to-one room"}</p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="rounded-full border border-slate-700 p-1.5 text-slate-300"><UserIcon size={12} /></div>
+          <div className="border border-[var(--border)] p-1.5 text-[var(--muted)]"><UserIcon size={12} /></div>
           <Wifi size={13} className={syncing ? "text-amber-400" : "text-emerald-400"} />
         </div>
       </header>
 
       <section className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
-        {error ? <p className="rounded-xl border border-rose-900 bg-rose-950/40 px-3 py-2 text-sm text-rose-200">{error}</p> : null}
+        {error ? <p className="border border-red-800 bg-red-950/50 px-3 py-2 font-mono text-sm text-red-300">{error}</p> : null}
 
         {messages.length === 0 ? (
-          <div className="mx-auto mt-16 max-w-xs rounded-2xl border border-slate-800 bg-slate-900/70 p-5 text-center">
-            <p className="text-sm text-slate-300">Start the conversation with {otherUser?.name || "your peer"}.</p>
+          <div className="mx-auto mt-16 max-w-xs border border-[var(--border)] bg-[var(--surface)] p-5 text-center">
+            <p className="font-mono text-sm text-[var(--muted)]">Start the conversation with {otherUser?.name || "your peer"}.</p>
           </div>
         ) : null}
 
@@ -127,14 +132,14 @@ export default function DirectMessagePage() {
           const isMe = message.sender_id === profile.id;
           return (
             <article key={message.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-              <div className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm ${isMe ? "bg-slate-100 text-slate-900" : "border border-slate-700 bg-slate-900 text-slate-100"}`}>
+              <div className={`max-w-[88%] px-3 py-2 text-sm ${isMe ? "bg-[var(--accent)] text-black font-mono" : "border border-[var(--border)] bg-[var(--surface)] text-white"}`}>
                 <MessageDisplay content={message.content} />
               </div>
 
-              <div className="mt-1 flex items-center gap-2 px-1 text-[10px] text-slate-500">
+              <div className="mt-1 flex items-center gap-2 px-1 font-mono text-[10px] text-[var(--muted)]">
                 <span>{formatDateTime(message.created_at)}</span>
                 {isMe ? (
-                  <button onClick={() => handleDeleteMessage(message.id)} className="text-slate-500 hover:text-rose-300" title="Delete message">
+                  <button onClick={() => handleDeleteMessage(message.id)} className="text-[var(--muted)] hover:text-red-300" title="Delete message">
                     <Trash2 size={11} />
                   </button>
                 ) : null}
@@ -145,14 +150,14 @@ export default function DirectMessagePage() {
         <div ref={messagesEndRef} />
       </section>
 
-      <footer className="border-t border-slate-800 bg-slate-950/95 p-3">
+      <footer className="border-t border-[var(--border)] bg-[var(--background)] p-3">
         <form
           onSubmit={async (e) => {
             e.preventDefault();
             if (!inputText.trim() || !profile.id || !roomId) return;
             setSending(true);
             setError(null);
-            const { error: insertError } = await supabase.from<ChatMessage>("messages").insert({
+            const { error: insertError } = await supabase.from("messages").insert({
               room_id: roomId,
               sender_id: profile.id,
               content: inputText.trim(),
@@ -174,10 +179,10 @@ export default function DirectMessagePage() {
               }
             }}
             placeholder="Write a message"
-            className="min-h-[42px] w-full resize-none rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
+            className="min-h-[42px] w-full resize-none border border-[var(--border)] bg-[var(--surface)] px-3 py-2 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
             rows={1}
           />
-          <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-900 disabled:opacity-50">
+          <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 shrink-0 items-center justify-center bg-[var(--accent)] text-black font-mono disabled:opacity-50">
             <Send size={16} />
           </button>
         </form>

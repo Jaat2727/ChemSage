@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Clock, Eye, EyeOff, Hexagon, LogIn, ShieldX } from "lucide-react";
+import { Clock, Eye, EyeOff, ShieldX } from "lucide-react";
 import { createClientComponentClient } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
 import { normalizeEmail } from "@/lib/rollno";
@@ -11,7 +11,7 @@ import { normalizeEmail } from "@/lib/rollno";
 const supabase = createClientComponentClient();
 
 const inputClasses =
-  "w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none";
+  "w-full border border-[var(--border)] bg-[var(--surface)] px-4 py-3 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,18 +21,19 @@ export default function LoginPage() {
   const [error, setError] = useState<React.ReactNode | null>(null);
   const [pendingMessage, setPendingMessage] = useState(false);
   const [bannedMessage, setBannedMessage] = useState(false);
+  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { refreshProfile } = useAuth();
 
   if (pendingMessage || bannedMessage) {
     return (
-      <div className="glass-light glass-border animate-scale-in rounded-2xl p-6 text-center">
-        <div className="mx-auto mb-4 w-fit rounded-full border border-slate-700 bg-slate-900 p-3 text-slate-200">
+      <div className="animate-scale-in border border-[var(--border)] bg-[var(--surface)] p-6 text-center">
+        <div className="mx-auto mb-4 w-fit border border-[var(--border)] bg-[var(--background)] p-3 text-[var(--muted)]">
           {pendingMessage ? <Clock size={26} /> : <ShieldX size={26} />}
         </div>
-        <h2 className="text-xl font-semibold text-slate-100">{pendingMessage ? "Pending Approval" : "Account Banned"}</h2>
-        <p className="mt-2 text-sm text-slate-400">
+        <h2 className="font-mono text-xl font-bold text-white">{pendingMessage ? "pending_approval" : "account_banned"}</h2>
+        <p className="mt-2 text-sm text-[var(--muted)]">
           {pendingMessage
             ? "Your account is waiting for admin approval."
             : "This account was banned by an administrator."}
@@ -43,9 +44,9 @@ export default function LoginPage() {
             setBannedMessage(false);
             setError(null);
           }}
-          className="mt-5 w-full rounded-xl border border-slate-600 bg-slate-900 py-2.5 text-sm text-slate-100"
+          className="mt-5 w-full border border-[var(--border)] bg-[var(--background)] py-2.5 font-mono text-sm text-white transition-colors hover:bg-[var(--surface)]"
         >
-          Try Again
+          tryAgain()
         </button>
       </div>
     );
@@ -63,7 +64,7 @@ export default function LoginPage() {
       if (signInError.message.toLowerCase().includes("invalid login credentials")) {
         setError(
           <span>
-            Invalid email or password. <Link href="/signup" className="underline">Create an account</Link>
+            Invalid email or password. <Link href="/signup" className="text-[var(--accent)] underline">Create an account</Link>
           </span>,
         );
       } else {
@@ -99,23 +100,52 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="glass-light glass-border animate-scale-in overflow-hidden rounded-2xl">
-      <div className="border-b border-slate-800 px-6 py-5">
-        <div className="flex items-center gap-2.5">
-          <div className="rounded-lg border border-slate-700 bg-slate-900 p-2 text-slate-100">
-            <Hexagon size={20} className="fill-current" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-slate-100">ChemSAGE</h1>
-            <p className="text-xs text-slate-500">Sign in to continue</p>
-          </div>
+    <div className="animate-scale-in border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
+      {/* MacOS-style window header */}
+      <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full bg-red-500" />
+          <span className="h-3 w-3 rounded-full bg-yellow-500" />
+          <span className="h-3 w-3 rounded-full bg-green-500" />
         </div>
+        <span className="font-mono text-xs text-[var(--muted)]">chemsage_auth.ts</span>
+        <div className="w-12" />
       </div>
 
-      <div className="p-6">
+      <div className="px-6 pt-5 pb-2">
+        <p className="font-mono text-sm text-[var(--muted)]">{`// ChemSAGE - Student Portal`}</p>
+      </div>
+
+      {/* Tab switcher */}
+      <div className="flex px-6 pt-2 pb-4">
+        <button
+          onClick={() => setActiveTab("login")}
+          className={`flex-1 border py-2.5 font-mono text-sm font-bold transition-all ${
+            activeTab === "login"
+              ? "border-[var(--accent)] bg-[var(--accent)] text-black"
+              : "border-[var(--border)] text-[var(--muted)] hover:text-white"
+          }`}
+        >
+          login()
+        </button>
+        <button
+          onClick={() => { setActiveTab("signup"); router.push("/signup"); }}
+          className={`flex-1 border border-l-0 py-2.5 font-mono text-sm font-bold transition-all ${
+            activeTab === "signup"
+              ? "border-[var(--accent)] bg-[var(--accent)] text-black"
+              : "border-[var(--border)] text-[var(--muted)] hover:text-white"
+          }`}
+        >
+          signUp()
+        </button>
+      </div>
+
+      <div className="px-6 pb-6">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-1.5 block text-sm text-slate-300">Email or Roll Number</label>
+            <label className="mb-1.5 flex items-center gap-1.5 font-mono text-xs text-[var(--muted)]">
+              <span>✉</span> email
+            </label>
             <input
               type="text"
               placeholder="CY25B013 or rollno@smail.iitm.ac.in"
@@ -126,7 +156,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm text-slate-300">Password</label>
+            <label className="mb-1.5 flex items-center gap-1.5 font-mono text-xs text-[var(--muted)]">
+              <span>🔒</span> password
+            </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -138,23 +170,36 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((value) => !value)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-white"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          {error ? <div className="rounded-xl border border-rose-900 bg-rose-950/40 px-3 py-2 text-sm text-rose-200">{error}</div> : null}
+          <div className="flex items-center justify-between font-mono text-xs text-[var(--muted)]">
+            <span>☐ rememberMe</span>
+            <Link href="/forgot-password" className="text-[var(--accent)] hover:underline">forgotPassword()</Link>
+          </div>
 
-          <button disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-900 disabled:opacity-60">
-            {loading ? "Signing in..." : <><LogIn size={16} /> Login</>}
+          {error ? <div className="border border-red-800 bg-red-950/50 px-3 py-2 font-mono text-sm text-red-300">{`> `}{error}</div> : null}
+
+          <button disabled={loading} className="flex w-full items-center justify-center gap-2 border border-[var(--accent)] bg-[var(--accent)] py-2.5 font-mono text-sm font-bold text-black transition-opacity disabled:opacity-60">
+            {loading ? "await signIn() ○" : "await signIn()"}
           </button>
 
-          <div className="flex items-center justify-between text-sm">
-            <Link href="/forgot-password" className="text-slate-400 hover:text-slate-200">Forgot password?</Link>
-            <Link href="/signup" className="text-slate-300 hover:text-slate-100">Create account</Link>
+          <div className="flex items-center gap-4">
+            <div className="h-px flex-1 bg-[var(--border)]" />
+            <span className="font-mono text-xs text-[var(--muted)]">{`/* or */`}</span>
+            <div className="h-px flex-1 bg-[var(--border)]" />
           </div>
+
+          <p className="text-center font-mono text-xs text-[var(--muted)]">
+            {`// By continuing, you agree to our `}
+            <span className="text-[var(--accent)]">Terms</span>
+            {` && `}
+            <span className="text-[var(--accent)]">Privacy</span>
+          </p>
         </form>
       </div>
     </div>

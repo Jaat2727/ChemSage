@@ -15,13 +15,13 @@ export function PageHeader({
   return (
     <div className="mb-6 flex animate-slide-up flex-col gap-3 md:flex-row md:items-end md:justify-between">
       <div>
-        <p className="mb-1 text-[11px] uppercase tracking-[0.18em] text-slate-500">ChemSAGE</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-100 md:text-3xl">{title}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-400">{description}</p>
+        <p className="mb-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">{`// ChemSAGE`}</p>
+        <h1 className="font-mono text-2xl font-bold tracking-tight text-white md:text-3xl">{title}</h1>
+        <p className="mt-2 max-w-2xl text-sm text-[var(--muted)]">{description}</p>
       </div>
       <div className="flex items-center gap-2">
         {profile ? (
-          <div className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-300">
+          <div className="border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 font-mono text-xs text-[var(--muted)]">
             {formatBadge(profile.programme, profile.batch_year)}
           </div>
         ) : null}

@@ -43,10 +43,10 @@ export default function AdminPage() {
     if (!profile || profile.role !== "admin") return;
     const load = async () => {
       const [{ data: p }, { data: r }, { data: e }, { data: n }] = await Promise.all([
-        supabase.from<Profile>("profiles").select("*"),
-        supabase.from<ResourceItem>("resources").select("*").order("created_at", { ascending: false }),
-        supabase.from<ExamPaper>("exam_papers").select("*").order("created_at", { ascending: false }),
-        supabase.from<AdminNotification>("admin_notifications").select("*").order("created_at", { ascending: false }),
+        supabase.from("profiles").select("*"),
+        supabase.from("resources").select("*").order("created_at", { ascending: false }),
+        supabase.from("exam_papers").select("*").order("created_at", { ascending: false }),
+        supabase.from("admin_notifications").select("*").order("created_at", { ascending: false }),
       ]);
       setAllProfiles(Array.isArray(p) ? p : []);
       setResources(Array.isArray(r) ? r : []);
@@ -68,10 +68,9 @@ export default function AdminPage() {
   }, [activeAndBannedUsers, filterProgramme, search]);
 
   const markNotificationsRead = async (userId: string) => {
-    // Mark all notifications for this user as read
     const related = notifications.filter((n) => n.related_user_id === userId && !n.is_read);
     for (const n of related) {
-      await supabase.from<AdminNotification>("admin_notifications").update({ is_read: true }).eq("id", n.id);
+      await supabase.from("admin_notifications").update({ is_read: true }).eq("id", n.id);
     }
     setNotifications((current) =>
       current.map((n) => (n.related_user_id === userId ? { ...n, is_read: true } : n))
@@ -80,7 +79,7 @@ export default function AdminPage() {
 
   if (!profile) return <LoadingCard />;
   if (profile.role !== "admin") return <LockedScreen title="Admin only" description="This section is restricted to administrators." />;
-  if (loading) return <LoadingCard title="Loading admin panel..." />;
+  if (loading) return <LoadingCard title="> loading admin..." />;
 
   return (
     <div className="mx-auto max-w-6xl pb-12">
@@ -90,23 +89,22 @@ export default function AdminPage() {
       <InlineAlert tone="success" message={success} />
 
       {/* Tabs */}
-      <div className="mb-8 flex flex-wrap gap-2 rounded-2xl border border-slate-800/50 bg-slate-900/40 p-2 backdrop-blur-sm">
+      <div className="mb-8 flex flex-wrap gap-0 border border-[var(--border)] bg-[var(--surface)]">
         {tabs.map((tab) => (
-          <button key={tab} onClick={() => { setActiveTab(tab); setError(null); setSuccess(null); }} className={`relative rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${activeTab === tab ? "bg-red-500/10 text-red-300 shadow-sm" : "text-slate-400 [@media(hover:hover)]:hover:bg-white/[0.04] [@media(hover:hover)]:hover:text-slate-200 active:bg-white/[0.04]"}`}>
+          <button key={tab} onClick={() => { setActiveTab(tab); setError(null); setSuccess(null); }} className={`relative px-5 py-3 font-mono text-sm font-bold transition-all ${activeTab === tab ? "bg-[var(--accent)] text-black" : "text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-white"}`}>
             {tab}
             {tab === "Pending" && pendingUsers.length > 0 ? (
-              <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white animate-pulse">
+              <span className="ml-2 inline-flex h-5 w-5 items-center justify-center bg-red-500 font-mono text-[10px] font-bold text-white animate-pulse">
                 {pendingUsers.length}
               </span>
             ) : null}
           </button>
         ))}
 
-        {/* Notification bell */}
         {unreadCount > 0 ? (
-          <div className="ml-auto flex items-center gap-2 rounded-xl bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-300">
+          <div className="ml-auto flex items-center gap-2 border-l border-[var(--border)] px-4 py-3 font-mono text-sm text-amber-400">
             <Bell size={16} className="animate-bounce" />
-            <span>{unreadCount} new signup{unreadCount !== 1 ? "s" : ""}</span>
+            <span>{unreadCount} new</span>
           </div>
         ) : null}
       </div>
@@ -115,8 +113,8 @@ export default function AdminPage() {
       {activeTab === "Users" ? (
         <div className="animate-fade-in">
           <div className="mb-5 grid gap-3 md:grid-cols-[1fr_auto]">
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or roll number..." className="rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20" />
-            <select value={filterProgramme} onChange={(e) => setFilterProgramme(e.target.value)} className="rounded-xl border border-slate-700/60 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none transition-all focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20">
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or roll number..." className="border border-[var(--border)] bg-[var(--background)] px-4 py-3 font-mono text-sm text-white outline-none placeholder:text-[var(--muted)] focus:border-[var(--accent)]" />
+            <select value={filterProgramme} onChange={(e) => setFilterProgramme(e.target.value)} className="border border-[var(--border)] bg-[var(--background)] px-4 py-3 font-mono text-sm text-white outline-none focus:border-[var(--accent)]">
               <option value="All">All Programmes</option>
               <option value="BS">BS</option>
               <option value="MSc">MSc</option>
@@ -126,52 +124,52 @@ export default function AdminPage() {
           <div className="space-y-2">
             {filteredUsers.length === 0 ? <EmptyState title="No users found" description="Try adjusting your search or filter." /> : null}
             {filteredUsers.map((user) => (
-              <div key={user.id} className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-slate-900/60 active:bg-slate-900/50">
+              <div key={user.id} className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 border border-[var(--border)] bg-[var(--surface)] px-5 py-4 transition-all hover:border-[var(--accent)]/30">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500/15 to-indigo-500/15 text-sm font-bold text-blue-300">{user.name?.[0]?.toUpperCase() || "?"}</div>
+                  <div className="flex h-10 w-10 items-center justify-center border border-[var(--border)] bg-[var(--background)] font-mono text-sm font-bold text-[var(--accent)]">{user.name?.[0]?.toUpperCase() || "?"}</div>
                   <div>
-                    <p className="font-semibold text-white">{user.name}</p>
-                    <p className="text-xs font-medium text-slate-400">{user.roll_no} • {user.programme} • {user.batch_year}</p>
+                    <p className="font-mono font-bold text-white">{user.name}</p>
+                    <p className="font-mono text-xs text-[var(--muted)]">{user.roll_no} • {user.programme} • {user.batch_year}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {user.role === "admin" ? <span className="flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300"><Shield size={12} /> Admin</span> : null}
-                  <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${user.status === "active" ? "bg-emerald-500/10 text-emerald-300" : user.status === "banned" ? "bg-red-500/10 text-red-300" : "bg-amber-500/10 text-amber-300"}`}>{user.status}</span>
-                  
+                  {user.role === "admin" ? <span className="flex items-center gap-1 border border-red-800 px-3 py-1.5 font-mono text-xs font-bold text-red-400"><Shield size={12} /> admin</span> : null}
+                  <span className={`border px-3 py-1.5 font-mono text-xs font-bold ${user.status === "active" ? "border-emerald-800 text-emerald-400" : user.status === "banned" ? "border-red-800 text-red-400" : "border-amber-800 text-amber-400"}`}>{user.status}</span>
+
                   <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
                   {user.role !== "admin" ? (
                     <>
                       <button onClick={async () => {
-                        const { error: updateError } = await supabase.from<Profile>("profiles").update({ role: "admin" }).eq("id", user.id);
+                        const { error: updateError } = await supabase.from("profiles").update({ role: "admin" }).eq("id", user.id);
                         if (updateError) setError(updateError.message);
                         else {
                           setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, role: "admin" } : p));
                           setSuccess(`${user.name} is now an admin.`);
                         }
-                      }} className="rounded-xl bg-blue-500/10 px-4 py-2 text-xs font-semibold text-blue-300 transition-all [@media(hover:hover)]:hover:bg-blue-500/20 active:scale-95">
-                        Make Admin
+                      }} className="border border-blue-800 px-4 py-2 font-mono text-xs font-bold text-blue-400 transition-all hover:bg-blue-950/40 active:scale-95">
+                        makeAdmin()
                       </button>
 
                       <button onClick={async () => {
                         const newStatus = user.status === "banned" ? "active" : "banned";
-                        const { error: updateError } = await supabase.from<Profile>("profiles").update({ status: newStatus }).eq("id", user.id);
+                        const { error: updateError } = await supabase.from("profiles").update({ status: newStatus }).eq("id", user.id);
                         if (updateError) setError(updateError.message);
                         else setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, status: newStatus } : p));
-                      }} className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all active:scale-95 ${user.status === "banned" ? "bg-emerald-500/10 text-emerald-300 [@media(hover:hover)]:hover:bg-emerald-500/20" : "bg-red-500/10 text-red-300 [@media(hover:hover)]:hover:bg-red-500/20"}`}>
-                        {user.status === "banned" ? "Unban" : "Ban"}
+                      }} className={`border px-4 py-2 font-mono text-xs font-bold transition-all active:scale-95 ${user.status === "banned" ? "border-emerald-800 text-emerald-400 hover:bg-emerald-950/40" : "border-red-800 text-red-400 hover:bg-red-950/40"}`}>
+                        {user.status === "banned" ? "unban()" : "ban()"}
                       </button>
                     </>
                   ) : (
                     user.id !== profile.id && (
                       <button onClick={async () => {
-                        const { error: updateError } = await supabase.from<Profile>("profiles").update({ role: "student" }).eq("id", user.id);
+                        const { error: updateError } = await supabase.from("profiles").update({ role: "student" }).eq("id", user.id);
                         if (updateError) setError(updateError.message);
                         else {
                           setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, role: "student" } : p));
                           setSuccess(`${user.name} is no longer an admin.`);
                         }
-                      }} className="rounded-xl bg-slate-500/10 px-4 py-2 text-xs font-semibold text-slate-300 transition-all [@media(hover:hover)]:hover:bg-slate-500/20 active:scale-95">
-                        Revoke Admin
+                      }} className="border border-[var(--border)] px-4 py-2 font-mono text-xs font-bold text-[var(--muted)] transition-all hover:text-white active:scale-95">
+                        revokeAdmin()
                       </button>
                     )
                   )}
@@ -179,11 +177,8 @@ export default function AdminPage() {
                   {user.id !== profile.id && (
                     <button onClick={async () => {
                       if (!confirm(`Are you sure you want to completely delete ${user.name} from the database? This cannot be undone.`)) return;
-                      // Delete profile first
-                      const { error: deleteError } = await supabase.from<Profile>("profiles").delete().eq("id", user.id);
+                      const { error: deleteError } = await supabase.from("profiles").delete().eq("id", user.id);
                       if (deleteError) { setError(deleteError.message); return; }
-                      
-                      // Attempt to delete auth user via edge function
                       try {
                         const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/delete-user`;
                         await fetch(url, {
@@ -192,11 +187,10 @@ export default function AdminPage() {
                           body: JSON.stringify({ user_id: user.id }),
                         });
                       } catch {}
-                      
                       setAllProfiles((current) => current.filter((p) => p.id !== user.id));
                       setSuccess(`${user.name} has been completely deleted.`);
-                    }} className="rounded-xl bg-red-600/10 px-4 py-2 text-xs font-semibold text-red-400 transition-all [@media(hover:hover)]:hover:bg-red-600/20 active:scale-95">
-                      Delete DB
+                    }} className="border border-red-900 px-4 py-2 font-mono text-xs font-bold text-red-400 transition-all hover:bg-red-950/40 active:scale-95">
+                      delete()
                     </button>
                   )}
                   </div>
@@ -212,28 +206,28 @@ export default function AdminPage() {
         <div className="animate-fade-in space-y-3">
           {pendingUsers.length === 0 ? <EmptyState title="No pending users" description="All sign-ups have been reviewed." /> : null}
           {pendingUsers.map((user) => (
-            <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 rounded-2xl border border-amber-500/20 bg-amber-500/[0.04] px-5 py-4 backdrop-blur-sm">
+            <div key={user.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 border border-amber-800/40 bg-amber-950/20 px-5 py-4">
               <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-sm font-bold text-amber-300">{user.name?.[0]?.toUpperCase() || "?"}</div>
+                <div className="flex h-10 w-10 items-center justify-center border border-amber-800 bg-[var(--background)] font-mono text-sm font-bold text-amber-400">{user.name?.[0]?.toUpperCase() || "?"}</div>
                 <div>
-                  <p className="font-semibold text-white">{user.name}</p>
-                  <p className="text-xs font-medium text-slate-400">{user.roll_no} • {user.programme} • {user.batch_year}</p>
+                  <p className="font-mono font-bold text-white">{user.name}</p>
+                  <p className="font-mono text-xs text-[var(--muted)]">{user.roll_no} • {user.programme} • {user.batch_year}</p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button onClick={async () => {
-                  const { error: updateError } = await supabase.from<Profile>("profiles").update({ status: "active" }).eq("id", user.id);
+                  const { error: updateError } = await supabase.from("profiles").update({ status: "active" }).eq("id", user.id);
                   if (updateError) setError(updateError.message);
                   else {
                     setAllProfiles((current) => current.map((p) => p.id === user.id ? { ...p, status: "active" } : p));
                     setSuccess(`${user.name} approved successfully.`);
                     await markNotificationsRead(user.id);
                   }
-                }} className="flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-sm font-semibold text-emerald-300 transition-all [@media(hover:hover)]:hover:bg-emerald-500/20 active:scale-[0.97]">
-                  <Check size={16} /> Approve
+                }} className="flex items-center gap-1.5 border border-emerald-800 px-4 py-2.5 font-mono text-sm font-bold text-emerald-400 transition-all hover:bg-emerald-950/40 active:scale-[0.97]">
+                  <Check size={16} /> approve()
                 </button>
                 <button onClick={async () => {
-                  const { error: deleteError } = await supabase.from<Profile>("profiles").delete().eq("id", user.id);
+                  const { error: deleteError } = await supabase.from("profiles").delete().eq("id", user.id);
                   if (deleteError) { setError(deleteError.message); return; }
                   try {
                     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/delete-user`;
@@ -246,8 +240,8 @@ export default function AdminPage() {
                   await markNotificationsRead(user.id);
                   setAllProfiles((current) => current.filter((p) => p.id !== user.id));
                   setSuccess(`${user.name} rejected and removed.`);
-                }} className="flex items-center gap-1.5 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-300 transition-all [@media(hover:hover)]:hover:bg-red-500/20 active:scale-[0.97]">
-                  <X size={16} /> Reject
+                }} className="flex items-center gap-1.5 border border-red-800 px-4 py-2.5 font-mono text-sm font-bold text-red-400 transition-all hover:bg-red-950/40 active:scale-[0.97]">
+                  <X size={16} /> reject()
                 </button>
               </div>
             </div>
@@ -258,11 +252,11 @@ export default function AdminPage() {
       {/* Upload CSV Tab */}
       {activeTab === "Upload CSV" ? (
         <div className="animate-fade-in">
-          <div className="mb-6 rounded-2xl border border-dashed border-slate-700/60 bg-slate-900/30 p-8 text-center backdrop-blur-sm">
-            <Upload size={32} className="mx-auto mb-3 text-slate-500" />
-            <p className="mb-4 text-sm font-medium text-slate-400">Upload a CSV file with columns: roll_no, name</p>
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all [@media(hover:hover)]:hover:from-blue-600 [@media(hover:hover)]:hover:to-blue-700 active:scale-[0.97]">
-              <Download size={16} /> Choose CSV
+          <div className="mb-6 border border-dashed border-[var(--border)] bg-[var(--surface)] p-8 text-center">
+            <Upload size={32} className="mx-auto mb-3 text-[var(--muted)]" />
+            <p className="mb-4 font-mono text-sm text-[var(--muted)]">{`// Upload a CSV file with columns: roll_no, name`}</p>
+            <label className="inline-flex cursor-pointer items-center gap-2 border border-[var(--accent)] bg-[var(--accent)] px-5 py-2.5 font-mono text-sm font-bold text-black transition-all active:scale-[0.97]">
+              <Download size={16} /> chooseCSV()
               <input type="file" accept=".csv" className="hidden" onChange={async (event) => {
                 const file = event.target.files?.[0];
                 if (!file) return;
@@ -280,32 +274,32 @@ export default function AdminPage() {
             </label>
           </div>
           {csvData.length > 0 ? (
-            <div className="animate-slide-up rounded-2xl border border-slate-800/50 bg-slate-900/40 backdrop-blur-sm">
-              <div className="flex items-center justify-between border-b border-slate-800/50 px-5 py-3">
-                <p className="text-sm font-bold text-white">{csvData.length} records parsed</p>
+            <div className="animate-slide-up border border-[var(--border)] bg-[var(--surface)]">
+              <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3">
+                <p className="font-mono text-sm font-bold text-white">{csvData.length} records parsed</p>
                 <button onClick={async () => {
                   setError(null);
-                  const { error: upsertError } = await supabase.from<RegisteredRollNo>("registered_rollnos").upsert(csvData, { onConflict: "roll_no" });
+                  const { error: upsertError } = await supabase.from("registered_rollnos").upsert(csvData, { onConflict: "roll_no" });
                   if (upsertError) setError(upsertError.message);
                   else {
                     setSuccess(`${csvData.length} roll numbers imported successfully.`);
                     setCsvData([]);
                   }
-                }} className="rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition-all [@media(hover:hover)]:hover:from-emerald-600 [@media(hover:hover)]:hover:to-green-700 active:scale-[0.97]">
-                  Import all
+                }} className="border border-emerald-800 bg-emerald-950/40 px-5 py-2.5 font-mono text-sm font-bold text-emerald-400 transition-all hover:bg-emerald-950/60 active:scale-[0.97]">
+                  importAll()
                 </button>
               </div>
               <div className="max-h-80 overflow-y-auto p-5">
-                <table className="w-full text-left text-sm">
-                  <thead className="sticky top-0 bg-slate-900">
-                    <tr className="border-b border-slate-800/50 text-xs font-bold uppercase tracking-[0.15em] text-slate-500">
+                <table className="w-full text-left font-mono text-sm">
+                  <thead className="sticky top-0 bg-[var(--surface)]">
+                    <tr className="border-b border-[var(--border)] text-xs font-bold uppercase tracking-[0.15em] text-[var(--muted)]">
                       <th className="pb-3">Roll No</th><th className="pb-3">Name</th><th className="pb-3">Programme</th><th className="pb-3">Batch</th>
                     </tr>
                   </thead>
                   <tbody>
                     {csvData.slice(0, 50).map((row) => (
-                      <tr key={row.roll_no} className="border-b border-slate-800/30 text-slate-300 transition-colors hover:bg-white/[0.02]">
-                        <td className="py-2.5 font-mono font-semibold text-blue-300">{row.roll_no}</td>
+                      <tr key={row.roll_no} className="border-b border-[var(--border)]/30 text-[var(--muted)] transition-colors hover:bg-[var(--surface-soft)]">
+                        <td className="py-2.5 font-bold text-[var(--accent)]">{row.roll_no}</td>
                         <td className="py-2.5">{row.name}</td>
                         <td className="py-2.5">{row.programme}</td>
                         <td className="py-2.5">{row.batch_year}</td>
@@ -323,28 +317,28 @@ export default function AdminPage() {
       {activeTab === "Content" ? (
         <div className="animate-fade-in space-y-8">
           <section>
-            <h2 className="mb-4 text-lg font-bold text-white">Resources ({resources.length})</h2>
+            <h2 className="mb-4 font-mono text-lg font-bold text-white">{`> resources (${resources.length})`}</h2>
             {resources.length === 0 ? <EmptyState title="No resources uploaded" description="Upload files in the Study Vault." /> : null}
             <div className="space-y-2">
               {resources.map((item) => (
-                <div key={item.id} className="group relative flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-slate-900/60 active:bg-slate-900/50">
+                <div key={item.id} className="group relative flex items-center justify-between border border-[var(--border)] bg-[var(--surface)] px-5 py-4 transition-all hover:border-[var(--accent)]/30">
                   {item.file_type?.startsWith("image/") ? (
-                    <div className="pointer-events-none absolute bottom-0 left-[250px] z-20 w-48 origin-left scale-95 opacity-0 shadow-2xl shadow-blue-900/20 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 xl:left-[300px]">
-                      <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-1">
+                    <div className="pointer-events-none absolute bottom-0 left-[250px] z-20 w-48 origin-left scale-95 opacity-0 shadow-2xl transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 xl:left-[300px]">
+                      <div className="overflow-hidden border border-[var(--border)] bg-[var(--background)] p-1">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.file_url} alt={item.title} className="aspect-video w-full rounded-lg object-cover" />
+                        <img src={item.file_url} alt={item.title} className="aspect-video w-full object-cover" />
                       </div>
                     </div>
                   ) : null}
                   <div>
-                    <p className="font-semibold text-white">{item.title}</p>
-                    <p className="text-xs font-medium text-slate-400">{item.category} • {formatDateTime(item.created_at)}</p>
+                    <p className="font-mono font-bold text-white">{item.title}</p>
+                    <p className="font-mono text-xs text-[var(--muted)]">{item.category} • {formatDateTime(item.created_at)}</p>
                   </div>
                   <button onClick={async () => {
-                    const { error: deleteError } = await supabase.from<ResourceItem>("resources").delete().eq("id", item.id);
+                    const { error: deleteError } = await supabase.from("resources").delete().eq("id", item.id);
                     if (deleteError) setError(deleteError.message);
                     else setResources((current) => current.filter((r) => r.id !== item.id));
-                  }} className="rounded-full bg-red-500/10 p-2.5 text-red-300 opacity-100 md:opacity-0 transition-all group-hover:opacity-100 [@media(hover:hover)]:hover:bg-red-500/20 active:scale-90">
+                  }} className="border border-red-900 p-2.5 text-red-400 opacity-100 md:opacity-0 transition-all group-hover:opacity-100 hover:bg-red-950/40 active:scale-90">
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -352,28 +346,28 @@ export default function AdminPage() {
             </div>
           </section>
           <section>
-            <h2 className="mb-4 text-lg font-bold text-white">Exam Papers ({papers.length})</h2>
+            <h2 className="mb-4 font-mono text-lg font-bold text-white">{`> exam_papers (${papers.length})`}</h2>
             {papers.length === 0 ? <EmptyState title="No papers uploaded" description="Upload files in the Exam Archive." /> : null}
             <div className="space-y-2">
               {papers.map((item) => (
-                <div key={item.id} className="group relative flex items-center justify-between rounded-2xl border border-slate-800/50 bg-slate-900/40 px-5 py-4 backdrop-blur-sm transition-all [@media(hover:hover)]:hover:bg-slate-900/60 active:bg-slate-900/50">
+                <div key={item.id} className="group relative flex items-center justify-between border border-[var(--border)] bg-[var(--surface)] px-5 py-4 transition-all hover:border-[var(--accent)]/30">
                   {item.file_url.match(/\.(jpg|jpeg|png|webp|gif|avif)$/i) ? (
-                    <div className="pointer-events-none absolute bottom-0 left-[250px] z-20 w-48 origin-left scale-95 opacity-0 shadow-2xl shadow-purple-900/20 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 xl:left-[300px]">
-                      <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800 p-1">
+                    <div className="pointer-events-none absolute bottom-0 left-[250px] z-20 w-48 origin-left scale-95 opacity-0 shadow-2xl transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 xl:left-[300px]">
+                      <div className="overflow-hidden border border-[var(--border)] bg-[var(--background)] p-1">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.file_url} alt={item.subject} className="aspect-video w-full rounded-lg object-cover" />
+                        <img src={item.file_url} alt={item.subject} className="aspect-video w-full object-cover" />
                       </div>
                     </div>
                   ) : null}
                   <div>
-                    <p className="font-semibold text-white">{item.subject}</p>
-                    <p className="text-xs font-medium text-slate-400">{item.exam_type} • {item.semester} {item.year} • {formatDateTime(item.created_at)}</p>
+                    <p className="font-mono font-bold text-white">{item.subject}</p>
+                    <p className="font-mono text-xs text-[var(--muted)]">{item.exam_type} • {item.semester} {item.year} • {formatDateTime(item.created_at)}</p>
                   </div>
                   <button onClick={async () => {
-                    const { error: deleteError } = await supabase.from<ExamPaper>("exam_papers").delete().eq("id", item.id);
+                    const { error: deleteError } = await supabase.from("exam_papers").delete().eq("id", item.id);
                     if (deleteError) setError(deleteError.message);
                     else setPapers((current) => current.filter((p) => p.id !== item.id));
-                  }} className="rounded-full bg-red-500/10 p-2.5 text-red-300 opacity-100 md:opacity-0 transition-all group-hover:opacity-100 [@media(hover:hover)]:hover:bg-red-500/20 active:scale-90">
+                  }} className="border border-red-900 p-2.5 text-red-400 opacity-100 md:opacity-0 transition-all group-hover:opacity-100 hover:bg-red-950/40 active:scale-90">
                     <Trash2 size={16} />
                   </button>
                 </div>

@@ -20,7 +20,7 @@ const supabase = createClientComponentClient();
 
 async function fetchPapers() {
   const { data, error } = await supabase
-    .from<ExamPaper>("exam_papers")
+    .from("exam_papers")
     .select("*")
     .order("created_at", { ascending: false });
   return { data: Array.isArray(data) ? data : [], error };
@@ -75,7 +75,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
     const { data: publicUrlData } = supabase.storage.from("exam-archive").getPublicUrl(path);
     setProgress(70);
 
-    const { error: insertError } = await supabase.from<ExamPaper>("exam_papers").insert({
+    const { error: insertError } = await supabase.from("exam_papers").insert({
       subject: subject.trim(),
       exam_type: examType,
       year,
@@ -92,12 +92,12 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
   }, [file, subject, examType, year, semester, uploaderId, onSuccess, onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-md animate-scale-in rounded-3xl border border-slate-700/60 bg-slate-900 p-7 shadow-2xl shadow-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 ">
+      <div className="relative w-full max-w-md animate-scale-in  border border-[var(--border)] bg-[var(--surface)] p-7 shadow-2xl shadow-black/40">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Upload Exam Paper</h2>
-          <button onClick={onClose} className="rounded-full p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white">
+          <button onClick={onClose} className=" p-1.5 text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-white">
             <X size={18} />
           </button>
         </div>
@@ -107,21 +107,21 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           onClick={() => inputRef.current?.click()}
-          className={`mb-5 flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-6 py-7 transition-all ${
-            file ? "border-purple-500/50 bg-purple-500/5" : "border-slate-700 bg-slate-800/40 hover:border-slate-500"
+          className={`mb-5 flex cursor-pointer flex-col items-center gap-2  border-2 border-dashed px-6 py-7 transition-all ${
+            file ? "border-purple-500/50 bg-purple-500/5" : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)]"
           }`}
         >
           {file ? (
             <>
-              <FileText size={30} className="text-purple-400" />
+              <FileText size={30} className="text-[var(--accent)]" />
               <p className="text-sm font-semibold text-white">{file.name}</p>
-              <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              <p className="text-xs text-[var(--muted)]">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </>
           ) : (
             <>
-              <Upload size={30} className="text-slate-500" />
-              <p className="text-sm font-medium text-slate-400">Drop file here or <span className="text-purple-400">browse</span></p>
-              <p className="text-xs text-slate-600">PDF / Images · Max {MAX_FILE_SIZE_MB} MB</p>
+              <Upload size={30} className="text-[var(--muted)]" />
+              <p className="text-sm font-medium text-[var(--muted)]">Drop file here or <span className="text-[var(--accent)]">browse</span></p>
+              <p className="text-xs text-[var(--muted)]">PDF / Images · Max {MAX_FILE_SIZE_MB} MB</p>
             </>
           )}
           <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) pickFile(f); }} />
@@ -129,26 +129,26 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
 
         {/* Subject */}
         <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Subject</label>
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Subject</label>
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="e.g. Physical Chemistry"
-            className="w-full rounded-xl border border-slate-700/60 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20"
+            className="w-full  border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
           />
         </div>
 
         {/* Exam Type */}
         <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Exam Type</label>
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Exam Type</label>
           <div className="flex flex-wrap gap-2">
             {uploadExamTypes.map((et) => (
               <button
                 key={et}
                 type="button"
                 onClick={() => setExamType(et)}
-                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all ${
-                  examType === et ? "bg-purple-600 text-white" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                className={` px-3.5 py-1.5 text-sm font-semibold transition-all ${
+                  examType === et ? "bg-[var(--accent)] text-white" : "bg-[var(--surface)] text-[var(--muted)] hover:bg-[var(--surface-soft)]"
                 }`}
               >
                 {et}
@@ -160,26 +160,26 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
         {/* Year & Semester */}
         <div className="mb-6 grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Year</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Year</label>
             <input
               type="number"
               value={year}
               min={2000}
               max={new Date().getFullYear()}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-700/60 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20"
+              className="w-full  border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm text-white outline-none focus:border-[var(--accent)]"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">Semester</label>
-            <div className="flex h-[46px] overflow-hidden rounded-xl border border-slate-700/60">
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Semester</label>
+            <div className="flex h-[46px] overflow-hidden  border border-[var(--border)]">
               {SEMESTERS.map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => setSemester(s)}
                   className={`flex-1 text-sm font-semibold transition-all ${
-                    semester === s ? "bg-purple-600 text-white" : "bg-slate-950/70 text-slate-300 hover:bg-slate-800"
+                    semester === s ? "bg-[var(--accent)] text-white" : "bg-[var(--background)] text-[var(--muted)] hover:bg-[var(--surface)]"
                   }`}
                 >
                   {s}
@@ -192,13 +192,13 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
         {/* Progress Bar */}
         {uploading && (
           <div className="mb-4">
-            <div className="mb-1.5 flex justify-between text-xs text-slate-400">
+            <div className="mb-1.5 flex justify-between text-xs text-[var(--muted)]">
               <span>{success ? "Upload complete!" : "Uploading…"}</span>
               <span>{progress}%</span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+            <div className="h-2 w-full overflow-hidden  bg-[var(--surface)]">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-500 transition-all duration-500"
+                className="h-full  bg-[var(--accent)] transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -206,25 +206,25 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
         )}
 
         {success && (
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-2.5 text-sm font-medium text-emerald-400">
+          <div className="mb-4 flex items-center gap-2  bg-emerald-950/40 border border-emerald-800 px-4 py-2.5 text-sm font-medium text-emerald-400">
             <CheckCircle2 size={16} /> Paper uploaded successfully!
           </div>
         )}
         {error && (
-          <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400">
+          <div className="mb-4 flex items-center gap-2  bg-red-950/40 border border-red-800 px-4 py-2.5 text-sm font-medium text-red-400">
             <AlertCircle size={16} /> {error}
           </div>
         )}
 
         {/* Actions */}
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 rounded-xl border border-slate-700 bg-transparent px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-slate-800">
+          <button onClick={onClose} className="flex-1  border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--surface)]">
             Cancel
           </button>
           <button
             onClick={handleUpload}
             disabled={uploading || !file}
-            className="flex-1 rounded-xl bg-gradient-to-r from-purple-500 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 transition-all hover:from-purple-600 hover:to-violet-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.97]"
+            className="flex-1  border border-[var(--accent)] bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white  transition-all hover:from-purple-600 hover:to-violet-700 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.97]"
           >
             {uploading ? "Uploading…" : "Upload"}
           </button>
@@ -286,7 +286,7 @@ export default function ExamArchivePage() {
           profile.status === "active" ? (
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-r from-purple-500 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 transition-all hover:from-purple-600 hover:to-violet-700 active:scale-[0.97]"
+              className="inline-flex cursor-pointer items-center gap-2  border border-[var(--accent)] bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white  transition-all hover:from-purple-600 hover:to-violet-700 active:scale-[0.97]"
             >
               <Upload size={16} /> Upload
             </button>
@@ -295,14 +295,14 @@ export default function ExamArchivePage() {
       />
 
       {/* Search + Filters */}
-      <div className="mb-6 grid gap-4 rounded-2xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm md:grid-cols-[1fr_auto]">
+      <div className="mb-6 grid gap-4  border border-[var(--border)] bg-[var(--surface)] p-5  md:grid-cols-[1fr_auto]">
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by subject or exam type…"
-            className="w-full rounded-xl border border-slate-700/60 bg-slate-950/80 py-3 pl-10 pr-4 text-sm text-white outline-none ring-0 transition-all placeholder:text-slate-500 focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20"
+            className="w-full  border border-[var(--border)] bg-[var(--background)] py-3 pl-10 pr-4 text-sm text-white outline-none ring-0 transition-all placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
           />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -310,8 +310,8 @@ export default function ExamArchivePage() {
             <button
               key={item}
               onClick={() => setExamType(item)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                examType === item ? "bg-purple-600 text-white shadow-md shadow-purple-600/25" : "bg-slate-800/60 text-slate-300 hover:bg-slate-700/60"
+              className={` px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                examType === item ? "bg-[var(--accent)] text-white " : "bg-[var(--surface)] text-[var(--muted)] hover:bg-[var(--surface-soft)]/60"
               }`}
             >
               {item}
@@ -340,10 +340,10 @@ export default function ExamArchivePage() {
         {filtered.map((paper) => (
           <article
             key={paper.id}
-            className="group animate-fade-in flex flex-col overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/40 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/50 hover:bg-slate-900/60 hover:shadow-lg hover:shadow-purple-950/10"
+            className="group animate-fade-in flex flex-col overflow-hidden  border border-[var(--border)] bg-[var(--surface)]  transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border)]/50 hover:bg-[var(--surface)]/60 hover:shadow-lg hover:shadow-purple-950/10"
           >
             {paper.file_url.match(/\.(jpg|jpeg|png|webp|gif|avif)$/i) ? (
-              <div className="relative h-40 w-full shrink-0 overflow-hidden border-b border-slate-800/50 bg-slate-950/50">
+              <div className="relative h-40 w-full shrink-0 overflow-hidden border-b border-[var(--border)] bg-[var(--background)]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={paper.file_url} alt={paper.subject} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
@@ -351,22 +351,22 @@ export default function ExamArchivePage() {
             <div className="flex flex-1 flex-col p-5">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <span className="rounded-full bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-300">{paper.exam_type}</span>
+                  <span className=" bg-[var(--accent)]/10 px-3 py-1 text-xs font-semibold text-[var(--accent)]">{paper.exam_type}</span>
                   <h3 className="mt-2.5 truncate text-base font-semibold text-white" title={paper.subject}>{paper.subject}</h3>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1.5">
-                  <span className="rounded-full bg-slate-800/60 px-3 py-1 text-[11px] font-semibold text-slate-400">
+                  <span className=" bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-[var(--muted)]">
                     {paper.semester} {paper.year}
                   </span>
-                  {paper.file_size ? <span className="text-[10px] font-medium text-slate-500">{formatBytes(paper.file_size)}</span> : null}
+                  {paper.file_size ? <span className="text-[10px] font-medium text-[var(--muted)]">{formatBytes(paper.file_size)}</span> : null}
                 </div>
               </div>
-              <p className="mt-auto mb-4 text-xs text-slate-500">Uploaded {formatDateTime(paper.created_at)}</p>
+              <p className="mt-auto mb-4 text-xs text-[var(--muted)]">Uploaded {formatDateTime(paper.created_at)}</p>
             <a
               href={paper.file_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-purple-500/10 px-4 py-2 text-sm font-semibold text-purple-300 transition-all hover:bg-purple-500/20"
+              className="inline-flex items-center gap-2  bg-[var(--accent)]/10 px-4 py-2 text-sm font-semibold text-[var(--accent)] transition-all hover:bg-purple-500/20"
             >
               <Eye size={15} /> View Paper
             </a>

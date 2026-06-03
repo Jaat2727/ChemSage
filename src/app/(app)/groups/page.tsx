@@ -29,8 +29,8 @@ export default function SynergyGroupsPage() {
     if (!profile || profile.status !== "active") return;
     const load = async () => {
       const [{ data: rooms }, { data: members }] = await Promise.all([
-        supabase.from<Room>("rooms").select("*").eq("is_public", true).neq("id", "global").order("created_at", { ascending: false }),
-        supabase.from<RoomMember>("room_members").select("room_id").eq("user_id", profile.id),
+        supabase.from("rooms").select("*").eq("is_public", true).neq("id", "global").order("created_at", { ascending: false }),
+        supabase.from("room_members").select("room_id").eq("user_id", profile.id),
       ]);
       setPublicRooms(Array.isArray(rooms) ? rooms : []);
       setJoined(new Set((Array.isArray(members) ? members : []).map((m) => m.room_id)));
@@ -44,10 +44,7 @@ export default function SynergyGroupsPage() {
     if (!window.confirm("Delete this group and all related messages?")) return;
 
     const { error: deleteError } = await supabase.from("rooms").delete().eq("id", roomId).eq("created_by", profile.id);
-    if (deleteError) {
-      setError(deleteError.message);
-      return;
-    }
+    if (deleteError) { setError(deleteError.message); return; }
 
     setPublicRooms((current) => current.filter((r) => r.id !== roomId));
     setJoined((current) => {
@@ -63,45 +60,44 @@ export default function SynergyGroupsPage() {
   const myGroups = publicRooms.filter((room) => joined.has(room.id));
   const discover = publicRooms.filter((room) => !joined.has(room.id));
 
+  const inputClasses = "w-full border border-[var(--border)] bg-[var(--background)] px-3 py-2 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none";
+
   return (
     <div className="mx-auto max-w-5xl pb-12">
       <PageHeader
         title="Study Circles"
         description="Join topic-focused group spaces with synced live chat and simple coordination."
         profile={profile}
-        action={<button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900"><Plus size={14} /> Create</button>}
+        action={<button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 font-mono text-sm font-bold text-black"><Plus size={14} /> create()</button>}
       />
 
       <InlineAlert message={error} />
-      {loading ? <LoadingCard title="Loading groups..." /> : null}
+      {loading ? <LoadingCard title="> loading groups..." /> : null}
 
       {myGroups.length > 0 ? (
         <section className="mb-8">
-          <h2 className="mb-3 text-sm font-semibold text-slate-200">My groups</h2>
+          <h2 className="mb-3 font-mono text-sm font-bold text-[var(--muted)]">{`> my_groups`}</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {myGroups.map((room) => (
-              <Link key={room.id} href={`/groups/${room.id}`} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/70 p-3 hover:border-slate-700">
+              <Link key={room.id} href={`/groups/${room.id}`} className="flex items-center justify-between border border-[var(--border)] bg-[var(--surface)] p-3 transition-all hover:border-[var(--accent)]">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-lg border border-slate-700 p-2 text-slate-300"><Users2 size={16} /></div>
+                  <div className="border border-[var(--border)] p-2 text-[var(--muted)]"><Users2 size={16} /></div>
                   <div>
-                    <p className="text-sm font-medium text-slate-100">{room.name}</p>
-                    <p className="text-xs text-slate-500">{room.location || "Public group"}</p>
+                    <p className="font-mono text-sm font-bold text-white">{room.name}</p>
+                    <p className="font-mono text-xs text-[var(--muted)]">{room.location || "Public group"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
                   {room.created_by === profile.id ? (
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        void handleDeleteRoom(room.id);
-                      }}
-                      className="rounded p-1.5 text-slate-500 hover:bg-rose-950/30 hover:text-rose-300"
+                      onClick={(e) => { e.preventDefault(); void handleDeleteRoom(room.id); }}
+                      className="p-1.5 text-[var(--muted)] transition-colors hover:text-red-400"
                       title="Delete group"
                     >
                       <Trash2 size={14} />
                     </button>
                   ) : null}
-                  <ArrowRight size={15} className="text-slate-500" />
+                  <ArrowRight size={15} className="text-[var(--muted)]" />
                 </div>
               </Link>
             ))}
@@ -111,26 +107,26 @@ export default function SynergyGroupsPage() {
 
       {discover.length > 0 ? (
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-slate-200">Discover</h2>
+          <h2 className="mb-3 font-mono text-sm font-bold text-[var(--muted)]">{`> discover`}</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {discover.map((room) => (
-              <div key={room.id} className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+              <div key={room.id} className="border border-[var(--border)] bg-[var(--surface)] p-3">
                 <div className="mb-3 flex items-center gap-3">
-                  <div className="rounded-lg border border-slate-700 p-2 text-slate-300"><Users2 size={16} /></div>
+                  <div className="border border-[var(--border)] p-2 text-[var(--muted)]"><Users2 size={16} /></div>
                   <div>
-                    <p className="text-sm font-medium text-slate-100">{room.name}</p>
-                    <p className="text-xs text-slate-500">{room.location || "Public group"}</p>
+                    <p className="font-mono text-sm font-bold text-white">{room.name}</p>
+                    <p className="font-mono text-xs text-[var(--muted)]">{room.location || "Public group"}</p>
                   </div>
                 </div>
                 <button
                   onClick={async () => {
-                    const { error: joinError } = await supabase.from<RoomMember>("room_members").insert({ room_id: room.id, user_id: profile.id });
+                    const { error: joinError } = await supabase.from("room_members").insert({ room_id: room.id, user_id: profile.id });
                     if (joinError) setError(joinError.message);
                     else setJoined((current) => new Set([...current, room.id]));
                   }}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:border-slate-600"
+                  className="w-full border border-[var(--accent)] bg-transparent px-3 py-2 font-mono text-sm text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-black"
                 >
-                  Join group
+                  join()
                 </button>
               </div>
             ))}
@@ -141,16 +137,16 @@ export default function SynergyGroupsPage() {
       {!loading && !myGroups.length && !discover.length ? <EmptyState title="No groups yet" description="Create one and invite peers." /> : null}
 
       {showCreate ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-5">
-            <h2 className="mb-4 text-lg font-semibold text-slate-100">Create a group</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="w-full max-w-md border border-[var(--border)] bg-[var(--background)] p-5">
+            <h2 className="mb-4 font-mono text-lg font-bold text-white">{`> create_group`}</h2>
             <form
               onSubmit={async (event) => {
                 event.preventDefault();
                 if (!profile) return;
                 setCreating(true);
                 setError(null);
-                const { data, error: insertError } = await supabase.from<Room>("rooms").insert({
+                const { data, error: insertError } = await supabase.from("rooms").insert({
                   id: slugify(newGroupName),
                   name: newGroupName,
                   location: newLocation.trim() || null,
@@ -158,7 +154,7 @@ export default function SynergyGroupsPage() {
                   invited_people: newInvitedPeople.trim() || null,
                   created_by: profile.id,
                   is_public: true,
-                });
+                }).select();
 
                 if (insertError) {
                   setError(insertError.message);
@@ -167,7 +163,7 @@ export default function SynergyGroupsPage() {
                   if (inserted) {
                     setPublicRooms((current) => [inserted, ...current]);
                     setJoined((current) => new Set([...current, inserted.id]));
-                    await supabase.from<RoomMember>("room_members").insert({ room_id: inserted.id, user_id: profile.id });
+                    await supabase.from("room_members").insert({ room_id: inserted.id, user_id: profile.id });
                   }
                   setShowCreate(false);
                   setNewGroupName("");
@@ -179,13 +175,13 @@ export default function SynergyGroupsPage() {
               }}
               className="space-y-3"
             >
-              <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Group name *" className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none" required />
-              <input value={newLocation} onChange={(e) => setNewLocation(e.target.value)} placeholder="Location" className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none" />
-              <input value={newContactInfo} onChange={(e) => setNewContactInfo(e.target.value)} placeholder="Contact info" className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none" />
-              <input value={newInvitedPeople} onChange={(e) => setNewInvitedPeople(e.target.value)} placeholder="Invited members" className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none" />
+              <input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="Group name *" className={inputClasses} required />
+              <input value={newLocation} onChange={(e) => setNewLocation(e.target.value)} placeholder="Location" className={inputClasses} />
+              <input value={newContactInfo} onChange={(e) => setNewContactInfo(e.target.value)} placeholder="Contact info" className={inputClasses} />
+              <input value={newInvitedPeople} onChange={(e) => setNewInvitedPeople(e.target.value)} placeholder="Invited members" className={inputClasses} />
               <div className="flex gap-2 pt-1">
-                <button type="button" onClick={() => setShowCreate(false)} className="w-full rounded-xl border border-slate-700 py-2 text-sm text-slate-300">Cancel</button>
-                <button type="submit" disabled={creating} className="w-full rounded-xl bg-slate-100 py-2 text-sm font-semibold text-slate-900 disabled:opacity-60">{creating ? "Creating..." : "Create"}</button>
+                <button type="button" onClick={() => setShowCreate(false)} className="w-full border border-[var(--border)] py-2 font-mono text-sm text-[var(--muted)] hover:text-white">cancel()</button>
+                <button type="submit" disabled={creating} className="w-full border border-[var(--accent)] bg-[var(--accent)] py-2 font-mono text-sm font-bold text-black disabled:opacity-60">{creating ? "creating..." : "create()"}</button>
               </div>
             </form>
           </div>

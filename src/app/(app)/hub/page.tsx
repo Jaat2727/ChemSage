@@ -20,7 +20,7 @@ export default function HubDirectoryPage() {
   useEffect(() => {
     if (!profile || profile.status !== "active") return;
     const load = async () => {
-      const { data } = await supabase.from<Profile>("profiles").select("*").neq("id", profile.id).order("name", { ascending: true });
+      const { data } = await supabase.from("profiles").select("*").neq("id", profile.id).order("name", { ascending: true });
       setUsers(Array.isArray(data) ? (data as Profile[]) : []);
       setLoading(false);
     };
@@ -40,37 +40,37 @@ export default function HubDirectoryPage() {
         description="Find classmates quickly and start one-to-one conversations or join the community feed."
         profile={profile}
         action={
-          <Link href="/hub/global" className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900">
-            <Globe size={14} /> Global Hub
+          <Link href="/hub/global" className="inline-flex items-center gap-2 border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 font-mono text-sm font-bold text-black">
+            <Globe size={14} /> globalHub()
           </Link>
         }
       />
 
       <div className="relative mb-6 max-w-xl">
-        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search name, roll no, or programme"
-          className="w-full rounded-xl border border-slate-700 bg-slate-900 py-2.5 pl-10 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
+          className="w-full border border-[var(--border)] bg-[var(--surface)] py-2.5 pl-10 pr-3 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
         />
       </div>
 
-      {loading ? <LoadingCard title="Loading directory..." /> : null}
+      {loading ? <LoadingCard title="> loading directory..." /> : null}
 
       {!loading && filteredUsers.length > 0 ? (
         <div className="grid gap-3 md:grid-cols-2">
           {filteredUsers.map((u) => (
-            <Link key={u.id} href={`/hub/${u.id}`} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/70 p-3 hover:border-slate-700">
+            <Link key={u.id} href={`/hub/${u.id}`} className="flex items-center justify-between border border-[var(--border)] bg-[var(--surface)] p-3 transition-all hover:border-[var(--accent)]">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg border border-slate-700 p-2 text-slate-300"><UserIcon size={16} /></div>
+                <div className="border border-[var(--border)] p-2 text-[var(--muted)]"><UserIcon size={16} /></div>
                 <div>
-                  <p className="text-sm font-medium text-slate-100">{u.name || "Unknown"}</p>
-                  <p className="text-xs text-slate-500">{u.programme} {u.batch_year?.toString().slice(-2)} · {u.roll_no}</p>
+                  <p className="font-mono text-sm font-bold text-white">{u.name || "Unknown"}</p>
+                  <p className="font-mono text-xs text-[var(--muted)]">{u.programme} {u.batch_year?.toString().slice(-2)} · {u.roll_no}</p>
                 </div>
               </div>
-              <ArrowRight size={15} className="text-slate-500" />
+              <ArrowRight size={15} className="text-[var(--muted)]" />
             </Link>
           ))}
         </div>

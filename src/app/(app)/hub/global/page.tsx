@@ -35,7 +35,7 @@ export default function GlobalHubPage() {
     const hydrateWithSenders = async (rows: ChatMessage[]) => {
       const senderIds = Array.from(new Set(rows.map((row) => row.sender_id)));
       const { data: senders } = senderIds.length
-        ? await supabase.from<Profile>("profiles").select("id, name, roll_no, programme, batch_year").in("id", senderIds)
+        ? await supabase.from("profiles").select("id, name, roll_no, programme, batch_year").in("id", senderIds)
         : { data: [] };
       const senderMap = new Map((Array.isArray(senders) ? senders : []).map((sender) => [sender.id, sender]));
       return rows.map((row) => ({ ...row, sender: senderMap.get(row.sender_id) }));
@@ -47,7 +47,7 @@ export default function GlobalHubPage() {
 
       await supabase.from("room_members").insert({ room_id: roomId, user_id: profile.id });
       const { data, error: loadError } = await supabase
-        .from<ChatMessage>("messages")
+        .from("messages")
         .select("id, room_id, sender_id, content, is_anon, created_at")
         .eq("room_id", roomId)
         .order("created_at", { ascending: true })
@@ -70,15 +70,20 @@ export default function GlobalHubPage() {
 
     void load();
 
+    // Clean up any stale channel (React Strict Mode / HMR)
+    const channelName = `msg-${roomId}`;
+    const stale = supabase.getChannels().find((ch) => ch.topic === `realtime:${channelName}`);
+    if (stale) supabase.removeChannel(stale);
+
     const channel = supabase
-      .channel(`messages:${roomId}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `room_id=eq.${roomId}` },
         async (payload) => {
           const row = payload.new as unknown as ChatMessage;
           const { data: sender } = await supabase
-            .from<Profile>("profiles")
+            .from("profiles")
             .select("id, name, roll_no, programme, batch_year")
             .eq("id", row.sender_id)
             .single();
@@ -124,7 +129,7 @@ export default function GlobalHubPage() {
     setError(null);
     const content = inputText.trim();
 
-    const { error: insertError } = await supabase.from<ChatMessage>("messages").insert({
+    const { error: insertError } = await supabase.from("messages").insert({
       room_id: roomId,
       sender_id: profile.id,
       content,
@@ -145,18 +150,18 @@ export default function GlobalHubPage() {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-10rem)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60">
-      <header className="flex items-center justify-between border-b border-slate-800 bg-slate-950/95 px-3 py-2.5">
-        <Link href="/hub" className="rounded-lg p-2 text-slate-400 hover:bg-slate-900 hover:text-slate-100">
+    <div className="mx-auto flex h-[calc(100dvh-10rem)] w-full max-w-5xl flex-col overflow-hidden  border border-[var(--border)] bg-[var(--background)]">
+      <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)] px-3 py-2.5">
+        <Link href="/hub" className=" p-2 text-[var(--muted)] hover:bg-[var(--surface)] hover:text-white">
           <ArrowLeft size={18} />
         </Link>
 
         <div className="text-center">
-          <h1 className="text-sm font-semibold text-slate-100">Community Chat</h1>
-          <p className="text-[11px] text-slate-500">{onlineCount || 1} active in feed</p>
+          <h1 className="text-sm font-semibold text-white">Community Chat</h1>
+          <p className="text-[11px] text-[var(--muted)]">{onlineCount || 1} active in feed</p>
         </div>
 
-        <div className="flex items-center gap-1 rounded-full border border-slate-700 px-2 py-1 text-[10px] text-slate-300">
+        <div className="flex items-center gap-1  border border-[var(--border)] px-2 py-1 text-[10px] text-[var(--muted)]">
           <Wifi size={12} className={syncing ? "text-amber-400" : "text-emerald-400"} />
           {syncing ? "syncing" : "live"}
         </div>
@@ -164,7 +169,7 @@ export default function GlobalHubPage() {
 
       <section className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
         {loading ? <LoadingCard title="Loading messages..." /> : null}
-        {error ? <p className="rounded-xl border border-rose-900 bg-rose-950/40 px-3 py-2 text-sm text-rose-200">{error}</p> : null}
+        {error ? <p className=" border border-red-800 bg-red-950/50 font-mono px-3 py-2 text-sm text-red-300">{error}</p> : null}
 
         {!loading &&
           messages.map((message) => {
@@ -172,14 +177,14 @@ export default function GlobalHubPage() {
             const alias = message.sender?.name || message.sender?.roll_no || "Unknown";
             return (
               <article key={message.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                <div className="mb-1 px-1 text-[11px] text-slate-500">{alias}</div>
-                <div className={`max-w-[88%] rounded-2xl px-3 py-2 text-sm ${isMe ? "bg-slate-100 text-slate-900" : "border border-slate-700 bg-slate-900 text-slate-100"}`}>
+                <div className="mb-1 px-1 text-[11px] text-[var(--muted)]">{alias}</div>
+                <div className={`max-w-[88%]  px-3 py-2 text-sm ${isMe ? "bg-[var(--accent)] text-black font-mono" : "border border-[var(--border)] bg-[var(--surface)] text-white font-mono"}`}>
                   <MessageDisplay content={message.content} />
                 </div>
-                <div className="mt-1 flex items-center gap-2 px-1 text-[10px] text-slate-500">
+                <div className="mt-1 flex items-center gap-2 px-1 text-[10px] text-[var(--muted)]">
                   <span>{formatDateTime(message.created_at)}</span>
                   {isMe ? (
-                    <button onClick={() => handleDeleteMessage(message.id)} className="text-slate-500 hover:text-rose-300" title="Delete message">
+                    <button onClick={() => handleDeleteMessage(message.id)} className="text-[var(--muted)] hover:text-red-300" title="Delete message">
                       <Trash2 size={11} />
                     </button>
                   ) : null}
@@ -190,7 +195,7 @@ export default function GlobalHubPage() {
         <div ref={messagesEndRef} />
       </section>
 
-      <footer className="border-t border-slate-800 bg-slate-950/95 p-3">
+      <footer className="border-t border-[var(--border)] bg-[var(--background)] p-3">
         <form onSubmit={handleSendMessage} className="flex items-end gap-2">
           <textarea
             value={inputText}
@@ -202,10 +207,10 @@ export default function GlobalHubPage() {
               }
             }}
             placeholder="Message the community chat"
-            className="min-h-[42px] w-full resize-none rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
+            className="min-h-[42px] w-full resize-none  border border-[var(--border)] bg-[var(--surface)] px-3 py-2 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
             rows={1}
           />
-          <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-900 disabled:opacity-50">
+          <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 shrink-0 items-center justify-center  bg-[var(--accent)] text-black font-mono disabled:opacity-50">
             <Send size={16} />
           </button>
         </form>
