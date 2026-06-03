@@ -99,7 +99,7 @@ export default function ScheduleManagerPage() {
   if (profile.status !== "active") return <LockedScreen title="Schedule Manager locked" description="Only active users can manage their schedule." />;
 
   return (
-    <div className="pb-12">
+    <div>
       <PageHeader
         title="Class Planner"
         description="Your academic timetable and upcoming deadlines mapped out clearly."

@@ -3,8 +3,8 @@ import DirectChatsSidebar from "./DirectChatsSidebar";
 
 export default function HubLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="pb-8">
-      <div className="mx-auto flex h-[calc(100dvh-6rem)] w-full max-w-[1400px] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-lg">
+    <div className="h-[calc(100vh-160px)] min-h-[600px] w-full">
+      <div className="mx-auto flex h-full w-full overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-lg">
         {/* Left Sidebar for DMs and Navigation */}
         <DirectChatsSidebar />
         

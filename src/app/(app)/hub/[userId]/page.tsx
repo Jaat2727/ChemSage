@@ -140,7 +140,7 @@ export default function DirectMessagePage() {
     }
   };
 
-  if (loading || !profile) return <LoadingCard />;
+  if (loading || !profile || !otherUser) return <LoadingCard />;
 
   const icebreakers = [
     `Hey ${otherUser.name.split(" ")[0]}!`,

@@ -184,7 +184,14 @@ export default function DirectChatsSidebar() {
       
       {/* Header & Search */}
       <div className="p-4 border-b border-[var(--border)]">
-        <h2 className="text-xl font-bold text-white mb-4">Direct Chats</h2>
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/hub" className="text-xl font-bold text-white hover:text-[var(--accent)] transition-colors">
+            Direct Chats
+          </Link>
+          <Link href="/hub" className="p-1.5 rounded-md bg-[var(--surface-soft)] text-[var(--muted)] hover:bg-[var(--accent)] hover:text-black transition-colors group" title="New Message">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square-plus"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" x2="15" y1="10" y2="10"/><line x1="12" x2="12" y1="7" y2="13"/></svg>
+          </Link>
+        </div>
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
           <input 

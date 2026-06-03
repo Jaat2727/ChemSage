@@ -6,7 +6,7 @@ import { ArrowLeft, Hash, Users2, FileText, Send, Trash2, ShieldAlert, Bell, Mes
 import { useParams } from "next/navigation";
 import { createClientComponentClient } from "@/lib/supabase";
 import type { ChatMessage, Profile, Room, ResourceItem } from "@/lib/types";
-import { LoadingCard } from "@/components/ui/Feedback";
+import { LoadingCard, InlineAlert } from "@/components/ui/Feedback";
 import { MessageDisplay } from "@/components/ui/MessageDisplay";
 import { formatDateTime, cn } from "@/lib/utils";
 import { useAuth } from "@/providers/AuthProvider";
@@ -346,12 +346,12 @@ export default function GroupChatPage() {
                         <div className="flex items-baseline gap-2 mb-0.5">
                           <span className={cn("text-sm font-bold", isMe ? "text-[var(--accent)]" : "text-emerald-400")}>{message.sender?.name || "Unknown User"}</span>
                           <span className="text-[10px] font-medium text-[var(--muted)]">{formatDateTime(message.created_at)}</span>
-                          {message.is_pinned && <Pin size={10} className="text-amber-400 fill-amber-400" title="Pinned" />}
+                          {message.is_pinned && <span title="Pinned"><Pin size={10} className="text-amber-400 fill-amber-400" /></span>}
                         </div>
                       )}
                       {isContinuation && message.is_pinned && (
-                        <div className="mb-0.5">
-                          <Pin size={10} className="text-amber-400 fill-amber-400" title="Pinned" />
+                        <div className="mb-0.5" title="Pinned">
+                          <Pin size={10} className="text-amber-400 fill-amber-400" />
                         </div>
                       )}
                       <div className="text-[13px] text-gray-200">
@@ -473,7 +473,7 @@ export default function GroupChatPage() {
                   <p className="text-[10px] font-medium text-[var(--muted)] truncate">{member.programme} - {member.batch_year}</p>
                 </div>
                 {room?.created_by === member.id && (
-                  <ShieldAlert size={12} className="text-amber-400 shrink-0" title="Community Creator" />
+                  <span title="Community Creator"><ShieldAlert size={12} className="text-amber-400 shrink-0" /></span>
                 )}
               </div>
             ))}

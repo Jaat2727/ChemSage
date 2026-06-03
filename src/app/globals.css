@@ -52,6 +52,7 @@ body {
 @keyframes sheet-up { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
 @keyframes msg-in-left { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes msg-in-right { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slide-in-right { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
 
 @utility animate-fade-in { animation: fade-in 0.3s ease-out both; }
 @utility animate-slide-up { animation: slide-up 0.35s ease-out both; }
@@ -61,6 +62,7 @@ body {
 @utility animate-sheet-up { animation: sheet-up 0.3s ease-out both; }
 @utility animate-msg-left { animation: msg-in-left 0.25s ease-out both; }
 @utility animate-msg-right { animation: msg-in-right 0.25s ease-out both; }
+@utility animate-slide-in-right { animation: slide-in-right 0.3s ease-out both; }
 @utility pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 
 /* Overriding old glass utilities with solid brutalist styling to not break old code */

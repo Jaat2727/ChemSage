@@ -1,305 +1,273 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, FlaskConical, Users, MessageSquare, CalendarClock, ShieldCheck, CheckCircle2, ChevronRight, Download, Clock, Star, FileText } from "lucide-react";
+import {
+  ArrowRight, FlaskConical, ShieldCheck, CheckCircle2, BookOpen, FileText,
+  Users, CalendarClock, Lock, ChevronRight, GraduationCap, BadgeCheck,
+  FolderOpen, MessageSquare, ArrowUpRight
+} from "lucide-react";
 
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen bg-[#050505] text-white selection:bg-[var(--accent)] selection:text-black font-sans">
-      
-      {/* Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-[#050505]/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface)] border border-white/10 text-[var(--accent)]">
-              <FlaskConical size={18} strokeWidth={2.5} />
+
+      {/* ─── Navigation ─────────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 w-full border-b border-white/[0.04] bg-[#050505]/90 backdrop-blur-lg">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)]">
+              <FlaskConical size={15} strokeWidth={2.5} />
             </div>
-            <span className="text-lg font-bold tracking-tight">ChemSAGE</span>
+            <span className="text-sm font-bold tracking-tight">ChemSAGE</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
-              Sign In
-            </Link>
-            <Link href="/signup" className="rounded-md bg-white px-4 py-2 text-sm font-bold text-black transition-transform hover:scale-105 active:scale-95">
-              Open Workspace
-            </Link>
-          </div>
+          <Link href="/login" className="rounded-md bg-white/[0.08] px-4 py-1.5 text-xs font-bold text-white transition-all hover:bg-white/[0.14] active:scale-95">
+            Access Workspace
+          </Link>
         </div>
       </header>
 
       <main className="flex flex-col">
-        
-        {/* ─── Hero Section ──────────────────────────────────────────────────────── */}
-        <section className="relative overflow-hidden border-b border-white/5 px-6 pt-24 pb-32">
-          <div className="mx-auto max-w-7xl">
-            <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
-              
-              {/* Left: Copy */}
-              <div className="flex flex-col z-10 max-w-2xl">
-                <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-300">
-                  <ShieldCheck size={14} className="text-[var(--accent)]" />
-                  Built for IITM BS Chemistry
-                </div>
-                
-                <h1 className="mb-6 text-5xl font-black leading-[1.1] tracking-tight md:text-6xl lg:text-7xl">
-                  The operating system for <span className="text-[var(--accent)]">IITM Chemistry</span> students.
-                </h1>
-                
-                <p className="mb-10 max-w-xl text-lg font-medium text-gray-400 md:text-xl leading-relaxed">
-                  Access notes, past papers, schedules, lab resources, deadlines, and study groups from one unified workspace.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                  <Link href="/signup" className="group flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-8 py-4 text-sm font-bold text-black transition-colors hover:bg-[#bce600]">
-                    Open Workspace
-                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                  </Link>
-                  <a href="#features" className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-transparent px-8 py-4 text-sm font-bold text-white transition-colors hover:bg-white/5">
-                    Explore Features
-                  </a>
-                </div>
 
-                {/* Trust Indicators */}
-                <div className="flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-white/10 pt-8">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-2xl font-bold text-white">800+</span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Notes</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-2xl font-bold text-white">250+</span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Past Papers</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-2xl font-bold text-white">40+</span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Study Groups</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-2xl font-bold text-[var(--accent)]">450+</span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Active Students</span>
-                  </div>
-                </div>
-              </div>
+        {/* ═══ HERO ══════════════════════════════════════════════════════════════ */}
+        <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden px-6 py-16 sm:py-20">
+          {/* Subtle glow */}
+          <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[800px] rounded-full bg-[var(--accent)]/[0.03] blur-[120px]" />
 
-              {/* Right: Dashboard Mockup */}
-              <div className="relative z-10 w-full rounded-xl border border-white/10 bg-[#0a0a0a] shadow-2xl overflow-hidden lg:scale-105 transform origin-left">
-                {/* Window Header */}
-                <div className="flex items-center gap-2 border-b border-white/10 bg-[#111] px-4 py-3">
-                  <div className="h-3 w-3 rounded-full bg-red-500/80" />
-                  <div className="h-3 w-3 rounded-full bg-amber-500/80" />
-                  <div className="h-3 w-3 rounded-full bg-emerald-500/80" />
-                </div>
-                {/* Mockup Body */}
-                <div className="flex h-[400px]">
-                  {/* Sidebar */}
-                  <div className="w-16 border-r border-white/10 bg-[#0a0a0a] flex flex-col items-center py-4 gap-6 text-gray-600">
-                     <FlaskConical size={20} className="text-[var(--accent)]" />
-                     <BookOpen size={20} />
-                     <Users size={20} />
-                     <CalendarClock size={20} />
-                     <MessageSquare size={20} />
-                  </div>
-                  {/* Main View */}
-                  <div className="flex-1 p-6 bg-[#050505] overflow-hidden flex flex-col gap-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-center">
-                      <div className="h-6 w-32 rounded bg-white/10" />
-                      <div className="h-8 w-8 rounded-full bg-blue-500/20 border border-blue-500/50" />
-                    </div>
-                    
-                    {/* Grid */}
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Class */}
-                      <div className="rounded-lg border border-white/10 bg-[#111] p-4">
-                        <div className="text-[10px] font-bold text-[var(--accent)] uppercase mb-2">Upcoming Class</div>
-                        <div className="text-sm font-bold text-white mb-1">Physical Chemistry II</div>
-                        <div className="text-xs text-gray-500 flex items-center gap-1"><Clock size={10}/> 10:00 AM • Rm 402</div>
-                      </div>
-                      {/* Task */}
-                      <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-4">
-                        <div className="text-[10px] font-bold text-red-400 uppercase mb-2">Pending Task</div>
-                        <div className="text-sm font-bold text-white mb-1">Lab Report Draft</div>
-                        <div className="text-xs text-gray-500 flex items-center gap-1">Due Tomorrow</div>
-                      </div>
-                    </div>
-                    
-                    {/* List */}
-                    <div className="rounded-lg border border-white/10 bg-[#111] flex-1 p-4">
-                      <div className="text-xs font-bold text-gray-400 uppercase mb-4">Recent Uploads</div>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded bg-blue-500/10 text-blue-400"><FileText size={14}/></div>
-                          <div className="h-4 w-40 rounded bg-white/10" />
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded bg-emerald-500/10 text-emerald-400"><FileText size={14}/></div>
-                          <div className="h-4 w-32 rounded bg-white/10" />
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded bg-amber-500/10 text-amber-400"><FileText size={14}/></div>
-                          <div className="h-4 w-48 rounded bg-white/10" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="relative mx-auto flex w-full max-w-4xl flex-col items-center text-center">
+            {/* 1. Private Academic Workspace badge */}
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 sm:text-[11px]">
+              <Lock size={12} className="text-[var(--accent)]" />
+              Private Academic Workspace
             </div>
-          </div>
-        </section>
 
-        {/* ─── Section 1: Academic Resources ────────────────────────────────────────── */}
-        <section id="features" className="border-b border-white/5 py-24 px-6">
-          <div className="mx-auto max-w-7xl">
-            <div className="mb-12 md:text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl font-bold text-white mb-4">A complete academic repository.</h2>
-              <p className="text-gray-400 text-lg">Stop searching through disjointed WhatsApp groups. Everything you need is structured and instantly searchable.</p>
-            </div>
-            
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 hover:bg-white/[0.02] transition-colors">
-                <BookOpen size={24} className="text-[var(--accent)] mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">Lecture Notes</h3>
-                <p className="text-gray-400 leading-relaxed">Crowdsourced, highly-rated notes organized by semester and subject. Never fall behind on theory.</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 hover:bg-white/[0.02] transition-colors">
-                <FlaskConical size={24} className="text-amber-400 mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">Lab Reports</h3>
-                <p className="text-gray-400 leading-relaxed">Access structural templates, data analysis scripts, and reference reports for complex experiments.</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 hover:bg-white/[0.02] transition-colors">
-                <CheckCircle2 size={24} className="text-emerald-400 mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">Assignments</h3>
-                <p className="text-gray-400 leading-relaxed">Keep track of assignment solutions and practice problem sets submitted by seniors.</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 hover:bg-white/[0.02] transition-colors">
-                <FileText size={24} className="text-blue-400 mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">References</h3>
-                <p className="text-gray-400 leading-relaxed">Standard textbooks, reaction mechanism charts, and spectral data tables available offline.</p>
-              </div>
-            </div>
-          </div>
-        </section>
+            {/* 2. Headline */}
+            <h1 className="mb-5 max-w-3xl text-[clamp(2.25rem,6vw,4.5rem)] font-black leading-[1.1] tracking-tight">
+              The academic operating system for{" "}
+              <span className="text-[var(--accent)]">IITM Chemistry.</span>
+            </h1>
 
-        {/* ─── Section 2: Past Paper Archive ────────────────────────────────────────── */}
-        <section className="border-b border-white/5 py-24 px-6 bg-gradient-to-b from-[#050505] to-[#0a0a0a]">
-          <div className="mx-auto max-w-7xl grid md:grid-cols-2 gap-16 items-center">
-            <div className="order-2 md:order-1 relative rounded-xl border border-white/10 bg-[#111] p-6 shadow-2xl">
-              <div className="flex gap-2 mb-4">
-                 <div className="h-6 w-20 rounded bg-white/10" />
-                 <div className="h-6 w-16 rounded bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[10px] text-[var(--accent)] font-bold flex items-center justify-center">End Sem</div>
-              </div>
-              <div className="space-y-3">
-                {[1,2,3].map(i => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-[#0a0a0a]">
-                    <div>
-                      <div className="text-sm font-bold text-white">Physical Chem {i}</div>
-                      <div className="text-xs text-gray-500">2024 • PDF</div>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-emerald-400">
-                      <Download size={12}/> 142
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="order-1 md:order-2">
-              <h2 className="text-3xl font-bold text-white mb-4">The ultimate Past Paper Archive.</h2>
-              <p className="text-gray-400 text-lg mb-6 leading-relaxed">
-                Stop begging seniors for last year's end-sem papers. Access a meticulously tagged, searchable database of Mid Sems, End Sems, and Quizzes.
+            {/* 3. Problem statement & 4. Supporting description */}
+            <div className="mb-8 max-w-2xl text-[clamp(0.95rem,2vw,1.125rem)] font-medium leading-relaxed text-gray-400">
+              <p className="mb-1 text-white">Stop searching through WhatsApp groups.</p>
+              <p>
+                A private workspace for verified IIT Madras BS Chemistry students.
+                Access notes, past papers, schedules, study circles, and academic resources in one trusted environment.
               </p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-3 text-sm font-bold text-gray-300"><CheckCircle2 size={16} className="text-[var(--accent)]"/> Sorted by Subject & Year</li>
-                <li className="flex items-center gap-3 text-sm font-bold text-gray-300"><CheckCircle2 size={16} className="text-[var(--accent)]"/> Download tracking for popular papers</li>
-                <li className="flex items-center gap-3 text-sm font-bold text-gray-300"><CheckCircle2 size={16} className="text-[var(--accent)]"/> Seamless contribution flow</li>
-              </ul>
+            </div>
+
+            {/* 5. Trust indicators */}
+            <div className="mb-10 flex w-full max-w-2xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[11px] font-bold text-gray-400 sm:text-xs">
+              <span className="flex items-center gap-1.5 whitespace-nowrap"><CheckCircle2 size={14} className="text-[var(--accent)]" /> Verified IITM Students Only</span>
+              <span className="flex items-center gap-1.5 whitespace-nowrap"><CheckCircle2 size={14} className="text-[var(--accent)]" /> Faculty Approved Resources</span>
+              <span className="flex items-center gap-1.5 whitespace-nowrap"><CheckCircle2 size={14} className="text-[var(--accent)]" /> Private Academic Community</span>
+            </div>
+
+            {/* 6. CTA */}
+            <div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
+              <Link href="/login" className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-8 py-3.5 text-sm font-bold text-black transition-all hover:bg-[#bce600] active:scale-[0.97] sm:w-auto">
+                Access Workspace
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </Link>
+              <a href="#why" className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.08] bg-transparent px-8 py-3.5 text-sm font-bold text-gray-300 transition-colors hover:bg-white/[0.04] hover:text-white sm:w-auto">
+                Learn More
+              </a>
             </div>
           </div>
         </section>
 
-        {/* ─── Section 3 & 4: Study Circles & Scheduling ────────────────────────────── */}
-        <section className="py-24 px-6 border-b border-white/5">
-          <div className="mx-auto max-w-7xl grid md:grid-cols-2 gap-6">
-            
-            <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 lg:p-12">
-              <Users size={32} className="text-purple-400 mb-6" />
-              <h2 className="text-2xl font-bold text-white mb-4">Study Circles</h2>
-              <p className="text-gray-400 mb-8">Join focused micro-communities based on your electives. Collaborate on lab reports, share real-time insights, and coordinate group projects via integrated rich-text chat channels.</p>
-              <Link href="/signup" className="text-sm font-bold text-white flex items-center gap-2 hover:text-purple-400 transition-colors">
-                Explore Communities <ChevronRight size={16} />
-              </Link>
+        {/* ─── Cohort Badges ────────────────────────────────────────────────────── */}
+        <section className="border-y border-white/[0.04] py-10 px-6">
+          <div className="mx-auto max-w-3xl">
+            <p className="mb-5 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Active Cohorts</p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {[
+                { label: "BS Chemistry 2024", icon: GraduationCap },
+                { label: "BS Chemistry 2025", icon: GraduationCap },
+                { label: "BS Chemistry 2026", icon: GraduationCap },
+                { label: "Faculty Contributors", icon: BadgeCheck },
+              ].map((c) => (
+                <div key={c.label} className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.02] px-4 py-2 text-xs font-bold text-gray-400">
+                  <c.icon size={13} className="text-[var(--accent)]" />
+                  {c.label}
+                </div>
+              ))}
             </div>
-            
-            <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 lg:p-12">
-              <CalendarClock size={32} className="text-orange-400 mb-6" />
-              <h2 className="text-2xl font-bold text-white mb-4">Schedule & Tasks</h2>
-              <p className="text-gray-400 mb-8">A highly dense, Kanban-style task manager deeply integrated with your weekly academic timetable. See your assignment deadlines right next to your lecture schedule.</p>
-              <Link href="/signup" className="text-sm font-bold text-white flex items-center gap-2 hover:text-orange-400 transition-colors">
-                View Planner <ChevronRight size={16} />
-              </Link>
-            </div>
-
           </div>
         </section>
 
-        {/* ─── Section 5: Testimonials ──────────────────────────────────────────────── */}
+        {/* ═══ SECTION 1: Why ChemSAGE Exists ═══════════════════════════════════ */}
+        <section id="why" className="py-24 px-6">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-16 max-w-2xl mx-auto text-center">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)]">The Problem</p>
+              <h2 className="text-3xl font-black tracking-tight text-white md:text-4xl">
+                Academic resources should not be buried in chats.
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Before */}
+              <div className="rounded-2xl border border-red-500/10 bg-red-500/[0.02] p-8">
+                <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.2em] text-red-400">Before ChemSAGE</p>
+                <ul className="space-y-4">
+                  {[
+                    "WhatsApp groups with 500+ unread messages",
+                    "PDFs lost in chat history",
+                    "Missing deadlines from scattered sources",
+                    "Notes shared once, never found again",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3 text-sm text-gray-400">
+                      <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-red-500/60" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* After */}
+              <div className="rounded-2xl border border-[var(--accent)]/10 bg-[var(--accent)]/[0.02] p-8">
+                <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--accent)]">With ChemSAGE</p>
+                <ul className="space-y-4">
+                  {[
+                    "Central repository with structured access",
+                    "Verified, version-tracked resources",
+                    "Searchable archive of every past paper",
+                    "Organized academic planning and deadlines",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3 text-sm text-gray-300">
+                      <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-[var(--accent)]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ SECTION 2: Membership ════════════════════════════════════════════ */}
+        <section className="py-24 px-6 border-y border-white/[0.04]">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-16 max-w-2xl mx-auto text-center">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)]">Membership</p>
+              <h2 className="text-3xl font-black tracking-tight text-white md:text-4xl mb-4">
+                Access is restricted.
+              </h2>
+              <p className="text-base text-gray-400 leading-relaxed">
+                Only verified IIT Madras BS Chemistry students and approved faculty can join ChemSAGE.
+                Every account is validated before access is granted.
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
+              {[
+                { title: "Verified Student", desc: "IITM roll number validated against official records", icon: ShieldCheck, color: "text-[var(--accent)]", border: "border-[var(--accent)]/15", bg: "bg-[var(--accent)]/[0.03]" },
+                { title: "Verified Faculty", desc: "Approved by admin with elevated contribution access", icon: BadgeCheck, color: "text-blue-400", border: "border-blue-400/15", bg: "bg-blue-400/[0.03]" },
+                { title: "Admin", desc: "Full platform governance and moderation capabilities", icon: Lock, color: "text-amber-400", border: "border-amber-400/15", bg: "bg-amber-400/[0.03]" },
+              ].map((role) => (
+                <div key={role.title} className={`rounded-2xl border ${role.border} ${role.bg} p-6 text-center`}>
+                  <div className={`mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl border ${role.border} ${role.color}`}>
+                    <role.icon size={20} />
+                  </div>
+                  <h3 className="mb-2 text-sm font-bold text-white">{role.title}</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">{role.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ SECTION 3: Everything In One Workspace ═══════════════════════════ */}
         <section className="py-24 px-6">
-          <div className="mx-auto max-w-7xl">
-            <h2 className="text-center text-2xl font-bold text-white mb-12">Trusted by the IITM Chemistry Cohort</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="rounded-xl border border-white/10 bg-[#0a0a0a] p-6">
-                <div className="flex items-center gap-1 text-[var(--accent)] mb-4">
-                  <Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/>
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-16 max-w-2xl mx-auto text-center">
+              <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)]">Workspace</p>
+              <h2 className="text-3xl font-black tracking-tight text-white md:text-4xl">
+                Everything in one workspace.
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5">
+              {[
+                { title: "Resource Vault", desc: "Community-maintained notes, assignments, lab reports, and references. Version-tracked with ownership and permissions.", icon: FolderOpen, color: "text-[var(--accent)]" },
+                { title: "Digital Library", desc: "Structured archive of quizzes, mid-sems, and end-sems. Searchable by subject, year, semester, and faculty.", icon: FileText, color: "text-blue-400" },
+                { title: "Study Circles", desc: "Collaborative spaces for course discussions, group preparation, and real-time academic chat.", icon: MessageSquare, color: "text-purple-400" },
+                { title: "Planner", desc: "Schedules, deadlines, and weekly academic planning. See your full week at a glance.", icon: CalendarClock, color: "text-amber-400" },
+              ].map((f) => (
+                <div key={f.title} className="group rounded-2xl border border-white/[0.06] bg-white/[0.015] p-7 transition-colors hover:bg-white/[0.03] hover:border-white/[0.1]">
+                  <f.icon size={22} className={`${f.color} mb-5`} />
+                  <h3 className="mb-2 text-lg font-bold text-white">{f.title}</h3>
+                  <p className="text-sm text-gray-400 leading-relaxed">{f.desc}</p>
                 </div>
-                <p className="text-sm text-gray-300 leading-relaxed mb-6">"The past paper archive saved my End Sems. The fact that I don't have to scroll through WhatsApp groups to find notes is a game changer."</p>
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-blue-500/20 border border-blue-500/50" />
-                  <div className="text-xs">
-                    <div className="font-bold text-white">Rahul K.</div>
-                    <div className="text-gray-500">Batch 2026</div>
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-xl border border-white/10 bg-[#0a0a0a] p-6">
-                <div className="flex items-center gap-1 text-[var(--accent)] mb-4">
-                  <Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/>
-                </div>
-                <p className="text-sm text-gray-300 leading-relaxed mb-6">"The Task Board is amazing. I have all my lab deadlines tracked right next to my class schedule. Linear-level quality."</p>
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-purple-500/20 border border-purple-500/50" />
-                  <div className="text-xs">
-                    <div className="font-bold text-white">Sneha P.</div>
-                    <div className="text-gray-500">Batch 2025</div>
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-xl border border-white/10 bg-[#0a0a0a] p-6">
-                <div className="flex items-center gap-1 text-[var(--accent)] mb-4">
-                  <Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/>
-                </div>
-                <p className="text-sm text-gray-300 leading-relaxed mb-6">"Study Circles completely replaced Discord for our cohort. The UI is incredibly clean and fast."</p>
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-orange-500/20 border border-orange-500/50" />
-                  <div className="text-xs">
-                    <div className="font-bold text-white">Vikram S.</div>
-                    <div className="text-gray-500">Batch 2025</div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="border-t border-white/5 py-12 px-6">
-          <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-gray-500 font-medium">
-              <FlaskConical size={16} /> ChemSAGE © {new Date().getFullYear()}
+        {/* ═══ SECTION 4: Built For The Cohort ══════════════════════════════════ */}
+        <section className="py-24 px-6 border-y border-white/[0.04]">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)]">Community</p>
+            <h2 className="text-3xl font-black tracking-tight text-white md:text-4xl mb-5">
+              Created by students. Used by students.
+            </h2>
+            <p className="mx-auto mb-10 max-w-lg text-base text-gray-400 leading-relaxed">
+              ChemSAGE was built specifically for the IITM BS Chemistry community to solve real academic workflow problems.
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-3 text-[12px] font-bold text-gray-500">
+              {[
+                "No generic LMS",
+                "No advertisements",
+                "No public users",
+                "Only the chemistry community",
+              ].map((item, i) => (
+                <span key={item} className="flex items-center gap-2">
+                  {i > 0 && <span className="hidden sm:block text-white/10">·</span>}
+                  {item}
+                </span>
+              ))}
             </div>
-            <div className="flex items-center gap-6 text-sm text-gray-500">
-              <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
-              <Link href="/signup" className="hover:text-white transition-colors">Sign Up</Link>
+          </div>
+        </section>
+
+        {/* ═══ SECTION 5: Final CTA ═════════════════════════════════════════════ */}
+        <section className="py-28 px-6">
+          <div className="relative mx-auto max-w-3xl text-center">
+            {/* Subtle glow */}
+            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[500px] rounded-full bg-[var(--accent)]/[0.04] blur-[100px]" />
+
+            <div className="relative">
+              <h2 className="mb-4 text-3xl font-black tracking-tight text-white md:text-4xl">
+                Join the IITM Chemistry workspace.
+              </h2>
+              <p className="mx-auto mb-10 max-w-md text-base text-gray-400 leading-relaxed">
+                Access verified resources, collaborate with peers, and stay organized throughout your degree.
+              </p>
+              <Link href="/login" className="group inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-8 py-4 text-sm font-bold text-black transition-all hover:bg-[#bce600] active:scale-[0.97]">
+                Access Workspace
+                <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Footer ───────────────────────────────────────────────────────────── */}
+        <footer className="border-t border-white/[0.04] py-10 px-6">
+          <div className="mx-auto max-w-5xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2.5 text-gray-500">
+              <FlaskConical size={14} />
+              <span className="text-xs font-bold">ChemSAGE</span>
+              <span className="text-xs text-gray-600">·</span>
+              <span className="text-xs text-gray-600">Private Academic Platform</span>
+            </div>
+            <div className="flex items-center gap-6 text-[11px] font-bold text-gray-600">
+              <span>IIT Madras BS Chemistry Community</span>
+              <span className="flex items-center gap-1.5 text-gray-500">
+                <Lock size={10} /> Verified Access Only
+              </span>
             </div>
           </div>
         </footer>
-        
+
       </main>
     </div>
   );

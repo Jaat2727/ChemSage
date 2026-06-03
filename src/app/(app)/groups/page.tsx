@@ -89,7 +89,7 @@ export default function SynergyGroupsPage() {
   const inputClasses = "w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-white placeholder:text-[var(--muted)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]";
 
   return (
-    <div className="pb-12">
+    <div>
       <PageHeader
         title="Study Circles"
         description="Discover topics, connect with peers, and collaborate in dedicated community spaces."
@@ -206,7 +206,8 @@ export default function SynergyGroupsPage() {
                 } else {
                   const inserted = Array.isArray(data) ? (data[0] as Room | undefined) : undefined;
                   if (inserted) {
-                    setPublicRooms((current) => [inserted, ...current]);
+                    const parsedRoom = { ...inserted, memberCount: 1, category: inserted.location || "General" };
+                    setPublicRooms((current) => [parsedRoom, ...current]);
                     setJoined((current) => new Set([...current, inserted.id]));
                     await supabase.from("room_members").insert({ room_id: inserted.id, user_id: profile.id });
                   }

@@ -118,7 +118,7 @@ export default function TaskTerminalPage() {
   const completedTasks = filteredTasks.filter(t => t.status === "Completed");
 
   return (
-    <div className="pb-20">
+    <div>
       <PageHeader title="Task Board" description="A fast personal Kanban board stored locally per signed-in profile." profile={profile} />
 
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">

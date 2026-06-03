@@ -13,7 +13,7 @@ export function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-6 flex animate-slide-up flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div className="mb-8 flex animate-slide-up flex-col gap-3 md:flex-row md:items-end md:justify-between">
       <div>
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">Workspace</p>
         <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">{title}</h1>

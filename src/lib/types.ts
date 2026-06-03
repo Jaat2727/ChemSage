@@ -76,6 +76,14 @@ export interface ResourceItem {
   room_id?: string | null;
   tags?: string[];
   download_count?: number;
+  updated_at?: string;
+  version?: string;
+  status?: "active" | "deleted";
+  folder_id?: string | null;
+  subject?: string;
+  semester?: string;
+  course_code?: string;
+  description?: string;
 }
 
 export interface ExamPaper {
@@ -89,6 +97,12 @@ export interface ExamPaper {
   uploaded_by: string;
   created_at: string;
   download_count?: number;
+  updated_at?: string;
+  version?: string;
+  status?: "active" | "deleted";
+  course_code?: string;
+  faculty?: string;
+  folder_id?: string | null;
 }
 
 export interface ScheduleEntry {
@@ -104,4 +118,45 @@ export interface ScheduleEntry {
 
 export interface ChatMessage extends MessageRow {
   sender?: Pick<Profile, "id" | "name" | "roll_no" | "programme" | "batch_year">;
+}
+
+// ─── Knowledge Management Types ──────────────────────────────────────────
+
+export interface Folder {
+  id: string;
+  name: string;
+  parent_id: string | null;
+  created_by: string;
+  created_at: string;
+  type: "general" | "past_papers";
+}
+
+export interface ResourceVersion {
+  id: string;
+  resource_id?: string;
+  paper_id?: string;
+  version: string;
+  file_url: string;
+  file_size?: number;
+  changed_by: string;
+  change_note?: string;
+  created_at: string;
+}
+
+export interface Comment {
+  id: string;
+  resource_id?: string;
+  paper_id?: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  user?: Pick<Profile, "id" | "name" | "roll_no">;
+}
+
+export interface StarRecord {
+  id: string;
+  user_id: string;
+  resource_id?: string;
+  paper_id?: string;
+  created_at: string;
 }
