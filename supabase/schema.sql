@@ -182,6 +182,9 @@ for insert with check (
   ))
 );
 
+create policy "messages delete own or admin" on public.messages
+for delete using (sender_id = auth.uid() or public.is_admin());
+
 create policy "resources active read" on public.resources
 for select using (public.is_active_user());
 
