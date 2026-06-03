@@ -30,13 +30,13 @@ export default function LandingPage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 px-6 md:px-12 lg:px-16 pb-20 pt-10 md:pt-16 lg:pt-24 flex items-center">
+        <main className="flex-1 px-6 md:px-12 lg:px-16 py-4 flex items-center">
           <div className="mx-auto w-full max-w-7xl">
-            <div className="grid gap-16 lg:grid-cols-2 lg:gap-12 items-center">
+            <div className="grid gap-10 lg:grid-cols-2 lg:gap-8 items-center">
               
               {/* Left Column: Hero Text */}
               <div className="flex flex-col max-w-2xl animate-fade-in order-2 lg:order-1">
-                <div className="mb-6 lg:mb-8 self-start inline-flex items-center gap-2 rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-4 py-1.5 md:px-5 md:py-2 text-xs md:text-sm font-semibold uppercase tracking-wider text-[var(--accent)] backdrop-blur-md">
+                <div className="mb-4 lg:mb-6 self-start inline-flex items-center gap-2 rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-4 py-1.5 text-xs md:text-sm font-semibold uppercase tracking-wider text-[var(--accent)] backdrop-blur-md">
                   <span className="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent)] opacity-75"></span>
                     <span className="relative inline-flex h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-[var(--accent)]"></span>
@@ -44,26 +44,26 @@ export default function LandingPage() {
                   Portal v1.0 Live
                 </div>
                 
-                <h1 className="mb-6 lg:mb-8 text-5xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl">
+                <h1 className="mb-4 lg:mb-6 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
                   The ultimate <br />
                   <span className="bg-gradient-to-r from-[var(--accent)] to-emerald-400 bg-clip-text text-transparent">chemistry</span> workspace.
                 </h1>
                 
-                <p className="mb-8 lg:mb-10 max-w-xl text-lg text-[var(--muted)] sm:text-xl leading-relaxed">
+                <p className="mb-6 max-w-xl text-base text-[var(--muted)] sm:text-lg leading-relaxed">
                   Everything you need for chemistry coursework, collaboration, and planning—all in one unified student portal. Log in to access your vault, classes, and peers.
                 </p>
                 
-                <div className="flex flex-col gap-4 sm:flex-row w-full sm:w-auto">
-                  <Link href="/login" className="group flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 py-4 sm:px-8 sm:py-4.5 text-base sm:text-lg font-bold text-black transition-all hover:bg-[#bce600] hover:shadow-lg hover:shadow-[var(--accent)]/20 w-full sm:w-auto">
+                <div className="flex flex-col gap-3 sm:flex-row w-full sm:w-auto">
+                  <Link href="/login" className="group flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 py-3.5 sm:px-8 sm:py-4 text-base font-bold text-black transition-all hover:bg-[#bce600] hover:shadow-lg hover:shadow-[var(--accent)]/20 w-full sm:w-auto">
                     Enter Portal
-                    <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                    <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                   </Link>
-                  <Link href="/signup" className="flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)]/50 backdrop-blur-sm px-6 py-4 sm:px-8 sm:py-4.5 text-base sm:text-lg font-semibold text-white transition-all hover:bg-[var(--surface-soft)] w-full sm:w-auto">
+                  <Link href="/signup" className="flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)]/50 backdrop-blur-sm px-6 py-3.5 sm:px-8 sm:py-4 text-base font-semibold text-white transition-all hover:bg-[var(--surface-soft)] w-full sm:w-auto">
                     Create Account
                   </Link>
                 </div>
                 
-                <div className="mt-8 flex items-center gap-3 text-sm font-medium text-[var(--muted)]">
+                <div className="mt-6 flex items-center gap-3 text-sm font-medium text-[var(--muted)]">
                   <ShieldCheck size={18} className="text-emerald-400" />
                   Secure access for registered students only.
                 </div>
@@ -71,59 +71,59 @@ export default function LandingPage() {
 
               {/* Right Column: Feature Tiles */}
               <div className="relative mx-auto w-full max-w-md sm:max-w-xl lg:max-w-none animate-slide-up order-1 lg:order-2" style={{ animationDelay: '150ms' }}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   
                   {/* Tile 1 */}
-                  <div className="sm:translate-y-12 group relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[var(--surface)]/80 to-[var(--background)]/80 backdrop-blur-md p-6 sm:p-8 shadow-2xl transition-all duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-2 hover:shadow-[var(--accent)]/10 flex flex-col justify-between h-[220px] sm:h-[260px]">
-                    <div className="mb-4 inline-flex rounded-2xl bg-blue-500/10 p-3.5 sm:p-4 text-blue-400 w-fit">
-                      <BookOpen size={28} />
+                  <div className="sm:translate-y-8 group relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[var(--surface)]/80 to-[var(--background)]/80 backdrop-blur-md p-5 sm:p-6 shadow-2xl transition-all duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-2 hover:shadow-[var(--accent)]/10 flex flex-col justify-between h-[180px] sm:h-[210px]">
+                    <div className="mb-3 inline-flex rounded-2xl bg-blue-500/10 p-3 sm:p-3.5 text-blue-400 w-fit">
+                      <BookOpen size={24} />
                     </div>
                     <div>
-                      <h3 className="mb-2 text-xl sm:text-2xl font-bold text-white">Resource Vault</h3>
-                      <p className="text-sm sm:text-base text-[var(--muted)] leading-relaxed">Access curated notes, lab references, and past papers.</p>
+                      <h3 className="mb-1.5 text-lg sm:text-xl font-bold text-white">Resource Vault</h3>
+                      <p className="text-sm text-[var(--muted)] leading-relaxed">Access curated notes, lab references, and past papers.</p>
                     </div>
                     <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-blue-500/10 blur-[50px] transition-all group-hover:bg-blue-500/20" />
                   </div>
                   
                   {/* Tile 2 */}
-                  <div className="group relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[var(--surface)]/80 to-[var(--background)]/80 backdrop-blur-md p-6 sm:p-8 shadow-2xl transition-all duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-2 hover:shadow-[var(--accent)]/10 flex flex-col justify-between h-[220px] sm:h-[260px]">
-                    <div className="mb-4 inline-flex rounded-2xl bg-[var(--accent)]/10 p-3.5 sm:p-4 text-[var(--accent)] w-fit">
-                      <MessageSquare size={28} />
+                  <div className="group relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[var(--surface)]/80 to-[var(--background)]/80 backdrop-blur-md p-5 sm:p-6 shadow-2xl transition-all duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-2 hover:shadow-[var(--accent)]/10 flex flex-col justify-between h-[180px] sm:h-[210px]">
+                    <div className="mb-3 inline-flex rounded-2xl bg-[var(--accent)]/10 p-3 sm:p-3.5 text-[var(--accent)] w-fit">
+                      <MessageSquare size={24} />
                     </div>
                     <div>
-                      <h3 className="mb-2 text-xl sm:text-2xl font-bold text-white">Community Hub</h3>
-                      <p className="text-sm sm:text-base text-[var(--muted)] leading-relaxed">Connect with peers in global and direct chats.</p>
+                      <h3 className="mb-1.5 text-lg sm:text-xl font-bold text-white">Community Hub</h3>
+                      <p className="text-sm text-[var(--muted)] leading-relaxed">Connect with peers in global and direct chats.</p>
                     </div>
                     <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[var(--accent)]/10 blur-[50px] transition-all group-hover:bg-[var(--accent)]/20" />
                   </div>
 
                   {/* Tile 3 */}
-                  <div className="sm:translate-y-12 group relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[var(--surface)]/80 to-[var(--background)]/80 backdrop-blur-md p-6 sm:p-8 shadow-2xl transition-all duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-2 hover:shadow-[var(--accent)]/10 flex flex-col justify-between h-[220px] sm:h-[260px]">
-                    <div className="mb-4 inline-flex rounded-2xl bg-purple-500/10 p-3.5 sm:p-4 text-purple-400 w-fit">
-                      <Users size={28} />
+                  <div className="sm:translate-y-8 group relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[var(--surface)]/80 to-[var(--background)]/80 backdrop-blur-md p-5 sm:p-6 shadow-2xl transition-all duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-2 hover:shadow-[var(--accent)]/10 flex flex-col justify-between h-[180px] sm:h-[210px]">
+                    <div className="mb-3 inline-flex rounded-2xl bg-purple-500/10 p-3 sm:p-3.5 text-purple-400 w-fit">
+                      <Users size={24} />
                     </div>
                     <div>
-                      <h3 className="mb-2 text-xl sm:text-2xl font-bold text-white">Study Circles</h3>
-                      <p className="text-sm sm:text-base text-[var(--muted)] leading-relaxed">Join focused groups for assignments and exam prep.</p>
+                      <h3 className="mb-1.5 text-lg sm:text-xl font-bold text-white">Study Circles</h3>
+                      <p className="text-sm text-[var(--muted)] leading-relaxed">Join focused groups for assignments and exam prep.</p>
                     </div>
                     <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-purple-500/10 blur-[50px] transition-all group-hover:bg-purple-500/20" />
                   </div>
                   
                   {/* Tile 4 */}
-                  <div className="group relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[var(--surface)]/80 to-[var(--background)]/80 backdrop-blur-md p-6 sm:p-8 shadow-2xl transition-all duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-2 hover:shadow-[var(--accent)]/10 flex flex-col justify-between h-[220px] sm:h-[260px]">
-                    <div className="mb-4 inline-flex rounded-2xl bg-orange-500/10 p-3.5 sm:p-4 text-orange-400 w-fit">
-                      <Zap size={28} />
+                  <div className="group relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-gradient-to-b from-[var(--surface)]/80 to-[var(--background)]/80 backdrop-blur-md p-5 sm:p-6 shadow-2xl transition-all duration-300 hover:border-[var(--accent)]/50 hover:-translate-y-2 hover:shadow-[var(--accent)]/10 flex flex-col justify-between h-[180px] sm:h-[210px]">
+                    <div className="mb-3 inline-flex rounded-2xl bg-orange-500/10 p-3 sm:p-3.5 text-orange-400 w-fit">
+                      <Zap size={24} />
                     </div>
                     <div>
-                      <h3 className="mb-2 text-xl sm:text-2xl font-bold text-white">Task Board</h3>
-                      <p className="text-sm sm:text-base text-[var(--muted)] leading-relaxed">Stay on top of deadlines and lab submissions.</p>
+                      <h3 className="mb-1.5 text-lg sm:text-xl font-bold text-white">Task Board</h3>
+                      <p className="text-sm text-[var(--muted)] leading-relaxed">Stay on top of deadlines and lab submissions.</p>
                     </div>
                     <div className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-orange-500/10 blur-[50px] transition-all group-hover:bg-orange-500/20" />
                   </div>
                 </div>
                 
                 {/* Center decorative element behind tiles */}
-                <div className="absolute left-1/2 top-1/2 -z-10 h-full w-full max-w-[300px] max-h-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent)]/5 blur-[80px]" />
+                <div className="absolute left-1/2 top-1/2 -z-10 h-full w-full max-w-[250px] max-h-[250px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent)]/5 blur-[80px]" />
               </div>
             </div>
           </div>
