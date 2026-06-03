@@ -160,3 +160,14 @@ export interface StarRecord {
   paper_id?: string;
   created_at: string;
 }
+
+export interface AdminAuditLog {
+  id: string;
+  admin_id: string;
+  action_type: string;
+  target_id?: string;
+  target_type: string;
+  details?: any;
+  created_at: string;
+  admin?: Pick<Profile, "id" | "name" | "roll_no">;
+}
