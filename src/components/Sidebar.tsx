@@ -70,7 +70,7 @@ export function Sidebar() {
         <button
           onClick={async () => {
             await signOut();
-            router.push("/login");
+            router.push("/");
           }}
           className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--surface-soft)]"
         >

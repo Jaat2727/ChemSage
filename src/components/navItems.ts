@@ -1,4 +1,5 @@
 import {
+  LayoutDashboard,
   Folder,
   FileText,
   Calendar,
@@ -8,6 +9,7 @@ import {
 } from "lucide-react";
 
 export const navItems = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Resource Vault", href: "/vault", icon: Folder },
   { name: "Past Papers", href: "/archive", icon: FileText },
   { name: "Class Planner", href: "/schedule", icon: Calendar },

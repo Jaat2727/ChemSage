@@ -96,7 +96,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.replace(searchParams.get("next") || "/vault");
+    router.replace(searchParams.get("next") || "/dashboard");
   };
 
   return (

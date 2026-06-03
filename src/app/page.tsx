@@ -1,203 +1,306 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, FlaskConical, Users, MessageSquare, Zap, ShieldCheck, Star, Sparkles, TrendingUp, ChevronRight } from "lucide-react";
+import { ArrowRight, BookOpen, FlaskConical, Users, MessageSquare, CalendarClock, ShieldCheck, CheckCircle2, ChevronRight, Download, Clock, Star, FileText } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white selection:bg-[var(--accent)] selection:text-black overflow-hidden font-sans">
-      {/* Deep Space Background Decor */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" style={{ opacity: 0.03 }}></div>
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[var(--accent)]/5 rounded-full blur-[150px] opacity-70 transform translate-x-1/3 -translate-y-1/3" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] opacity-60 transform -translate-x-1/4 translate-y-1/4" />
-      </div>
-
-      <div className="relative z-10 flex flex-col">
-        {/* Navigation */}
-        <header className="w-full flex items-center justify-between px-6 py-6 md:px-10 lg:px-16">
+    <div className="relative min-h-screen bg-[#050505] text-white selection:bg-[var(--accent)] selection:text-black font-sans">
+      
+      {/* Navigation */}
+      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-[#050505]/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--accent)] shadow-xl shadow-[var(--accent)]/10">
-              <FlaskConical size={22} strokeWidth={2.5} />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface)] border border-white/10 text-[var(--accent)]">
+              <FlaskConical size={18} strokeWidth={2.5} />
             </div>
-            <span className="text-xl md:text-2xl font-bold tracking-tight">ChemSAGE</span>
+            <span className="text-lg font-bold tracking-tight">ChemSAGE</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="rounded-xl bg-white/10 border border-white/10 px-5 py-2.5 text-sm md:text-base font-semibold text-white transition-all hover:bg-white/20">
+            <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
               Sign In
             </Link>
-            <Link href="/signup" className="hidden sm:flex rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm md:text-base font-bold text-black transition-all hover:scale-105 shadow-lg">
-              Get Started
+            <Link href="/signup" className="rounded-md bg-white px-4 py-2 text-sm font-bold text-black transition-transform hover:scale-105 active:scale-95">
+              Open Workspace
             </Link>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Main Content */}
-        <main className="w-full px-6 md:px-10 lg:px-16 pt-8 md:pt-12 pb-24 relative">
-          
-          {/* Floating decorative elements to fill empty void */}
-          <div className="hidden lg:block absolute top-10 left-1/2 -translate-x-12 animate-pulse pointer-events-none opacity-60">
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex items-center gap-4 shadow-2xl">
-               <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                 <FlaskConical size={20} className="text-emerald-400" />
-               </div>
-               <div>
-                 <p className="text-xs text-gray-300 font-medium">New Lab Added</p>
-                 <p className="text-sm font-bold text-white">Organic Synthesis Lab</p>
-               </div>
-            </div>
-          </div>
-          
-          <div className="hidden lg:block absolute top-32 right-1/2 translate-x-20 animate-pulse pointer-events-none opacity-60" style={{ animationDelay: '2s' }}>
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center gap-3 shadow-2xl">
-               <div className="flex -space-x-2">
-                 <div className="h-8 w-8 rounded-full bg-blue-500 border-2 border-[#050505]"></div>
-                 <div className="h-8 w-8 rounded-full bg-purple-500 border-2 border-[#050505]"></div>
-                 <div className="h-8 w-8 rounded-full bg-orange-500 border-2 border-[#050505]"></div>
-               </div>
-               <p className="text-xs font-bold text-white pr-2">12 online</p>
-            </div>
-          </div>
-
-          <div className="mx-auto max-w-7xl mt-8">
-            <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16 items-center">
+      <main className="flex flex-col">
+        
+        {/* ─── Hero Section ──────────────────────────────────────────────────────── */}
+        <section className="relative overflow-hidden border-b border-white/5 px-6 pt-24 pb-32">
+          <div className="mx-auto max-w-7xl">
+            <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
               
-              {/* Left Column: Hero Text */}
-              <div className="flex flex-col max-w-2xl animate-fade-in z-10">
-                <div className="mb-6 self-start inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-wide text-white backdrop-blur-md">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent)] opacity-75"></span>
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--accent)]"></span>
-                  </span>
-                  ChemSAGE Portal v1.0
+              {/* Left: Copy */}
+              <div className="flex flex-col z-10 max-w-2xl">
+                <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-300">
+                  <ShieldCheck size={14} className="text-[var(--accent)]" />
+                  Built for IITM BS Chemistry
                 </div>
                 
-                <h1 className="mb-6 text-[2.75rem] font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-                  The central hub for <br />
-                  <span className="text-[var(--accent)] drop-shadow-[0_0_20px_rgba(188,230,0,0.3)]">IITM Chemistry</span> students.
+                <h1 className="mb-6 text-5xl font-black leading-[1.1] tracking-tight md:text-6xl lg:text-7xl">
+                  The operating system for <span className="text-[var(--accent)]">IITM Chemistry</span> students.
                 </h1>
                 
-                <p className="mb-8 max-w-xl text-lg text-gray-200 sm:text-xl leading-relaxed font-light">
-                  Manage coursework, lab submissions, notes, and study groups in one place. Your entire academic life, streamlined.
+                <p className="mb-10 max-w-xl text-lg font-medium text-gray-400 md:text-xl leading-relaxed">
+                  Access notes, past papers, schedules, lab resources, deadlines, and study groups from one unified workspace.
                 </p>
                 
-                <div className="flex flex-col gap-4 sm:flex-row w-full sm:w-auto mb-10">
-                  <Link href="/signup" className="group flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-8 py-4 text-lg font-bold text-black transition-all hover:bg-[#bce600] hover:shadow-[0_0_30px_rgba(188,230,0,0.25)] hover:-translate-y-0.5 w-full sm:w-auto">
-                    Start Learning
-                    <ArrowRight size={20} className="transition-transform group-hover:translate-x-1.5" />
+                <div className="flex flex-col sm:flex-row gap-4 mb-12">
+                  <Link href="/signup" className="group flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-8 py-4 text-sm font-bold text-black transition-colors hover:bg-[#bce600]">
+                    Open Workspace
+                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                   </Link>
+                  <a href="#features" className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-transparent px-8 py-4 text-sm font-bold text-white transition-colors hover:bg-white/5">
+                    Explore Features
+                  </a>
                 </div>
-                
-                {/* Social Proof */}
-                <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row sm:items-center gap-6">
-                  <div className="flex -space-x-3">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="h-10 w-10 rounded-full border-2 border-[#050505] bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-xs font-bold shadow-sm">
-                        {String.fromCharCode(64 + i)}
-                      </div>
-                    ))}
-                    <div className="h-10 w-10 rounded-full border-2 border-[#050505] bg-white/10 flex items-center justify-center text-xs font-bold backdrop-blur-md">
-                      +
-                    </div>
+
+                {/* Trust Indicators */}
+                <div className="flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-white/10 pt-8">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-2xl font-bold text-white">800+</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Notes</span>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-1 mb-1 text-[var(--accent)]">
-                      <Star size={14} fill="currentColor" />
-                      <Star size={14} fill="currentColor" />
-                      <Star size={14} fill="currentColor" />
-                      <Star size={14} fill="currentColor" />
-                      <Star size={14} fill="currentColor" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-300">
-                      Trusted by <span className="text-white font-bold">450+</span> IITM Chemistry students
-                    </p>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-2xl font-bold text-white">250+</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Past Papers</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-2xl font-bold text-white">40+</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Study Groups</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-2xl font-bold text-[var(--accent)]">450+</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Active Students</span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Clickable Bento Box Tiles */}
-              <div className="relative mx-auto w-full animate-slide-up z-10" style={{ animationDelay: '100ms' }}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 auto-rows-[180px]">
-                  
-                  {/* Feature 1: Large Bento (Spans 2 rows) */}
-                  <Link href="/signup" className="sm:row-span-2 group relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] p-6 sm:p-8 shadow-2xl transition-all hover:border-[var(--accent)]/50 hover:bg-white/[0.06] hover:-translate-y-1 flex flex-col justify-between backdrop-blur-sm cursor-pointer">
-                    <div className="flex justify-between items-start w-full z-10">
-                      <div className="inline-flex rounded-2xl bg-[var(--accent)]/15 p-4 text-[var(--accent)] w-fit backdrop-blur-md shadow-[0_0_20px_rgba(188,230,0,0.2)]">
-                        <BookOpen size={32} />
-                      </div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)]/10 px-3 py-1 text-xs font-bold text-[var(--accent)] border border-[var(--accent)]/20">
-                        <Star size={12} fill="currentColor" /> Most Popular
-                      </div>
+              {/* Right: Dashboard Mockup */}
+              <div className="relative z-10 w-full rounded-xl border border-white/10 bg-[#0a0a0a] shadow-2xl overflow-hidden lg:scale-105 transform origin-left">
+                {/* Window Header */}
+                <div className="flex items-center gap-2 border-b border-white/10 bg-[#111] px-4 py-3">
+                  <div className="h-3 w-3 rounded-full bg-red-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-amber-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-emerald-500/80" />
+                </div>
+                {/* Mockup Body */}
+                <div className="flex h-[400px]">
+                  {/* Sidebar */}
+                  <div className="w-16 border-r border-white/10 bg-[#0a0a0a] flex flex-col items-center py-4 gap-6 text-gray-600">
+                     <FlaskConical size={20} className="text-[var(--accent)]" />
+                     <BookOpen size={20} />
+                     <Users size={20} />
+                     <CalendarClock size={20} />
+                     <MessageSquare size={20} />
+                  </div>
+                  {/* Main View */}
+                  <div className="flex-1 p-6 bg-[#050505] overflow-hidden flex flex-col gap-6">
+                    {/* Header */}
+                    <div className="flex justify-between items-center">
+                      <div className="h-6 w-32 rounded bg-white/10" />
+                      <div className="h-8 w-8 rounded-full bg-blue-500/20 border border-blue-500/50" />
                     </div>
-                    <div className="z-10 mt-8">
-                      <h3 className="mb-3 text-2xl font-bold text-white tracking-tight flex items-center gap-2 group-hover:text-[var(--accent)] transition-colors">
-                        Access 800+ Notes <ChevronRight size={20} className="opacity-0 -ml-4 transition-all group-hover:opacity-100 group-hover:ml-0" />
-                      </h3>
-                      <p className="text-gray-300 leading-relaxed font-light text-sm">
-                        Curated lecture notes, 250+ past papers, and 50+ lab resources at your fingertips.
-                      </p>
-                    </div>
-                    <div className="absolute -right-20 -bottom-20 h-64 w-64 rounded-full bg-[var(--accent)]/20 blur-[80px] transition-opacity group-hover:opacity-100 opacity-50" />
-                  </Link>
-                  
-                  {/* Feature 2: Wide Bento */}
-                  <Link href="/signup" className="group relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] p-6 shadow-xl transition-all hover:border-purple-500/50 hover:bg-white/[0.06] hover:-translate-y-1 flex flex-col justify-between backdrop-blur-sm cursor-pointer">
-                    <div className="flex justify-between items-start z-10">
-                      <div className="inline-flex rounded-xl bg-purple-500/15 p-3.5 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
-                        <Users size={24} />
+                    
+                    {/* Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Class */}
+                      <div className="rounded-lg border border-white/10 bg-[#111] p-4">
+                        <div className="text-[10px] font-bold text-[var(--accent)] uppercase mb-2">Upcoming Class</div>
+                        <div className="text-sm font-bold text-white mb-1">Physical Chemistry II</div>
+                        <div className="text-xs text-gray-500 flex items-center gap-1"><Clock size={10}/> 10:00 AM • Rm 402</div>
                       </div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-400 border border-purple-500/20">
-                        <TrendingUp size={12} /> Active
-                      </div>
-                    </div>
-                    <div className="z-10">
-                      <h3 className="mb-1 text-lg font-bold text-white tracking-tight flex items-center gap-1 group-hover:text-purple-400 transition-colors">
-                        Join 40+ Study Circles <ChevronRight size={16} className="opacity-0 -ml-2 transition-all group-hover:opacity-100 group-hover:ml-0" />
-                      </h3>
-                      <p className="text-sm text-gray-300 font-light">Collaborate on assignments and exam prep.</p>
-                    </div>
-                    <div className="absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-purple-500/20 blur-[50px] opacity-0 transition-opacity group-hover:opacity-100" />
-                  </Link>
-
-                  {/* Feature 3 */}
-                  <Link href="/signup" className="group relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] p-6 shadow-xl transition-all hover:border-blue-500/50 hover:bg-white/[0.06] hover:-translate-y-1 flex flex-col justify-between backdrop-blur-sm cursor-pointer">
-                    <div className="flex justify-between items-start z-10">
-                      <div className="inline-flex rounded-xl bg-blue-500/15 p-3.5 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                        <MessageSquare size={24} />
-                      </div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-400 border border-blue-500/20">
-                        <Sparkles size={12} /> Live
+                      {/* Task */}
+                      <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-4">
+                        <div className="text-[10px] font-bold text-red-400 uppercase mb-2">Pending Task</div>
+                        <div className="text-sm font-bold text-white mb-1">Lab Report Draft</div>
+                        <div className="text-xs text-gray-500 flex items-center gap-1">Due Tomorrow</div>
                       </div>
                     </div>
-                    <div className="z-10">
-                      <h3 className="mb-1 text-lg font-bold text-white tracking-tight flex items-center gap-1 group-hover:text-blue-400 transition-colors">
-                        Connect Globally <ChevronRight size={16} className="opacity-0 -ml-2 transition-all group-hover:opacity-100 group-hover:ml-0" />
-                      </h3>
-                      <p className="text-sm text-gray-300 font-light">Real-time chat with chemistry peers.</p>
-                    </div>
-                    <div className="absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-blue-500/20 blur-[50px] opacity-0 transition-opacity group-hover:opacity-100" />
-                  </Link>
-
-                  {/* Feature 4: Wide Bento */}
-                  <Link href="/signup" className="sm:col-span-2 group relative overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-r from-orange-500/5 to-white/[0.03] p-6 shadow-xl transition-all hover:border-orange-500/50 hover:bg-white/[0.06] hover:-translate-y-1 flex items-center justify-between backdrop-blur-sm cursor-pointer">
-                    <div className="z-10 flex-1 pr-4">
-                      <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/10 px-3 py-1 text-xs font-bold text-orange-400 border border-orange-500/20 mb-3">
-                        Required
+                    
+                    {/* List */}
+                    <div className="rounded-lg border border-white/10 bg-[#111] flex-1 p-4">
+                      <div className="text-xs font-bold text-gray-400 uppercase mb-4">Recent Uploads</div>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded bg-blue-500/10 text-blue-400"><FileText size={14}/></div>
+                          <div className="h-4 w-40 rounded bg-white/10" />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded bg-emerald-500/10 text-emerald-400"><FileText size={14}/></div>
+                          <div className="h-4 w-32 rounded bg-white/10" />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded bg-amber-500/10 text-amber-400"><FileText size={14}/></div>
+                          <div className="h-4 w-48 rounded bg-white/10" />
+                        </div>
                       </div>
-                      <h3 className="mb-2 text-xl font-bold text-white tracking-tight flex items-center gap-2 group-hover:text-orange-400 transition-colors">
-                        Track Deadlines & Labs <ChevronRight size={20} className="opacity-0 -ml-4 transition-all group-hover:opacity-100 group-hover:ml-0" />
-                      </h3>
-                      <p className="text-sm text-gray-300 font-light">Never miss a submission. 100% sync with coursework.</p>
                     </div>
-                    <div className="inline-flex rounded-2xl bg-orange-500/15 p-5 text-orange-400 shrink-0 shadow-[0_0_20px_rgba(249,115,22,0.2)] z-10 transition-transform group-hover:scale-110">
-                      <Zap size={32} />
-                    </div>
-                    <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-orange-500/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                  </Link>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </section>
+
+        {/* ─── Section 1: Academic Resources ────────────────────────────────────────── */}
+        <section id="features" className="border-b border-white/5 py-24 px-6">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-12 md:text-center max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold text-white mb-4">A complete academic repository.</h2>
+              <p className="text-gray-400 text-lg">Stop searching through disjointed WhatsApp groups. Everything you need is structured and instantly searchable.</p>
+            </div>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 hover:bg-white/[0.02] transition-colors">
+                <BookOpen size={24} className="text-[var(--accent)] mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Lecture Notes</h3>
+                <p className="text-gray-400 leading-relaxed">Crowdsourced, highly-rated notes organized by semester and subject. Never fall behind on theory.</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 hover:bg-white/[0.02] transition-colors">
+                <FlaskConical size={24} className="text-amber-400 mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Lab Reports</h3>
+                <p className="text-gray-400 leading-relaxed">Access structural templates, data analysis scripts, and reference reports for complex experiments.</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 hover:bg-white/[0.02] transition-colors">
+                <CheckCircle2 size={24} className="text-emerald-400 mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">Assignments</h3>
+                <p className="text-gray-400 leading-relaxed">Keep track of assignment solutions and practice problem sets submitted by seniors.</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 hover:bg-white/[0.02] transition-colors">
+                <FileText size={24} className="text-blue-400 mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">References</h3>
+                <p className="text-gray-400 leading-relaxed">Standard textbooks, reaction mechanism charts, and spectral data tables available offline.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Section 2: Past Paper Archive ────────────────────────────────────────── */}
+        <section className="border-b border-white/5 py-24 px-6 bg-gradient-to-b from-[#050505] to-[#0a0a0a]">
+          <div className="mx-auto max-w-7xl grid md:grid-cols-2 gap-16 items-center">
+            <div className="order-2 md:order-1 relative rounded-xl border border-white/10 bg-[#111] p-6 shadow-2xl">
+              <div className="flex gap-2 mb-4">
+                 <div className="h-6 w-20 rounded bg-white/10" />
+                 <div className="h-6 w-16 rounded bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[10px] text-[var(--accent)] font-bold flex items-center justify-center">End Sem</div>
+              </div>
+              <div className="space-y-3">
+                {[1,2,3].map(i => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-[#0a0a0a]">
+                    <div>
+                      <div className="text-sm font-bold text-white">Physical Chem {i}</div>
+                      <div className="text-xs text-gray-500">2024 • PDF</div>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-emerald-400">
+                      <Download size={12}/> 142
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="order-1 md:order-2">
+              <h2 className="text-3xl font-bold text-white mb-4">The ultimate Past Paper Archive.</h2>
+              <p className="text-gray-400 text-lg mb-6 leading-relaxed">
+                Stop begging seniors for last year's end-sem papers. Access a meticulously tagged, searchable database of Mid Sems, End Sems, and Quizzes.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-sm font-bold text-gray-300"><CheckCircle2 size={16} className="text-[var(--accent)]"/> Sorted by Subject & Year</li>
+                <li className="flex items-center gap-3 text-sm font-bold text-gray-300"><CheckCircle2 size={16} className="text-[var(--accent)]"/> Download tracking for popular papers</li>
+                <li className="flex items-center gap-3 text-sm font-bold text-gray-300"><CheckCircle2 size={16} className="text-[var(--accent)]"/> Seamless contribution flow</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Section 3 & 4: Study Circles & Scheduling ────────────────────────────── */}
+        <section className="py-24 px-6 border-b border-white/5">
+          <div className="mx-auto max-w-7xl grid md:grid-cols-2 gap-6">
+            
+            <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 lg:p-12">
+              <Users size={32} className="text-purple-400 mb-6" />
+              <h2 className="text-2xl font-bold text-white mb-4">Study Circles</h2>
+              <p className="text-gray-400 mb-8">Join focused micro-communities based on your electives. Collaborate on lab reports, share real-time insights, and coordinate group projects via integrated rich-text chat channels.</p>
+              <Link href="/signup" className="text-sm font-bold text-white flex items-center gap-2 hover:text-purple-400 transition-colors">
+                Explore Communities <ChevronRight size={16} />
+              </Link>
+            </div>
+            
+            <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 lg:p-12">
+              <CalendarClock size={32} className="text-orange-400 mb-6" />
+              <h2 className="text-2xl font-bold text-white mb-4">Schedule & Tasks</h2>
+              <p className="text-gray-400 mb-8">A highly dense, Kanban-style task manager deeply integrated with your weekly academic timetable. See your assignment deadlines right next to your lecture schedule.</p>
+              <Link href="/signup" className="text-sm font-bold text-white flex items-center gap-2 hover:text-orange-400 transition-colors">
+                View Planner <ChevronRight size={16} />
+              </Link>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ─── Section 5: Testimonials ──────────────────────────────────────────────── */}
+        <section className="py-24 px-6">
+          <div className="mx-auto max-w-7xl">
+            <h2 className="text-center text-2xl font-bold text-white mb-12">Trusted by the IITM Chemistry Cohort</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="rounded-xl border border-white/10 bg-[#0a0a0a] p-6">
+                <div className="flex items-center gap-1 text-[var(--accent)] mb-4">
+                  <Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed mb-6">"The past paper archive saved my End Sems. The fact that I don't have to scroll through WhatsApp groups to find notes is a game changer."</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-blue-500/20 border border-blue-500/50" />
+                  <div className="text-xs">
+                    <div className="font-bold text-white">Rahul K.</div>
+                    <div className="text-gray-500">Batch 2026</div>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-[#0a0a0a] p-6">
+                <div className="flex items-center gap-1 text-[var(--accent)] mb-4">
+                  <Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed mb-6">"The Task Board is amazing. I have all my lab deadlines tracked right next to my class schedule. Linear-level quality."</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-purple-500/20 border border-purple-500/50" />
+                  <div className="text-xs">
+                    <div className="font-bold text-white">Sneha P.</div>
+                    <div className="text-gray-500">Batch 2025</div>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-[#0a0a0a] p-6">
+                <div className="flex items-center gap-1 text-[var(--accent)] mb-4">
+                  <Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/><Star size={14} fill="currentColor"/>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed mb-6">"Study Circles completely replaced Discord for our cohort. The UI is incredibly clean and fast."</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-orange-500/20 border border-orange-500/50" />
+                  <div className="text-xs">
+                    <div className="font-bold text-white">Vikram S.</div>
+                    <div className="text-gray-500">Batch 2025</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="border-t border-white/5 py-12 px-6">
+          <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-gray-500 font-medium">
+              <FlaskConical size={16} /> ChemSAGE © {new Date().getFullYear()}
+            </div>
+            <div className="flex items-center gap-6 text-sm text-gray-500">
+              <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
+              <Link href="/signup" className="hover:text-white transition-colors">Sign Up</Link>
+            </div>
+          </div>
+        </footer>
+        
+      </main>
     </div>
   );
 }

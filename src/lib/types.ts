@@ -40,6 +40,7 @@ export interface MessageRow {
   sender_id: string;
   content: string;
   is_anon: boolean;
+  is_pinned?: boolean;
   created_at: string;
 }
 
@@ -59,6 +60,8 @@ export interface RoomMember {
   room_id: string;
   user_id: string;
   joined_at?: string;
+  last_read_at?: string;
+  is_favorite?: boolean;
 }
 
 export interface ResourceItem {
@@ -72,6 +75,7 @@ export interface ResourceItem {
   created_at: string;
   room_id?: string | null;
   tags?: string[];
+  download_count?: number;
 }
 
 export interface ExamPaper {
@@ -84,6 +88,7 @@ export interface ExamPaper {
   file_size?: number | null;
   uploaded_by: string;
   created_at: string;
+  download_count?: number;
 }
 
 export interface ScheduleEntry {

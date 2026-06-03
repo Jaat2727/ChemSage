@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Send, Trash2, Wifi } from "lucide-react";
+import { ArrowLeft, Send, Trash2, Wifi, Hash } from "lucide-react";
 import { createClientComponentClient } from "@/lib/supabase";
 import type { ChatMessage, Profile } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
@@ -160,20 +160,27 @@ export default function GlobalHubPage() {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-8rem)] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-lg">
-      <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3">
-        <Link href="/hub" className="rounded-lg p-2 text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white">
+    <div className="flex-1 flex flex-col h-full bg-[var(--background)]">
+      <header className="flex h-14 shrink-0 items-center border-b border-[var(--border)] px-4 bg-[var(--surface-soft)] shadow-sm">
+        <Link href="/hub" className="rounded-lg p-2 text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white md:hidden">
           <ArrowLeft size={18} />
         </Link>
+        
+        <div className="flex-1 flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center font-bold text-sm text-[var(--muted)]">
+              <Hash size={16} />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold text-white leading-tight">Global Hub</h1>
+              <p className="text-[10px] font-medium text-[var(--muted)] leading-tight">{onlineCount || 1} active in feed</p>
+            </div>
+          </div>
 
-        <div className="text-center">
-          <h1 className="text-base font-bold text-white">Community Chat</h1>
-          <p className="text-xs font-medium text-[var(--muted)]">{onlineCount || 1} active in feed</p>
-        </div>
-
-        <div className="flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
-          <Wifi size={14} className={syncing ? "text-amber-400" : "text-emerald-400"} />
-          {syncing ? "Syncing" : "Live"}
+          <div className="flex items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+            <Wifi size={12} className={syncing ? "text-amber-400" : "text-emerald-400"} />
+            {syncing ? "Syncing" : "Live"}
+          </div>
         </div>
       </header>
 
