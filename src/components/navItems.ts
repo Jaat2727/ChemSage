@@ -1,5 +1,4 @@
 import {
-  Activity,
   Folder,
   FileText,
   Calendar,
@@ -9,7 +8,6 @@ import {
 } from "lucide-react";
 
 export const navItems = [
-  { name: "Home", href: "/", icon: Activity },
   { name: "Resource Vault", href: "/vault", icon: Folder },
   { name: "Past Papers", href: "/archive", icon: FileText },
   { name: "Class Planner", href: "/schedule", icon: Calendar },

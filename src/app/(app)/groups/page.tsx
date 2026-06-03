@@ -60,7 +60,7 @@ export default function SynergyGroupsPage() {
   const myGroups = publicRooms.filter((room) => joined.has(room.id));
   const discover = publicRooms.filter((room) => !joined.has(room.id));
 
-  const inputClasses = "w-full border border-[var(--border)] bg-[var(--background)] px-3 py-2 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none";
+  const inputClasses = "w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-white placeholder:text-[var(--muted)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]";
 
   return (
     <div className="mx-auto max-w-5xl pb-12">
@@ -68,36 +68,36 @@ export default function SynergyGroupsPage() {
         title="Study Circles"
         description="Join topic-focused group spaces with synced live chat and simple coordination."
         profile={profile}
-        action={<button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 font-mono text-sm font-bold text-black"><Plus size={14} /> create()</button>}
+        action={<button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-lg border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-sm font-bold text-black transition-colors hover:bg-[#bce600]"><Plus size={16} /> Create Group</button>}
       />
 
       <InlineAlert message={error} />
-      {loading ? <LoadingCard title="> loading groups..." /> : null}
+      {loading ? <LoadingCard title="Loading groups..." /> : null}
 
       {myGroups.length > 0 ? (
-        <section className="mb-8">
-          <h2 className="mb-3 font-mono text-sm font-bold text-[var(--muted)]">{`> my_groups`}</h2>
-          <div className="grid gap-3 md:grid-cols-2">
+        <section className="mb-10">
+          <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-[var(--muted)]">My Groups</h2>
+          <div className="grid gap-4 md:grid-cols-2">
             {myGroups.map((room) => (
-              <Link key={room.id} href={`/groups/${room.id}`} className="flex items-center justify-between border border-[var(--border)] bg-[var(--surface)] p-3 transition-all hover:border-[var(--accent)]">
-                <div className="flex items-center gap-3">
-                  <div className="border border-[var(--border)] p-2 text-[var(--muted)]"><Users2 size={16} /></div>
+              <Link key={room.id} href={`/groups/${room.id}`} className="group flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 transition-all hover:border-[var(--accent)] hover:shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-full border border-[var(--border)] bg-[var(--background)] p-2.5 text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors"><Users2 size={18} /></div>
                   <div>
-                    <p className="font-mono text-sm font-bold text-white">{room.name}</p>
-                    <p className="font-mono text-xs text-[var(--muted)]">{room.location || "Public group"}</p>
+                    <p className="text-sm font-bold text-white">{room.name}</p>
+                    <p className="mt-0.5 text-xs font-medium text-[var(--muted)]">{room.location || "Public group"}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   {room.created_by === profile.id ? (
                     <button
                       onClick={(e) => { e.preventDefault(); void handleDeleteRoom(room.id); }}
-                      className="p-1.5 text-[var(--muted)] transition-colors hover:text-red-400"
+                      className="rounded-lg p-2 text-[var(--muted)] transition-colors hover:bg-red-500/10 hover:text-red-400"
                       title="Delete group"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={16} />
                     </button>
                   ) : null}
-                  <ArrowRight size={15} className="text-[var(--muted)]" />
+                  <ArrowRight size={18} className="text-[var(--muted)] transition-colors group-hover:text-white" />
                 </div>
               </Link>
             ))}
@@ -107,15 +107,15 @@ export default function SynergyGroupsPage() {
 
       {discover.length > 0 ? (
         <section>
-          <h2 className="mb-3 font-mono text-sm font-bold text-[var(--muted)]">{`> discover`}</h2>
-          <div className="grid gap-3 md:grid-cols-2">
+          <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-[var(--muted)]">Discover</h2>
+          <div className="grid gap-4 md:grid-cols-2">
             {discover.map((room) => (
-              <div key={room.id} className="border border-[var(--border)] bg-[var(--surface)] p-3">
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="border border-[var(--border)] p-2 text-[var(--muted)]"><Users2 size={16} /></div>
+              <div key={room.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+                <div className="mb-4 flex items-center gap-4">
+                  <div className="rounded-full border border-[var(--border)] bg-[var(--background)] p-2.5 text-[var(--muted)]"><Users2 size={18} /></div>
                   <div>
-                    <p className="font-mono text-sm font-bold text-white">{room.name}</p>
-                    <p className="font-mono text-xs text-[var(--muted)]">{room.location || "Public group"}</p>
+                    <p className="text-sm font-bold text-white">{room.name}</p>
+                    <p className="mt-0.5 text-xs font-medium text-[var(--muted)]">{room.location || "Public group"}</p>
                   </div>
                 </div>
                 <button
@@ -124,9 +124,9 @@ export default function SynergyGroupsPage() {
                     if (joinError) setError(joinError.message);
                     else setJoined((current) => new Set([...current, room.id]));
                   }}
-                  className="w-full border border-[var(--accent)] bg-transparent px-3 py-2 font-mono text-sm text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-black"
+                  className="w-full rounded-lg border border-[var(--accent)] bg-transparent px-4 py-2 text-sm font-bold text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-black"
                 >
-                  join()
+                  Join Group
                 </button>
               </div>
             ))}
@@ -137,9 +137,9 @@ export default function SynergyGroupsPage() {
       {!loading && !myGroups.length && !discover.length ? <EmptyState title="No groups yet" description="Create one and invite peers." /> : null}
 
       {showCreate ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div className="w-full max-w-md border border-[var(--border)] bg-[var(--background)] p-5">
-            <h2 className="mb-4 font-mono text-lg font-bold text-white">{`> create_group`}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--background)] p-6 shadow-2xl">
+            <h2 className="mb-6 text-xl font-bold text-white">Create Group</h2>
             <form
               onSubmit={async (event) => {
                 event.preventDefault();
@@ -179,9 +179,9 @@ export default function SynergyGroupsPage() {
               <input value={newLocation} onChange={(e) => setNewLocation(e.target.value)} placeholder="Location" className={inputClasses} />
               <input value={newContactInfo} onChange={(e) => setNewContactInfo(e.target.value)} placeholder="Contact info" className={inputClasses} />
               <input value={newInvitedPeople} onChange={(e) => setNewInvitedPeople(e.target.value)} placeholder="Invited members" className={inputClasses} />
-              <div className="flex gap-2 pt-1">
-                <button type="button" onClick={() => setShowCreate(false)} className="w-full border border-[var(--border)] py-2 font-mono text-sm text-[var(--muted)] hover:text-white">cancel()</button>
-                <button type="submit" disabled={creating} className="w-full border border-[var(--accent)] bg-[var(--accent)] py-2 font-mono text-sm font-bold text-black disabled:opacity-60">{creating ? "creating..." : "create()"}</button>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowCreate(false)} className="w-full rounded-lg border border-[var(--border)] py-2.5 text-sm font-bold text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white">Cancel</button>
+                <button type="submit" disabled={creating} className="w-full rounded-lg border border-[var(--accent)] bg-[var(--accent)] py-2.5 text-sm font-bold text-black transition-colors hover:bg-[#bce600] disabled:opacity-60">{creating ? "Creating..." : "Create"}</button>
               </div>
             </form>
           </div>

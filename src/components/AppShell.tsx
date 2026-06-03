@@ -16,11 +16,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
           {/* Mobile header */}
           <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background)] px-4 md:hidden">
-            <h1 className="font-mono text-sm font-bold tracking-[0.18em] text-white">[ CS ]</h1>
+            <h1 className="text-base font-bold tracking-tight text-white">ChemSAGE</h1>
             <NotificationBell />
           </header>
 
-          <div className="mx-auto mb-16 w-full max-w-6xl flex-1 overflow-x-hidden overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 md:mb-0 md:px-8 md:py-8 pb-safe">
+          <div className="mx-auto mb-16 w-full max-w-6xl flex-1 overflow-x-hidden overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 md:mb-0 md:px-10 md:py-10 pb-safe">
             {children}
           </div>
 

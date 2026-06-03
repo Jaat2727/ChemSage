@@ -18,10 +18,10 @@ export function MobileTabBar() {
       {menuOpen ? (
         <div className="fixed inset-0 z-50 bg-black/80 md:hidden" onClick={() => setMenuOpen(false)}>
           <div
-            className="absolute bottom-16 left-3 right-3 border border-[var(--border)] bg-[var(--surface)] p-3"
+            className="absolute bottom-16 left-3 right-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-lg shadow-black/50"
             onClick={(event) => event.stopPropagation()}
           >
-            <p className="mb-2 px-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">{`> more`}</p>
+            <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">More Options</p>
             <div className="space-y-0.5">
               {moreItems.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -31,13 +31,13 @@ export function MobileTabBar() {
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 font-mono text-sm",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
                       isActive
-                        ? "border-l-2 border-[var(--accent)] bg-[var(--surface-soft)] text-[var(--accent)]"
-                        : "border-l-2 border-transparent text-[var(--muted)] hover:text-white",
+                        ? "bg-[var(--surface-soft)] text-[var(--accent)]"
+                        : "text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-white",
                     )}
                   >
-                    <item.icon size={16} strokeWidth={isActive ? 2.3 : 1.8} />
+                    <item.icon size={18} strokeWidth={isActive ? 2.3 : 1.8} />
                     {item.name}
                   </Link>
                 );
@@ -56,11 +56,11 @@ export function MobileTabBar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 font-mono text-[10px]",
-                  isActive ? "text-[var(--accent)]" : "text-[var(--muted)]",
+                  "flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors",
+                  isActive ? "text-[var(--accent)]" : "text-[var(--muted)] hover:text-white",
                 )}
               >
-                <item.icon size={18} strokeWidth={isActive ? 2.4 : 1.8} />
+                <item.icon size={20} strokeWidth={isActive ? 2.4 : 1.8} />
                 <span>{item.name.split(" ")[0]}</span>
               </Link>
             );
@@ -70,13 +70,13 @@ export function MobileTabBar() {
             type="button"
             onClick={() => setMenuOpen((current) => !current)}
             className={cn(
-              "flex flex-col items-center justify-center gap-1 font-mono text-[10px]",
+              "flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors",
               menuOpen || moreItems.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
                 ? "text-[var(--accent)]"
-                : "text-[var(--muted)]",
+                : "text-[var(--muted)] hover:text-white",
             )}
           >
-            <Menu size={18} />
+            <Menu size={20} />
             <span>More</span>
           </button>
         </div>

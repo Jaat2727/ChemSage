@@ -136,39 +136,39 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-[80] mt-2 w-[min(22rem,calc(100vw-2rem))] origin-top animate-scale-in border border-[var(--border)] bg-[var(--background)] p-2 shadow-2xl md:left-auto md:right-0 md:w-[24rem]">
-          <div className="mb-2 flex items-center justify-between border-b border-[var(--border)] px-3 pb-2 pt-2">
-            <h3 className="font-mono text-sm font-bold text-white">{`> notifications`}</h3>
+        <div className="absolute left-0 top-full z-[80] mt-2 w-[min(22rem,calc(100vw-2rem))] origin-top animate-scale-in rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-2 shadow-2xl shadow-black/60 md:left-auto md:right-0 md:w-[24rem]">
+          <div className="mb-2 flex items-center justify-between border-b border-[var(--border)] px-3 pb-3 pt-2">
+            <h3 className="text-sm font-bold text-white">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="font-mono text-xs text-[var(--accent)] hover:underline"
+                className="text-xs font-medium text-[var(--accent)] hover:underline"
               >
-                markAllRead()
+                Mark all read
               </button>
             )}
           </div>
 
-          <div className="mt-2 max-h-[22rem] space-y-1 overflow-y-auto pr-1">
+          <div className="mt-2 max-h-[22rem] space-y-1.5 overflow-y-auto pr-1">
             {notifications.length === 0 ? (
-              <div className="py-8 text-center font-mono text-sm text-[var(--muted)]">
-                {`> no notifications`}
+              <div className="py-8 text-center text-sm font-medium text-[var(--muted)]">
+                No new notifications
               </div>
             ) : (
               notifications.map((n) => (
                 <div
                   key={n.id}
                   className={cn(
-                    "group relative flex flex-col gap-1 border p-3 text-sm transition-all",
+                    "group relative flex flex-col gap-1 rounded-lg border p-3 text-sm transition-all",
                     n.read
                       ? "border-transparent bg-transparent opacity-80 hover:bg-[var(--surface)]"
                       : "border-[var(--accent)]/20 bg-[var(--accent)]/5"
                   )}
                 >
-                  <p className={cn("pr-6 leading-relaxed line-clamp-3", n.read ? "text-[var(--muted)]" : "text-white font-mono")}>
+                  <p className={cn("pr-6 leading-relaxed line-clamp-3", n.read ? "text-[var(--muted)]" : "font-medium text-white")}>
                     {n.message}
                   </p>
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--muted)] mt-1">
+                  <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-[var(--muted)]">
                     {new Date(n.created_at).toLocaleDateString(undefined, {
                       month: "short",
                       day: "numeric",

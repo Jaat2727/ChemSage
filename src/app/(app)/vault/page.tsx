@@ -105,12 +105,12 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
   }, [file, title, category, tagsInput, uploaderId, onSuccess, onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 ">
-      <div className="relative w-full max-w-md animate-scale-in  border border-[var(--border)] bg-[var(--surface)] p-7 shadow-2xl shadow-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-md animate-scale-in rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-7 shadow-2xl shadow-black/40">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Upload Resource</h2>
-          <button onClick={onClose} className=" p-1.5 text-[var(--muted)] transition [@media(hover:hover)]:hover:bg-[var(--surface)] [@media(hover:hover)]:hover:text-white active:bg-[var(--surface)]">
+          <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--muted)] transition [@media(hover:hover)]:hover:bg-[var(--surface-soft)] [@media(hover:hover)]:hover:text-white active:bg-[var(--surface-soft)]">
             <X size={18} />
           </button>
         </div>
@@ -121,8 +121,8 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
           onClick={() => inputRef.current?.click()}
-          className={`mb-5 flex cursor-pointer flex-col items-center gap-2  border-2 border-dashed px-6 py-8 transition-all ${
-            file ? "border-[var(--accent)]/50 bg-[var(--accent)]/5" : "border-[var(--border)] bg-[var(--surface)] [@media(hover:hover)]:hover:border-[var(--accent)] active:border-[var(--accent)]"
+          className={`mb-5 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed px-6 py-8 transition-all ${
+            file ? "border-[var(--accent)]/50 bg-[var(--accent)]/5" : "border-[var(--border)] bg-[var(--surface-soft)] [@media(hover:hover)]:hover:border-[var(--accent)] active:border-[var(--accent)]"
           }`}
         >
           {file ? (
@@ -148,7 +148,7 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Thermodynamics Notes Unit 2"
-            className="w-full  border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
+            className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-white outline-none placeholder:text-[var(--muted)] transition-colors focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
           />
         </div>
 
@@ -161,8 +161,8 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
                 key={cat}
                 type="button"
                 onClick={() => setCategory(cat)}
-                className={` px-4 py-1.5 text-sm font-semibold transition-all ${
-                  category === cat ? "bg-[var(--accent)] text-white" : "bg-[var(--surface)] text-[var(--muted)] [@media(hover:hover)]:hover:bg-[var(--surface-soft)] active:scale-95"
+                className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-all ${
+                  category === cat ? "bg-[var(--accent)] text-black" : "bg-[var(--surface-soft)] text-[var(--muted)] [@media(hover:hover)]:hover:bg-[var(--surface)] active:scale-95"
                 }`}
               >
                 {cat}
@@ -178,20 +178,20 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
             value={tagsInput}
             onChange={(e) => setTagsInput(e.target.value)}
             placeholder="e.g. organic, chemistry, exam2"
-            className="w-full  border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm text-white outline-none placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
+            className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-white outline-none placeholder:text-[var(--muted)] transition-colors focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
           />
         </div>
 
         {/* Progress Bar */}
         {uploading && (
           <div className="mb-4">
-            <div className="mb-1.5 flex justify-between text-xs text-[var(--muted)]">
+            <div className="mb-1.5 flex justify-between text-xs font-medium text-[var(--muted)]">
               <span>{success ? "Upload complete!" : "Uploading…"}</span>
               <span>{progress}%</span>
             </div>
-            <div className="h-2 w-full overflow-hidden  bg-[var(--surface)]">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--surface-soft)]">
               <div
-                className="h-full  bg-[var(--accent)] transition-all duration-500"
+                className="h-full rounded-full bg-[var(--accent)] transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -200,27 +200,27 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
 
         {/* Success */}
         {success && (
-          <div className="mb-4 flex items-center gap-2  bg-emerald-950/40 border border-emerald-800 px-4 py-2.5 text-sm font-medium text-emerald-400">
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-800 bg-emerald-950/40 px-4 py-2.5 text-sm font-medium text-emerald-400">
             <CheckCircle2 size={16} /> Resource uploaded successfully!
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="mb-4 flex items-center gap-2  bg-red-950/40 border border-red-800 px-4 py-2.5 text-sm font-medium text-red-400">
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-800 bg-red-950/40 px-4 py-2.5 text-sm font-medium text-red-400">
             <AlertCircle size={16} /> {error}
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex gap-3 mt-2">
-          <button onClick={onClose} className="flex-1  border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--muted)] transition [@media(hover:hover)]:hover:bg-[var(--surface)] active:bg-[var(--surface)]">
+        <div className="mt-2 flex gap-3">
+          <button onClick={onClose} className="flex-1 rounded-lg border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-bold text-[var(--muted)] transition-colors [@media(hover:hover)]:hover:bg-[var(--surface-soft)] active:bg-[var(--surface-soft)]">
             Cancel
           </button>
           <button
             onClick={handleUpload}
             disabled={uploading || !file}
-            className="flex-1  border border-[var(--accent)] bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white  transition-all [@media(hover:hover)]: [@media(hover:hover)]: disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.97]"
+            className="flex-1 rounded-lg border border-[var(--accent)] bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-black transition-all [@media(hover:hover)]:hover:bg-[#bce600] disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.97]"
           >
             {uploading ? "Uploading…" : "Upload"}
           </button>
@@ -306,26 +306,26 @@ export default function StudyVaultPage() {
         profile={profile}
         action={
           profile.status === "active" ? (
-            <button
-              onClick={() => setShowModal(true)}
-              className="inline-flex cursor-pointer items-center gap-2  border border-[var(--accent)] bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white  transition-all [@media(hover:hover)]: [@media(hover:hover)]: active:scale-[0.97]"
-            >
-              <Upload size={16} /> Upload
-            </button>
+              <button
+                onClick={() => setShowModal(true)}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-sm font-bold text-black transition-colors hover:bg-[#bce600]"
+              >
+                <Upload size={16} /> Upload
+              </button>
           ) : undefined
         }
       />
 
       {/* Filters */}
-      <div className="mb-6 grid gap-4  border border-[var(--border)] bg-[var(--surface)] p-5  md:grid-cols-[1fr_auto]">
+      <div className="mb-8 grid gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm md:grid-cols-[1fr_auto]">
         <div className="flex flex-col gap-3">
           <div className="relative">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
+            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by title..."
-              className="w-full  border border-[var(--border)] bg-[var(--background)] py-3 pl-10 pr-4 text-sm text-white outline-none ring-0 transition-all placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] py-2.5 pl-11 pr-4 text-sm font-medium text-white outline-none ring-0 transition-colors placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
             />
           </div>
           <div className="relative">
@@ -334,15 +334,15 @@ export default function StudyVaultPage() {
               onChange={(e) => setTagsInputFilter(e.target.value)}
               onKeyDown={handleAddTagFilter}
               placeholder="Add tag filter and press Enter..."
-              className="w-full  border border-[var(--border)] bg-[var(--background)] px-4 py-2 text-sm text-white outline-none ring-0 transition-all placeholder:text-[var(--muted)] focus:border-[var(--accent)]"
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-white outline-none ring-0 transition-colors placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
             />
           </div>
           {selectedTags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {selectedTags.map((tag) => (
-                <span key={tag} className="inline-flex items-center gap-1.5  bg-[var(--accent)]/20 px-3 py-1 text-xs font-semibold text-[var(--accent)]">
+                <span key={tag} className="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent)]/20 px-3 py-1 text-xs font-semibold text-[var(--accent)]">
                   {tag}
-                  <button onClick={() => removeTagFilter(tag)} className="text-[var(--accent)] hover:text-[var(--accent)]">
+                  <button onClick={() => removeTagFilter(tag)} className="text-[var(--accent)] transition-colors hover:text-white">
                     <X size={12} />
                   </button>
                 </span>
@@ -355,8 +355,8 @@ export default function StudyVaultPage() {
             <button
               key={item}
               onClick={() => setCategory(item)}
-              className={` px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                category === item ? "bg-[var(--accent)] text-white shadow-md shadow-blue-600/25" : "bg-[var(--surface)] text-[var(--muted)] [@media(hover:hover)]:hover:bg-[var(--surface-soft)]/60 active:scale-95"
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                category === item ? "bg-[var(--accent)] text-black shadow-md shadow-[var(--accent)]/25" : "bg-[var(--surface-soft)] text-[var(--muted)] [@media(hover:hover)]:hover:bg-[var(--surface)] active:scale-95"
               }`}
             >
               {item}
@@ -385,7 +385,7 @@ export default function StudyVaultPage() {
         {resources.map((resource) => (
           <article
             key={resource.id}
-            className="group animate-fade-in flex flex-col overflow-hidden  border border-[var(--border)] bg-[var(--surface)]  transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-[var(--border)]/50 [@media(hover:hover)]:hover:bg-[var(--surface)]/60 [@media(hover:hover)]:hover:shadow-lg [@media(hover:hover)]:hover:shadow-blue-950/10 active:scale-[0.99] active:bg-[var(--surface)]/50"
+            className="group flex animate-fade-in flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:border-[var(--accent)]/50 [@media(hover:hover)]:hover:shadow-lg active:scale-[0.99]"
           >
             {resource.file_type?.startsWith("image/") ? (
               <div className="relative flex-none h-40 w-full overflow-hidden border-b border-[var(--border)] bg-[var(--background)]">

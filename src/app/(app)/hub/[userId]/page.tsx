@@ -95,36 +95,46 @@ export default function DirectMessagePage() {
 
   const handleDeleteMessage = async (messageId: string) => {
     if (!profile?.id) return;
+    
+    // Optimistic UI update
+    const previousMessages = [...messages];
+    setMessages((current) => current.filter((msg) => msg.id !== messageId));
+
     const { error: deleteError } = await supabase.from("messages").delete().eq("id", messageId).eq("sender_id", profile.id);
-    if (deleteError) setError(deleteError.message);
+    
+    if (deleteError) {
+      setError(deleteError.message);
+      // Revert on error
+      setMessages(previousMessages);
+    }
   };
 
   if (loading || !profile) return <LoadingCard />;
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-10rem)] w-full max-w-5xl flex-col overflow-hidden border border-[var(--border)] bg-[var(--background)]">
-      <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)] px-3 py-2.5">
-        <Link href="/hub" className="p-2 text-[var(--muted)] hover:bg-[var(--surface)] hover:text-white">
+    <div className="mx-auto flex h-[calc(100dvh-8rem)] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-lg">
+      <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3">
+        <Link href="/hub" className="rounded-lg p-2 text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white">
           <ArrowLeft size={18} />
         </Link>
 
         <div className="text-center">
-          <h1 className="font-mono text-sm font-bold text-white">{otherUser?.name || "Direct chat"}</h1>
-          <p className="font-mono text-[11px] text-[var(--muted)]">{otherUser?.roll_no || "one-to-one room"}</p>
+          <h1 className="text-base font-bold text-white">{otherUser?.name || "Direct chat"}</h1>
+          <p className="text-xs font-medium text-[var(--muted)]">{otherUser?.roll_no || "one-to-one room"}</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="border border-[var(--border)] p-1.5 text-[var(--muted)]"><UserIcon size={12} /></div>
-          <Wifi size={13} className={syncing ? "text-amber-400" : "text-emerald-400"} />
+        <div className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-[var(--muted)]">
+          <UserIcon size={14} />
+          <Wifi size={14} className={syncing ? "text-amber-400" : "text-emerald-400"} />
         </div>
       </header>
 
-      <section className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
-        {error ? <p className="border border-red-800 bg-red-950/50 px-3 py-2 font-mono text-sm text-red-300">{error}</p> : null}
+      <section className="flex-1 space-y-5 overflow-y-auto px-4 py-6">
+        {error ? <p className="rounded-lg border border-red-800 bg-red-950/50 px-4 py-3 text-sm font-medium text-red-300">{error}</p> : null}
 
         {messages.length === 0 ? (
-          <div className="mx-auto mt-16 max-w-xs border border-[var(--border)] bg-[var(--surface)] p-5 text-center">
-            <p className="font-mono text-sm text-[var(--muted)]">Start the conversation with {otherUser?.name || "your peer"}.</p>
+          <div className="mx-auto mt-16 max-w-xs rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] p-6 text-center shadow-sm">
+            <p className="text-sm font-medium text-[var(--muted)]">Start the conversation with {otherUser?.name || "your peer"}.</p>
           </div>
         ) : null}
 
@@ -132,15 +142,15 @@ export default function DirectMessagePage() {
           const isMe = message.sender_id === profile.id;
           return (
             <article key={message.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-              <div className={`max-w-[88%] px-3 py-2 text-sm ${isMe ? "bg-[var(--accent)] text-black font-mono" : "border border-[var(--border)] bg-[var(--surface)] text-white"}`}>
+              <div className={`max-w-[88%] px-4 py-2.5 text-sm ${isMe ? "rounded-2xl rounded-tr-sm bg-[var(--accent)] text-black" : "rounded-2xl rounded-tl-sm border border-[var(--border)] bg-[var(--surface-soft)] text-white"}`}>
                 <MessageDisplay content={message.content} />
               </div>
 
-              <div className="mt-1 flex items-center gap-2 px-1 font-mono text-[10px] text-[var(--muted)]">
+              <div className="mt-1.5 flex items-center gap-2 px-2 text-[11px] font-medium text-[var(--muted)]">
                 <span>{formatDateTime(message.created_at)}</span>
                 {isMe ? (
-                  <button onClick={() => handleDeleteMessage(message.id)} className="text-[var(--muted)] hover:text-red-300" title="Delete message">
-                    <Trash2 size={11} />
+                  <button onClick={() => handleDeleteMessage(message.id)} className="text-[var(--muted)] hover:text-red-300 transition-colors" title="Delete message">
+                    <Trash2 size={13} />
                   </button>
                 ) : null}
               </div>
@@ -150,7 +160,7 @@ export default function DirectMessagePage() {
         <div ref={messagesEndRef} />
       </section>
 
-      <footer className="border-t border-[var(--border)] bg-[var(--background)] p-3">
+      <footer className="border-t border-[var(--border)] bg-[var(--surface)] p-4">
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -167,7 +177,7 @@ export default function DirectMessagePage() {
             else setInputText("");
             setSending(false);
           }}
-          className="flex items-end gap-2"
+          className="flex items-end gap-3"
         >
           <textarea
             value={inputText}
@@ -179,11 +189,11 @@ export default function DirectMessagePage() {
               }
             }}
             placeholder="Write a message"
-            className="min-h-[42px] w-full resize-none border border-[var(--border)] bg-[var(--surface)] px-3 py-2 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
+            className="min-h-[44px] w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-colors"
             rows={1}
           />
-          <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 shrink-0 items-center justify-center bg-[var(--accent)] text-black font-mono disabled:opacity-50">
-            <Send size={16} />
+          <button type="submit" disabled={!inputText.trim() || sending} className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-black transition-colors hover:bg-[#bce600] disabled:opacity-50">
+            <Send size={18} />
           </button>
         </form>
       </footer>

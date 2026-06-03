@@ -38,18 +38,16 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/signup") ||
     path.startsWith("/forgot-password");
 
-  // Redirect unauthenticated users to login
-  if (!user && !isAuthRoute) {
+  // Allow unauthenticated access to auth routes and the root landing page
+  if (!user && !isAuthRoute && path !== "/") {
     const redirectUrl = new URL("/login", request.url);
-    if (path !== "/") {
-      redirectUrl.searchParams.set("next", path);
-    }
+    redirectUrl.searchParams.set("next", path);
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Redirect authenticated users away from auth pages
+  // Redirect authenticated users away from auth pages to their default workspace
   if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/vault", request.url));
   }
 
   return supabaseResponse;

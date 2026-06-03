@@ -19,7 +19,7 @@ interface TaskItem {
 const priorities: Array<TaskItem["priority"]> = ["High", "Medium", "Low"];
 const storageKey = (profileId: string) => `chemsage.tasks.${profileId}`;
 
-const inputClasses = "border border-[var(--border)] bg-[var(--background)] px-4 py-3 font-mono text-sm text-white outline-none placeholder:text-[var(--muted)] focus:border-[var(--accent)]";
+const inputClasses = "w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-white outline-none placeholder:text-[var(--muted)] transition-colors focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]";
 
 export default function TaskTerminalPage() {
   const { profile } = useAuth();
@@ -65,27 +65,27 @@ export default function TaskTerminalPage() {
     <div className="mx-auto max-w-5xl pb-20">
       <PageHeader title="Task Terminal" description="A fast personal task board stored locally per signed-in profile." profile={profile} />
 
-      <div className="mb-6 grid gap-3 md:grid-cols-3">
-        <div className="border border-[var(--border)] bg-[var(--surface)] p-4">
-          <p className="font-mono text-xs text-[var(--muted)]">PENDING</p>
-          <p className="mt-1 font-mono text-3xl font-bold text-amber-400">{stats.pending}</p>
+      <div className="mb-8 grid gap-4 md:grid-cols-3">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+          <p className="text-xs font-bold tracking-wider text-[var(--muted)] uppercase">Pending</p>
+          <p className="mt-2 text-3xl font-bold text-amber-400">{stats.pending}</p>
         </div>
-        <div className="border border-[var(--border)] bg-[var(--surface)] p-4">
-          <p className="font-mono text-xs text-[var(--muted)]">COMPLETED</p>
-          <p className="mt-1 font-mono text-3xl font-bold text-emerald-400">{stats.completed}</p>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+          <p className="text-xs font-bold tracking-wider text-[var(--muted)] uppercase">Completed</p>
+          <p className="mt-2 text-3xl font-bold text-emerald-400">{stats.completed}</p>
         </div>
-        <div className="border border-[var(--border)] bg-[var(--surface)] p-4">
-          <p className="font-mono text-xs text-[var(--muted)]">HIGH_PRIORITY</p>
-          <p className="mt-1 font-mono text-3xl font-bold text-red-400">{stats.highPriority}</p>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+          <p className="text-xs font-bold tracking-wider text-red-500/80 uppercase">High Priority</p>
+          <p className="mt-2 text-3xl font-bold text-red-400">{stats.highPriority}</p>
         </div>
       </div>
 
-      <div className="mb-6 border border-[var(--border)] bg-[var(--surface)] p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <div className="border border-[var(--accent)]/30 p-2 text-[var(--accent)]"><Plus size={18} /></div>
+      <div className="mb-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="rounded-lg border border-[var(--accent)]/30 bg-[var(--accent)]/10 p-2 text-[var(--accent)]"><Plus size={20} /></div>
           <div>
-            <h2 className="font-mono text-lg font-bold text-white">addTask()</h2>
-            <p className="font-mono text-xs text-[var(--muted)]">{`// Create quick reminders`}</p>
+            <h2 className="text-lg font-bold text-white">Add Task</h2>
+            <p className="text-sm font-medium text-[var(--muted)]">Create quick personal reminders</p>
           </div>
         </div>
 
@@ -108,8 +108,8 @@ export default function TaskTerminalPage() {
             <select value={priority} onChange={(event) => setPriority(event.target.value as TaskItem["priority"])} className={`${inputClasses} bg-[var(--background)]`}>
               {priorities.map((item) => (<option key={item} value={item}>{item}</option>))}
             </select>
-            <button type="submit" className="inline-flex items-center justify-center gap-2 border border-[var(--accent)] bg-[var(--accent)] px-5 py-3 font-mono text-sm font-bold text-black transition-all active:scale-[0.98]">
-              <Plus size={16} /> add()
+            <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--accent)] bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-black transition-colors hover:bg-[#bce600] active:scale-[0.98]">
+              <Plus size={16} /> Add Task
             </button>
           </div>
         </form>
@@ -120,32 +120,32 @@ export default function TaskTerminalPage() {
       {!tasks.length ? (
         <EmptyState title="No tasks yet" description="Create your first task above." />
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {tasks.map((task) => (
             <article
               key={task.id}
               className={cn(
-                "border p-5 transition-all duration-200",
+                "rounded-xl border p-5 transition-all duration-300",
                 task.done
                   ? "border-emerald-800/40 bg-emerald-950/20"
-                  : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)]/30",
+                  : "border-[var(--border)] bg-[var(--surface)] hover:-translate-y-0.5 hover:border-[var(--accent)]/50 hover:shadow-lg",
               )}
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="mb-3 flex flex-wrap items-center gap-2">
                     <span className={cn(
-                      "border px-3 py-1 font-mono text-xs font-bold",
-                      task.priority === "High" && "border-red-800 text-red-400",
-                      task.priority === "Medium" && "border-amber-800 text-amber-400",
-                      task.priority === "Low" && "border-emerald-800 text-emerald-400",
+                      "rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider",
+                      task.priority === "High" && "bg-red-500/10 text-red-400",
+                      task.priority === "Medium" && "bg-amber-500/10 text-amber-400",
+                      task.priority === "Low" && "bg-emerald-500/10 text-emerald-400",
                     )}>
-                      {task.priority.toUpperCase()}
+                      {task.priority} Priority
                     </span>
-                    {task.done ? <span className="border border-emerald-800 px-3 py-1 font-mono text-xs font-bold text-emerald-400">DONE</span> : null}
+                    {task.done ? <span className="rounded-md bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold tracking-wider text-emerald-400">DONE</span> : null}
                   </div>
-                  <h3 className="font-mono text-lg font-bold text-white">{task.title}</h3>
-                  <p className="mt-2 text-sm text-[var(--muted)]">{task.notes || "No extra notes added."}</p>
+                  <h3 className="text-lg font-bold text-white">{task.title}</h3>
+                  <p className="mt-2 text-sm font-medium text-[var(--muted)]">{task.notes || "No extra notes added."}</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -153,19 +153,19 @@ export default function TaskTerminalPage() {
                     type="button"
                     onClick={() => setTasks((current) => current.map((item) => (item.id === task.id ? { ...item, done: !item.done } : item)))}
                     className={cn(
-                      "inline-flex items-center gap-2 border px-4 py-2.5 font-mono text-sm font-bold transition-all active:scale-[0.98]",
+                      "inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-bold transition-all active:scale-[0.98]",
                       task.done
-                        ? "border-[var(--border)] text-[var(--muted)] hover:text-white"
-                        : "border-emerald-800 text-emerald-400 hover:bg-emerald-950/40",
+                        ? "border-[var(--border)] bg-[var(--background)] text-[var(--muted)] hover:text-white"
+                        : "border-emerald-800 bg-emerald-950/20 text-emerald-400 hover:bg-emerald-950/40",
                     )}
                   >
                     <CheckCircle2 size={16} />
-                    {task.done ? "undo()" : "done()"}
+                    {task.done ? "Undo" : "Mark Done"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setTasks((current) => current.filter((item) => item.id !== task.id))}
-                    className="border border-red-900 p-3 text-red-400 transition-all hover:bg-red-950/40 active:scale-[0.96]"
+                    className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-2.5 text-[var(--muted)] transition-all hover:border-red-800 hover:bg-red-950/40 hover:text-red-400 active:scale-[0.96]"
                     aria-label={`Delete ${task.title}`}
                   >
                     <Trash2 size={16} />
@@ -177,9 +177,9 @@ export default function TaskTerminalPage() {
         </div>
       )}
 
-      <div className="mt-6 flex items-center gap-2 border border-[var(--border)] bg-[var(--surface)] px-4 py-3 font-mono text-sm text-[var(--muted)]">
-        <ListTodo size={16} className="text-[var(--accent)]" />
-        {`// Tasks are stored on this device for the current signed-in profile.`}
+      <div className="mt-8 flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-4 text-sm font-medium text-[var(--muted)]">
+        <ListTodo size={18} className="text-[var(--accent)]" />
+        Tasks are stored securely on this device for the current signed-in profile.
       </div>
     </div>
   );

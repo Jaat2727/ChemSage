@@ -11,7 +11,7 @@ import { normalizeEmail } from "@/lib/rollno";
 const supabase = createClientComponentClient();
 
 const inputClasses =
-  "w-full border border-[var(--border)] bg-[var(--surface)] px-4 py-3 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none";
+  "w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none transition-colors";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,11 +28,11 @@ export default function LoginPage() {
 
   if (pendingMessage || bannedMessage) {
     return (
-      <div className="animate-scale-in border border-[var(--border)] bg-[var(--surface)] p-6 text-center">
-        <div className="mx-auto mb-4 w-fit border border-[var(--border)] bg-[var(--background)] p-3 text-[var(--muted)]">
+      <div className="animate-scale-in rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center shadow-lg">
+        <div className="mx-auto mb-4 w-fit rounded-full border border-[var(--border)] bg-[var(--background)] p-3 text-[var(--muted)]">
           {pendingMessage ? <Clock size={26} /> : <ShieldX size={26} />}
         </div>
-        <h2 className="font-mono text-xl font-bold text-white">{pendingMessage ? "pending_approval" : "account_banned"}</h2>
+        <h2 className="text-xl font-bold text-white">{pendingMessage ? "Approval Pending" : "Account Banned"}</h2>
         <p className="mt-2 text-sm text-[var(--muted)]">
           {pendingMessage
             ? "Your account is waiting for admin approval."
@@ -44,9 +44,9 @@ export default function LoginPage() {
             setBannedMessage(false);
             setError(null);
           }}
-          className="mt-5 w-full border border-[var(--border)] bg-[var(--background)] py-2.5 font-mono text-sm text-white transition-colors hover:bg-[var(--surface)]"
+          className="mt-6 w-full rounded-lg border border-[var(--border)] bg-[var(--background)] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--surface-soft)]"
         >
-          tryAgain()
+          Try Again
         </button>
       </div>
     );
@@ -96,55 +96,55 @@ export default function LoginPage() {
       return;
     }
 
-    router.replace(searchParams.get("next") || "/");
+    router.replace(searchParams.get("next") || "/vault");
   };
 
   return (
-    <div className="animate-scale-in border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
-      {/* MacOS-style window header */}
-      <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+    <div className="animate-fade-in overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--background)] shadow-2xl">
+      <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-red-500" />
-          <span className="h-3 w-3 rounded-full bg-yellow-500" />
-          <span className="h-3 w-3 rounded-full bg-green-500" />
+          <div className="h-3 w-3 rounded-full bg-red-500/20 border border-red-500/50" />
+          <div className="h-3 w-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+          <div className="h-3 w-3 rounded-full bg-green-500/20 border border-green-500/50" />
         </div>
-        <span className="font-mono text-xs text-[var(--muted)]">chemsage_auth.ts</span>
+        <span className="text-xs font-semibold tracking-wider text-[var(--muted)] uppercase">Authentication</span>
         <div className="w-12" />
       </div>
 
-      <div className="px-6 pt-5 pb-2">
-        <p className="font-mono text-sm text-[var(--muted)]">{`// ChemSAGE - Student Portal`}</p>
+      <div className="px-6 pt-6 pb-2 text-center">
+        <h2 className="text-2xl font-bold text-white">ChemSAGE</h2>
+        <p className="mt-1 text-sm text-[var(--muted)]">Student Portal</p>
       </div>
 
       {/* Tab switcher */}
-      <div className="flex px-6 pt-2 pb-4">
+      <div className="flex px-6 pt-3 pb-5">
         <button
           onClick={() => setActiveTab("login")}
-          className={`flex-1 border py-2.5 font-mono text-sm font-bold transition-all ${
+          className={`flex-1 rounded-l-lg border py-2.5 text-sm font-semibold transition-all ${
             activeTab === "login"
               ? "border-[var(--accent)] bg-[var(--accent)] text-black"
-              : "border-[var(--border)] text-[var(--muted)] hover:text-white"
+              : "border-[var(--border)] text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-white"
           }`}
         >
-          login()
+          Login
         </button>
         <button
           onClick={() => { setActiveTab("signup"); router.push("/signup"); }}
-          className={`flex-1 border border-l-0 py-2.5 font-mono text-sm font-bold transition-all ${
+          className={`flex-1 rounded-r-lg border border-l-0 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "signup"
               ? "border-[var(--accent)] bg-[var(--accent)] text-black"
-              : "border-[var(--border)] text-[var(--muted)] hover:text-white"
+              : "border-[var(--border)] text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-white"
           }`}
         >
-          signUp()
+          Sign Up
         </button>
       </div>
 
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-8">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-1.5 flex items-center gap-1.5 font-mono text-xs text-[var(--muted)]">
-              <span>✉</span> email
+            <label className="mb-1.5 block text-sm font-medium text-[var(--muted)]">
+              Email Address
             </label>
             <input
               type="text"
@@ -156,8 +156,8 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="mb-1.5 flex items-center gap-1.5 font-mono text-xs text-[var(--muted)]">
-              <span>🔒</span> password
+            <label className="mb-1.5 block text-sm font-medium text-[var(--muted)]">
+              Password
             </label>
             <div className="relative">
               <input
@@ -177,28 +177,31 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between font-mono text-xs text-[var(--muted)]">
-            <span>☐ rememberMe</span>
-            <Link href="/forgot-password" className="text-[var(--accent)] hover:underline">forgotPassword()</Link>
+          <div className="flex items-center justify-between text-sm font-medium text-[var(--muted)]">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" className="rounded border-[var(--border)] bg-[var(--surface)] text-[var(--accent)] focus:ring-[var(--accent)]" />
+              <span>Remember me</span>
+            </label>
+            <Link href="/forgot-password" className="text-[var(--accent)] hover:underline">Forgot password?</Link>
           </div>
 
-          {error ? <div className="border border-red-800 bg-red-950/50 px-3 py-2 font-mono text-sm text-red-300">{`> `}{error}</div> : null}
+          {error ? <div className="rounded-lg border border-red-800 bg-red-950/50 px-4 py-3 text-sm font-medium text-red-300">{error}</div> : null}
 
-          <button disabled={loading} className="flex w-full items-center justify-center gap-2 border border-[var(--accent)] bg-[var(--accent)] py-2.5 font-mono text-sm font-bold text-black transition-opacity disabled:opacity-60">
-            {loading ? "await signIn() ○" : "await signIn()"}
+          <button disabled={loading} className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--accent)] bg-[var(--accent)] py-3 text-sm font-bold text-black transition-opacity hover:bg-[#bce600] disabled:opacity-60">
+            {loading ? "Signing in..." : "Sign In"}
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 py-2">
             <div className="h-px flex-1 bg-[var(--border)]" />
-            <span className="font-mono text-xs text-[var(--muted)]">{`/* or */`}</span>
+            <span className="text-xs font-medium uppercase tracking-wider text-[var(--muted)]">Or</span>
             <div className="h-px flex-1 bg-[var(--border)]" />
           </div>
 
-          <p className="text-center font-mono text-xs text-[var(--muted)]">
-            {`// By continuing, you agree to our `}
-            <span className="text-[var(--accent)]">Terms</span>
-            {` && `}
-            <span className="text-[var(--accent)]">Privacy</span>
+          <p className="text-center text-xs font-medium text-[var(--muted)]">
+            By continuing, you agree to our{" "}
+            <Link href="#" className="text-[var(--accent)] hover:underline">Terms</Link>
+            {" "}and{" "}
+            <Link href="#" className="text-[var(--accent)] hover:underline">Privacy Policy</Link>
           </p>
         </form>
       </div>

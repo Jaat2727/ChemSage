@@ -4,10 +4,10 @@
 :root {
   --background: #050505;
   --foreground: #ffffff;
-  --muted: #888888;
+  --muted: #a3a3a3;
   --surface: #111111;
   --surface-soft: #1a1a1a;
-  --border: #333333;
+  --border: #222222;
   --accent: #D4FF00;
 }
 

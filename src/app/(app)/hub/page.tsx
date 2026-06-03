@@ -40,37 +40,37 @@ export default function HubDirectoryPage() {
         description="Find classmates quickly and start one-to-one conversations or join the community feed."
         profile={profile}
         action={
-          <Link href="/hub/global" className="inline-flex items-center gap-2 border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 font-mono text-sm font-bold text-black">
-            <Globe size={14} /> globalHub()
+          <Link href="/hub/global" className="inline-flex items-center gap-2 rounded-lg border border-[var(--accent)] bg-[var(--accent)] px-4 py-2 text-sm font-bold text-black transition-colors hover:bg-[#bce600]">
+            <Globe size={16} /> Global Hub
           </Link>
         }
       />
 
       <div className="relative mb-6 max-w-xl">
-        <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
+        <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search name, roll no, or programme"
-          className="w-full border border-[var(--border)] bg-[var(--surface)] py-2.5 pl-10 pr-3 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
+          className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-3 pl-11 pr-4 text-sm font-medium text-white placeholder:text-[var(--muted)] transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
         />
       </div>
 
-      {loading ? <LoadingCard title="> loading directory..." /> : null}
+      {loading ? <LoadingCard title="Loading directory..." /> : null}
 
       {!loading && filteredUsers.length > 0 ? (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {filteredUsers.map((u) => (
-            <Link key={u.id} href={`/hub/${u.id}`} className="flex items-center justify-between border border-[var(--border)] bg-[var(--surface)] p-3 transition-all hover:border-[var(--accent)]">
-              <div className="flex items-center gap-3">
-                <div className="border border-[var(--border)] p-2 text-[var(--muted)]"><UserIcon size={16} /></div>
+            <Link key={u.id} href={`/hub/${u.id}`} className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 transition-all hover:border-[var(--accent)] hover:shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="rounded-full border border-[var(--border)] bg-[var(--background)] p-2.5 text-[var(--muted)]"><UserIcon size={18} /></div>
                 <div>
-                  <p className="font-mono text-sm font-bold text-white">{u.name || "Unknown"}</p>
-                  <p className="font-mono text-xs text-[var(--muted)]">{u.programme} {u.batch_year?.toString().slice(-2)} · {u.roll_no}</p>
+                  <p className="text-sm font-bold text-white">{u.name || "Unknown"}</p>
+                  <p className="mt-0.5 text-xs font-medium text-[var(--muted)]">{u.programme} {u.batch_year?.toString().slice(-2)} · {u.roll_no}</p>
                 </div>
               </div>
-              <ArrowRight size={15} className="text-[var(--muted)]" />
+              <ArrowRight size={18} className="text-[var(--muted)] transition-colors group-hover:text-white" />
             </Link>
           ))}
         </div>

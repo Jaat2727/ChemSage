@@ -119,48 +119,58 @@ export default function GroupDetailPage() {
 
   const handleDeleteMessage = async (messageId: string) => {
     if (!profile?.id) return;
+    
+    // Optimistic UI update
+    const previousMessages = [...messages];
+    setMessages((current) => current.filter((msg) => msg.id !== messageId));
+
     const { error: deleteError } = await supabase.from("messages").delete().eq("id", messageId).eq("sender_id", profile.id);
-    if (deleteError) setError(deleteError.message);
+    
+    if (deleteError) {
+      setError(deleteError.message);
+      // Revert on error
+      setMessages(previousMessages);
+    }
   };
 
   if (loading || !profile) return <LoadingCard />;
 
   return (
-    <div className="mx-auto grid h-[calc(100dvh-10rem)] w-full max-w-6xl overflow-hidden border border-[var(--border)] bg-[var(--background)] md:grid-cols-[1fr_320px]">
+    <div className="mx-auto grid h-[calc(100dvh-8rem)] w-full max-w-6xl overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-lg md:grid-cols-[1fr_320px]">
       <section className="flex min-h-0 flex-col border-b border-[var(--border)] md:border-b-0 md:border-r">
-        <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)] px-3 py-2.5">
-          <div className="flex items-center gap-2.5">
-            <Link href="/groups" className="p-2 text-[var(--muted)] hover:bg-[var(--surface)] hover:text-white">
+        <header className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface-soft)] px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Link href="/groups" className="rounded-lg p-2 text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white">
               <ArrowLeft size={18} />
             </Link>
             <div>
-              <h1 className="font-mono text-sm font-bold text-white">{room?.name || groupId}</h1>
-              <p className="font-mono text-[11px] text-[var(--muted)]">{members.length} members</p>
+              <h1 className="text-base font-bold text-white">{room?.name || groupId}</h1>
+              <p className="text-xs font-medium text-[var(--muted)]">{members.length} members</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 border border-[var(--border)] px-2 py-1 font-mono text-[10px] text-[var(--muted)]">
-            <Wifi size={12} className={syncing ? "text-amber-400" : "text-emerald-400"} />
-            {syncing ? "syncing" : "live"}
+          <div className="flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
+            <Wifi size={14} className={syncing ? "text-amber-400" : "text-emerald-400"} />
+            {syncing ? "Syncing" : "Live"}
           </div>
         </header>
 
-        <div className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
-          {error ? <p className="border border-red-800 bg-red-950/50 px-3 py-2 font-mono text-sm text-red-300">{error}</p> : null}
+        <div className="flex-1 space-y-5 overflow-y-auto px-4 py-6">
+          {error ? <p className="rounded-lg border border-red-800 bg-red-950/50 px-4 py-3 text-sm font-medium text-red-300">{error}</p> : null}
 
           {messages.map((message) => {
             const isMe = message.sender_id === profile.id;
             return (
               <article key={message.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                <p className="mb-1 px-1 font-mono text-[11px] text-[var(--muted)]">{message.sender?.name || "Unknown"}</p>
-                <div className={`max-w-[88%] px-3 py-2 text-sm ${isMe ? "bg-[var(--accent)] text-black font-mono" : "border border-[var(--border)] bg-[var(--surface)] text-white"}`}>
+                <p className="mb-1.5 px-2 text-xs font-medium text-[var(--muted)]">{message.sender?.name || "Unknown"}</p>
+                <div className={`max-w-[88%] px-4 py-2.5 text-sm ${isMe ? "rounded-2xl rounded-tr-sm bg-[var(--accent)] text-black" : "rounded-2xl rounded-tl-sm border border-[var(--border)] bg-[var(--surface-soft)] text-white"}`}>
                   <MessageDisplay content={message.content} />
                 </div>
-                <div className="mt-1 flex items-center gap-2 px-1 font-mono text-[10px] text-[var(--muted)]">
+                <div className="mt-1.5 flex items-center gap-2 px-2 text-[11px] font-medium text-[var(--muted)]">
                   <span>{formatDateTime(message.created_at)}</span>
                   {isMe ? (
-                    <button onClick={() => handleDeleteMessage(message.id)} className="text-[var(--muted)] hover:text-red-300" title="Delete message">
-                      <Trash2 size={11} />
+                    <button onClick={() => handleDeleteMessage(message.id)} className="text-[var(--muted)] hover:text-red-300 transition-colors" title="Delete message">
+                      <Trash2 size={13} />
                     </button>
                   ) : null}
                 </div>
@@ -170,9 +180,9 @@ export default function GroupDetailPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        <footer className="border-t border-[var(--border)] bg-[var(--background)] p-3">
+        <footer className="border-t border-[var(--border)] bg-[var(--surface)] p-4">
           <form
-            className="flex items-end gap-2"
+            className="flex items-end gap-3"
             onSubmit={async (event) => {
               event.preventDefault();
               if (!inputText.trim() || !profile.id) return;
@@ -196,30 +206,30 @@ export default function GroupDetailPage() {
                 }
               }}
               placeholder="Write a message"
-              className="min-h-[42px] w-full resize-none border border-[var(--border)] bg-[var(--surface)] px-3 py-2 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none"
+              className="min-h-[44px] w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-colors"
               rows={1}
             />
-            <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 shrink-0 items-center justify-center bg-[var(--accent)] text-black font-mono disabled:opacity-50">
-              <Send size={16} />
+            <button type="submit" disabled={!inputText.trim() || sending} className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-black transition-colors hover:bg-[#bce600] disabled:opacity-50">
+              <Send size={18} />
             </button>
           </form>
         </footer>
       </section>
 
-      <aside className="hidden overflow-y-auto border-l border-[var(--border)] bg-[var(--background)] p-4 md:block">
-        <div className="mb-5 border border-[var(--border)] bg-[var(--surface)] p-4">
-          <div className="mb-2 flex items-center gap-2 font-mono text-sm font-bold text-white"><Users2 size={14} /> group_details</div>
-          {room?.location ? <p className="mb-1 flex items-start gap-2 text-xs text-[var(--muted)]"><MapPin size={12} className="mt-0.5" /> {room.location}</p> : null}
-          {room?.contact_info ? <p className="mb-1 flex items-start gap-2 text-xs text-[var(--muted)]"><Phone size={12} className="mt-0.5" /> {room.contact_info}</p> : null}
-          {room?.invited_people ? <p className="flex items-start gap-2 text-xs text-[var(--muted)]"><UserPlus size={12} className="mt-0.5" /> {room.invited_people}</p> : null}
+      <aside className="hidden overflow-y-auto border-l border-[var(--border)] bg-[var(--background)] p-5 md:block">
+        <div className="mb-6 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+          <div className="mb-3 flex items-center gap-2 text-sm font-bold text-white"><Users2 size={16} /> Group Details</div>
+          {room?.location ? <p className="mb-1.5 flex items-start gap-2 text-xs font-medium text-[var(--muted)]"><MapPin size={14} className="mt-0.5" /> {room.location}</p> : null}
+          {room?.contact_info ? <p className="mb-1.5 flex items-start gap-2 text-xs font-medium text-[var(--muted)]"><Phone size={14} className="mt-0.5" /> {room.contact_info}</p> : null}
+          {room?.invited_people ? <p className="flex items-start gap-2 text-xs font-medium text-[var(--muted)]"><UserPlus size={14} className="mt-0.5" /> {room.invited_people}</p> : null}
         </div>
 
-        <h3 className="mb-2 font-mono text-xs uppercase tracking-[0.14em] text-[var(--muted)]">members ({members.length})</h3>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Members ({members.length})</h3>
         <div className="space-y-2">
           {members.map((member) => (
-            <div key={member.id} className="border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
-              <p className="font-mono text-sm text-white">{member.name}</p>
-              <p className="font-mono text-[11px] text-[var(--muted)]">{member.roll_no}</p>
+            <div key={member.id} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 transition-colors hover:bg-[var(--surface-soft)]">
+              <p className="text-sm font-medium text-white">{member.name}</p>
+              <p className="text-xs font-medium text-[var(--muted)]">{member.roll_no}</p>
             </div>
           ))}
         </div>

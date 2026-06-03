@@ -9,7 +9,7 @@ import { InlineAlert } from "@/components/ui/Feedback";
 
 const supabase = createClientComponentClient();
 
-const inputClasses = "w-full border border-[var(--border)] bg-[var(--surface)] px-4 py-3 font-mono text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none";
+const inputClasses = "w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none transition-colors";
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -42,33 +42,32 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative w-full max-w-sm animate-scale-in border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
-      {/* MacOS-style window header */}
-      <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+    <div className="relative w-full max-w-sm animate-fade-in overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--background)] shadow-2xl">
+      <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-red-500" />
-          <span className="h-3 w-3 rounded-full bg-yellow-500" />
-          <span className="h-3 w-3 rounded-full bg-green-500" />
+          <div className="h-3 w-3 rounded-full bg-red-500/20 border border-red-500/50" />
+          <div className="h-3 w-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+          <div className="h-3 w-3 rounded-full bg-green-500/20 border border-green-500/50" />
         </div>
-        <span className="font-mono text-xs text-[var(--muted)]">chemsage_reset.ts</span>
+        <span className="text-xs font-semibold tracking-wider text-[var(--muted)] uppercase">Password Reset</span>
         <div className="w-12" />
       </div>
 
       <div className="px-8 pb-8 pt-6">
         {step < 4 ? (
-          <button onClick={() => (step === 1 ? window.history.back() : setStep((value) => (value - 1) as 1 | 2 | 3))} className="mb-4 flex items-center gap-1.5 font-mono text-sm text-[var(--muted)] transition-colors hover:text-white">
-            <ArrowLeft size={16} /> {`< back`}
+          <button onClick={() => (step === 1 ? window.history.back() : setStep((value) => (value - 1) as 1 | 2 | 3))} className="mb-6 flex items-center gap-1.5 text-sm font-medium text-[var(--muted)] transition-colors hover:text-white">
+            <ArrowLeft size={16} /> Back
           </button>
         ) : null}
 
         {step === 1 ? (
           <div className="animate-slide-up">
             <div className="mb-8 mt-2 flex flex-col items-center text-center">
-              <div className="mb-4 border border-[var(--border)] bg-[var(--background)] p-4 text-[var(--muted)]">
+              <div className="mb-4 rounded-full border border-[var(--border)] bg-[var(--surface)] p-4 text-[var(--muted)]">
                 <KeyRound size={28} />
               </div>
-              <h1 className="font-mono text-2xl font-bold text-white">forgotPassword()</h1>
-              <p className="mt-2 font-mono text-sm text-[var(--muted)]">{`// Enter your registered smail address to receive an OTP.`}</p>
+              <h1 className="text-2xl font-bold text-white">Forgot Password</h1>
+              <p className="mt-2 text-sm text-[var(--muted)]">Enter your registered email address to receive an OTP.</p>
             </div>
 
             <form
@@ -89,14 +88,14 @@ export default function ForgotPasswordPage() {
               }}
             >
               <div className="space-y-1.5">
-                <label className="font-mono text-xs text-[var(--muted)]">EMAIL</label>
+                <label className="text-sm font-medium text-[var(--muted)]">Email Address</label>
                 <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="CY25B013 or rollno@smail.iitm.ac.in" required className={inputClasses} />
               </div>
 
               <InlineAlert message={error} />
 
-              <button disabled={loading} type="submit" className="w-full border border-[var(--accent)] bg-[var(--accent)] py-3 font-mono text-sm font-bold text-black disabled:opacity-60">
-                {loading ? "sending_otp..." : "sendOtp()"}
+              <button disabled={loading} type="submit" className="w-full rounded-lg border border-[var(--accent)] bg-[var(--accent)] py-3 text-sm font-bold text-black transition-colors hover:bg-[#bce600] disabled:opacity-60">
+                {loading ? "Sending OTP..." : "Send OTP"}
               </button>
             </form>
           </div>
@@ -105,8 +104,8 @@ export default function ForgotPasswordPage() {
         {step === 2 ? (
           <div className="animate-slide-up">
             <div className="mb-8 mt-2 flex flex-col items-center text-center">
-              <h1 className="font-mono text-2xl font-bold text-white">verifyOtp()</h1>
-              <p className="mt-2 font-mono text-sm text-[var(--muted)]">{`// We've sent a 6-digit code to your email.`}</p>
+              <h1 className="text-2xl font-bold text-white">Verify OTP</h1>
+              <p className="mt-2 text-sm text-[var(--muted)]">We've sent a 6-digit code to your email.</p>
             </div>
 
             <form
@@ -152,7 +151,7 @@ export default function ForgotPasswordPage() {
                         inputsRef.current[index - 1]?.focus();
                       }
                     }}
-                    className="h-14 w-12 border border-[var(--border)] bg-[var(--surface)] text-center font-mono text-xl font-bold text-white focus:border-[var(--accent)] focus:outline-none"
+                    className="h-14 w-12 rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] text-center text-xl font-bold text-white focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                     placeholder="0"
                     required
                   />
@@ -162,9 +161,9 @@ export default function ForgotPasswordPage() {
               <InlineAlert message={error} />
 
               <div className="text-center">
-                <p className="mb-1 font-mono text-sm text-[var(--muted)]">{`// Didn't receive code?`}</p>
+                <p className="mb-1 text-sm font-medium text-[var(--muted)]">Didn't receive code?</p>
                 {timer > 0 ? (
-                  <p className="font-mono text-sm text-[var(--muted)]">resend in 00:{timer.toString().padStart(2, "0")}</p>
+                  <p className="text-sm text-[var(--muted)]">Resend in 00:{timer.toString().padStart(2, "0")}</p>
                 ) : (
                   <button
                     type="button"
@@ -180,15 +179,15 @@ export default function ForgotPasswordPage() {
                         setLoading(false);
                       }
                     }}
-                    className="font-mono text-sm text-[var(--accent)] hover:underline"
+                    className="text-sm font-medium text-[var(--accent)] hover:underline"
                   >
-                    resendOtp()
+                    Resend OTP
                   </button>
                 )}
               </div>
 
-              <button disabled={loading} type="submit" className="w-full border border-[var(--accent)] bg-[var(--accent)] py-3 font-mono text-sm font-bold text-black disabled:opacity-60">
-                {loading ? "verifying..." : "verify()"}
+              <button disabled={loading} type="submit" className="w-full rounded-lg border border-[var(--accent)] bg-[var(--accent)] py-3 text-sm font-bold text-black transition-colors hover:bg-[#bce600] disabled:opacity-60">
+                {loading ? "Verifying..." : "Verify"}
               </button>
             </form>
           </div>
@@ -197,8 +196,8 @@ export default function ForgotPasswordPage() {
         {step === 3 ? (
           <div className="animate-slide-up">
             <div className="mb-8 mt-2 flex flex-col items-center text-center">
-              <h1 className="font-mono text-2xl font-bold text-white">resetPassword()</h1>
-              <p className="mt-2 font-mono text-sm text-[var(--muted)]">{`// Create a strong new password for your account.`}</p>
+              <h1 className="text-2xl font-bold text-white">Reset Password</h1>
+              <p className="mt-2 text-sm text-[var(--muted)]">Create a strong new password for your account.</p>
             </div>
 
             <form
@@ -222,7 +221,7 @@ export default function ForgotPasswordPage() {
               }}
             >
               <div className="space-y-1.5">
-                <label className="font-mono text-xs text-[var(--muted)]">NEW_PASSWORD</label>
+                <label className="text-sm font-medium text-[var(--muted)]">New Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -243,7 +242,7 @@ export default function ForgotPasswordPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-mono text-xs text-[var(--muted)]">CONFIRM_PASSWORD</label>
+                <label className="text-sm font-medium text-[var(--muted)]">Confirm Password</label>
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -265,8 +264,8 @@ export default function ForgotPasswordPage() {
 
               <InlineAlert message={error} />
 
-              <button disabled={loading} type="submit" className="mt-4 w-full border border-[var(--accent)] bg-[var(--accent)] py-3 font-mono text-sm font-bold text-black disabled:opacity-60">
-                {loading ? "updating..." : "updatePassword()"}
+              <button disabled={loading} type="submit" className="mt-6 w-full rounded-lg border border-[var(--accent)] bg-[var(--accent)] py-3 text-sm font-bold text-black transition-colors hover:bg-[#bce600] disabled:opacity-60">
+                {loading ? "Updating..." : "Update Password"}
               </button>
             </form>
           </div>
@@ -275,14 +274,14 @@ export default function ForgotPasswordPage() {
         {step === 4 ? (
           <div className="animate-scale-in py-6 text-center">
             <div className="mb-6 flex justify-center">
-              <div className="border border-emerald-800 bg-emerald-950/30 p-4 text-emerald-300">
+              <div className="rounded-full border border-emerald-800 bg-emerald-950/30 p-4 text-emerald-300">
                 <CheckCircle2 size={48} strokeWidth={2.5} />
               </div>
             </div>
-            <h2 className="mb-2 font-mono text-2xl font-bold text-white">password_updated ✓</h2>
+            <h2 className="mb-2 text-2xl font-bold text-white">Password Updated</h2>
             <p className="mb-8 leading-relaxed text-[var(--muted)]">Your password has been successfully reset. You can now login.</p>
-            <Link href="/login" className="block w-full border border-[var(--accent)] bg-[var(--accent)] py-3 font-mono text-sm font-bold text-black">
-              goToLogin()
+            <Link href="/login" className="block w-full rounded-lg border border-[var(--accent)] bg-[var(--accent)] py-3 text-sm font-bold text-black transition-colors hover:bg-[#bce600]">
+              Go to Login
             </Link>
           </div>
         ) : null}
