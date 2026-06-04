@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ListTodo, Plus, Trash2, Activity, AlertTriangle, Edit3, Calendar as CalendarIcon, Search, ArrowRight, ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { InlineAlert, LoadingCard, LockedScreen } from "@/components/ui/Feedback";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/AuthProvider";
+import { createClientComponentClient } from "@/lib/supabase";
 
 interface TaskItem {
   id: string;
@@ -17,8 +18,23 @@ interface TaskItem {
   createdAt: string;
 }
 
+// Map Supabase row → local TaskItem shape
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToTask(row: any): TaskItem {
+  return {
+    id: row.id,
+    title: row.title,
+    notes: row.notes || "",
+    priority: row.priority,
+    status: row.status,
+    dueDate: row.due_date || null,
+    createdAt: row.created_at,
+  };
+}
+
 const priorities: Array<TaskItem["priority"]> = ["High", "Medium", "Low"];
-const storageKey = (profileId: string) => `chemsage.tasks.${profileId}`;
+const localStorageKey = (profileId: string) => `chemsage.tasks.${profileId}`;
+const supabase = createClientComponentClient();
 
 const inputClasses = "rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm font-medium text-white outline-none placeholder:text-[var(--muted)] transition-colors focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]";
 
@@ -32,36 +48,57 @@ export default function TaskTerminalPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Load tasks from Supabase, and migrate localStorage data if present
   useEffect(() => {
     if (!profile) return;
     if (profile.status !== "active") { setLoading(false); return; }
-    try {
-      const saved = window.localStorage.getItem(storageKey(profile.id));
-      if (!saved) { setTasks([]); }
-      else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const parsed = JSON.parse(saved) as any[];
-        // Migration
-        const migrated: TaskItem[] = parsed.map(p => ({
-          id: p.id,
-          title: p.title || "",
-          notes: p.notes || "",
-          priority: p.priority || "Medium",
-          status: p.status || (p.done ? "Completed" : "Pending"),
-          dueDate: p.dueDate || null,
-          createdAt: p.createdAt || new Date().toISOString()
-        }));
-        setTasks(Array.isArray(migrated) ? migrated : []);
-      }
-      setError(null);
-    } catch { setError("We could not load your saved tasks on this device."); setTasks([]); }
-    finally { setLoading(false); }
-  }, [profile]);
 
-  useEffect(() => {
-    if (!profile || profile.status !== "active" || loading) return;
-    window.localStorage.setItem(storageKey(profile.id), JSON.stringify(tasks));
-  }, [loading, profile, tasks]);
+    const loadTasks = async () => {
+      try {
+        // Migrate any leftover localStorage tasks to Supabase (one-time)
+        const lsKey = localStorageKey(profile.id);
+        const localData = window.localStorage.getItem(lsKey);
+        if (localData) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const parsed = JSON.parse(localData) as any[];
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const rowsToInsert = parsed.map(p => ({
+                user_id: profile.id,
+                title: p.title || "Untitled",
+                notes: p.notes || "",
+                priority: p.priority || "Medium",
+                status: p.status || (p.done ? "Completed" : "Pending"),
+                due_date: p.dueDate || null,
+              }));
+              await supabase.from("tasks").insert(rowsToInsert);
+            }
+          } catch { /* ignore parse errors */ }
+          // Remove localStorage data after migration attempt
+          window.localStorage.removeItem(lsKey);
+        }
+
+        // Fetch tasks from Supabase
+        const { data, error: fetchError } = await supabase
+          .from("tasks")
+          .select("*")
+          .eq("user_id", profile.id)
+          .order("created_at", { ascending: false });
+
+        if (fetchError) {
+          setError(fetchError.message);
+        } else {
+          setTasks((data || []).map(rowToTask));
+        }
+      } catch (e) {
+        setError("Failed to load tasks.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadTasks();
+  }, [profile]);
 
   const stats = useMemo(() => {
     const completed = tasks.filter((task) => task.status === "Completed").length;
@@ -75,38 +112,88 @@ export default function TaskTerminalPage() {
     return tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.notes.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [tasks, searchQuery]);
 
-  const handleCreateTask = (e: React.FormEvent) => {
+  const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanTitle = title.trim();
-    if (!cleanTitle) return;
-    setTasks((current) => [{ id: `${Date.now()}`, title: cleanTitle, notes: "", priority, status: "Pending", dueDate: dueDate || null, createdAt: new Date().toISOString() }, ...current]);
+    if (!cleanTitle || !profile) return;
+
+    // Optimistic: add immediately with temp id
+    const tempId = `temp-${Date.now()}`;
+    const optimisticTask: TaskItem = {
+      id: tempId, title: cleanTitle, notes: "", priority,
+      status: "Pending", dueDate: dueDate || null, createdAt: new Date().toISOString()
+    };
+    setTasks(current => [optimisticTask, ...current]);
     setTitle("");
     setDueDate("");
     setPriority("Medium");
-  };
 
-  const updateTaskStatus = (id: string, newStatus: TaskItem["status"]) => {
-    setTasks(current => current.map(t => t.id === id ? { ...t, status: newStatus } : t));
-  };
-  const deleteTask = (id: string) => {
-    setTasks(current => current.filter(t => t.id !== id));
-  };
+    const { data, error: insertError } = await supabase
+      .from("tasks")
+      .insert({
+        user_id: profile.id, title: cleanTitle, notes: "",
+        priority, status: "Pending", due_date: dueDate || null,
+      })
+      .select()
+      .single();
 
-  const addTemplate = (type: string) => {
-    const now = new Date().toISOString();
-    let newTasks: TaskItem[] = [];
-    if (type === "study") {
-      newTasks = [
-        { id: `${Date.now()}-1`, title: "Review Chapter 4 Notes", notes: "Focus on thermodynamics", priority: "High", status: "Pending", dueDate: null, createdAt: now },
-        { id: `${Date.now()}-2`, title: "Complete Practice Set 2", notes: "Questions 1-15", priority: "Medium", status: "Pending", dueDate: null, createdAt: now }
-      ];
-    } else if (type === "lab") {
-      newTasks = [
-        { id: `${Date.now()}-3`, title: "Draft Lab Report", notes: "Include data tables and graphs", priority: "High", status: "In Progress", dueDate: null, createdAt: now },
-        { id: `${Date.now()}-4`, title: "Submit Prelab", notes: "Due before next Tuesday", priority: "High", status: "Pending", dueDate: null, createdAt: now }
-      ];
+    if (insertError) {
+      setError(insertError.message);
+      setTasks(current => current.filter(t => t.id !== tempId));
+    } else if (data) {
+      // Replace temp task with real one from DB (gets real UUID)
+      setTasks(current => current.map(t => t.id === tempId ? rowToTask(data) : t));
     }
-    setTasks(current => [...newTasks, ...current]);
+  };
+
+  const updateTaskStatus = async (id: string, newStatus: TaskItem["status"]) => {
+    const previous = tasks;
+    setTasks(current => current.map(t => t.id === id ? { ...t, status: newStatus } : t));
+
+    const { error: updateError } = await supabase
+      .from("tasks")
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq("id", id);
+
+    if (updateError) {
+      setError(updateError.message);
+      setTasks(previous); // rollback
+    }
+  };
+
+  const deleteTask = async (id: string) => {
+    const previous = tasks;
+    setTasks(current => current.filter(t => t.id !== id));
+
+    const { error: deleteError } = await supabase.from("tasks").delete().eq("id", id);
+    if (deleteError) {
+      setError(deleteError.message);
+      setTasks(previous); // rollback
+    }
+  };
+
+  const addTemplate = async (type: string) => {
+    if (!profile) return;
+    const rows: Array<{ user_id: string; title: string; notes: string; priority: string; status: string; due_date: null }> = [];
+    if (type === "study") {
+      rows.push(
+        { user_id: profile.id, title: "Review Chapter 4 Notes", notes: "Focus on thermodynamics", priority: "High", status: "Pending", due_date: null },
+        { user_id: profile.id, title: "Complete Practice Set 2", notes: "Questions 1-15", priority: "Medium", status: "Pending", due_date: null }
+      );
+    } else if (type === "lab") {
+      rows.push(
+        { user_id: profile.id, title: "Draft Lab Report", notes: "Include data tables and graphs", priority: "High", status: "In Progress", due_date: null },
+        { user_id: profile.id, title: "Submit Prelab", notes: "Due before next Tuesday", priority: "High", status: "Pending", due_date: null }
+      );
+    }
+    if (!rows.length) return;
+
+    const { data, error: insertError } = await supabase.from("tasks").insert(rows).select();
+    if (insertError) {
+      setError(insertError.message);
+    } else if (data) {
+      setTasks(current => [...data.map(rowToTask), ...current]);
+    }
   };
 
   if (!profile) return <LoadingCard />;

@@ -52,7 +52,7 @@ export default function GroupChatPage() {
       // Fetch Members
       const { data: memberData } = await supabase
         .from("room_members")
-        .select("user_id, profiles:user_id(id, name, roll_no, programme, batch_year)")
+        .select("user_id, profiles:user_id(id, name, roll_no, programme, batch_year, avatar_url)")
         .eq("room_id", groupId);
       const profiles = (Array.isArray(memberData) ? memberData : [])
         .map((m) => (m as unknown as { profiles: Profile }).profiles)
@@ -73,7 +73,7 @@ export default function GroupChatPage() {
         const rows = Array.isArray(msgs) ? msgs : [];
         const senderIds = Array.from(new Set(rows.map((row) => row.sender_id)));
         const { data: senders } = senderIds.length
-          ? await supabase.from("profiles").select("id, name, roll_no, programme, batch_year").in("id", senderIds)
+          ? await supabase.from("profiles").select("id, name, roll_no, programme, batch_year, avatar_url").in("id", senderIds)
           : { data: [] };
         const senderMap = new Map((Array.isArray(senders) ? senders : []).map((item) => [item.id, item]));
         if (mounted) setMessages(rows.map((row) => ({ ...row, sender: senderMap.get(row.sender_id) })));
@@ -102,7 +102,7 @@ export default function GroupChatPage() {
         { event: "INSERT", schema: "public", table: "messages", filter: `room_id=eq.${groupId}` },
         async (payload) => {
           const row = payload.new as unknown as ChatMessage;
-          const { data: sender } = await supabase.from("profiles").select("id, name").eq("id", row.sender_id).single();
+          const { data: sender } = await supabase.from("profiles").select("id, name, avatar_url").eq("id", row.sender_id).single();
           setMessages((current) => {
             if (current.some((item) => item.id === row.id)) return current;
             return [...current, { ...row, sender: (sender as Profile) ?? undefined }];
@@ -330,8 +330,8 @@ export default function GroupChatPage() {
                     {/* Avatar Area */}
                     <div className="w-10 shrink-0 flex justify-center">
                       {!isContinuation ? (
-                        <div className="h-10 w-10 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center font-bold text-sm text-[var(--muted)]">
-                          {message.sender?.name?.charAt(0).toUpperCase() || "?"}
+                        <div className="h-10 w-10 overflow-hidden rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center font-bold text-sm text-[var(--muted)]">
+                          {message.sender?.avatar_url ? <img src={message.sender.avatar_url} alt={message.sender.name} className="h-full w-full object-cover" /> : (message.sender?.name?.charAt(0).toUpperCase() || "?")}
                         </div>
                       ) : (
                         <span className="text-[10px] text-[var(--muted)] opacity-0 group-hover:opacity-100 self-center">
@@ -462,8 +462,8 @@ export default function GroupChatPage() {
             {members.map((member) => (
               <div key={member.id} className="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-[var(--surface-soft)] transition-colors cursor-default group">
                 <div className="relative">
-                  <div className="h-8 w-8 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-xs font-bold text-[var(--muted)] group-hover:text-white transition-colors">
-                    {member.name.charAt(0).toUpperCase()}
+                  <div className="h-8 w-8 overflow-hidden rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-xs font-bold text-[var(--muted)] group-hover:text-white transition-colors">
+                    {member.avatar_url ? <img src={member.avatar_url} alt={member.name} className="h-full w-full object-cover" /> : member.name.charAt(0).toUpperCase()}
                   </div>
                   {/* Fake online status for aesthetics */}
                   <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-[2px] border-[#0f0f11]" />

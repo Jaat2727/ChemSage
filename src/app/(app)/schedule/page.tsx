@@ -47,20 +47,20 @@ export default function ScheduleManagerPage() {
     if (!profile || profile.status !== "active") return;
     
     const loadSchedule = async () => {
-      const { data, error: fetchError } = await supabase.from("schedule").select("*").eq("user_id", profile.id).order("start_time", { ascending: true });
-      if (fetchError) setError(fetchError.message);
-      setEntries(Array.isArray(data) ? data : []);
+      const [scheduleRes, tasksRes] = await Promise.all([
+        supabase.from("schedule").select("*").eq("user_id", profile.id).order("start_time", { ascending: true }),
+        supabase.from("tasks").select("*").eq("user_id", profile.id).order("created_at", { ascending: false }),
+      ]);
+      if (scheduleRes.error) setError(scheduleRes.error.message);
+      setEntries(Array.isArray(scheduleRes.data) ? scheduleRes.data : []);
+      // Map DB rows to TaskItem shape
+      setTasks((tasksRes.data || []).map((r: any) => ({
+        id: r.id, title: r.title, notes: r.notes || "",
+        priority: r.priority, status: r.status,
+        dueDate: r.due_date || null, createdAt: r.created_at,
+      })));
       setLoading(false);
     };
-    
-    try {
-      const savedTasks = window.localStorage.getItem(`chemsage.tasks.${profile.id}`);
-      if (savedTasks) {
-        setTasks(JSON.parse(savedTasks));
-      }
-    } catch {
-      console.error("Failed to load tasks");
-    }
 
     void loadSchedule();
   }, [profile]);

@@ -50,7 +50,6 @@ export default function ContentSection({ resources, setResources, papers, setPap
       } else {
         setPapers(cur => cur.map(p => p.id === item.id ? { ...p, status: newStatus } : p));
       }
-      await logAdminAction(newStatus === "deleted" ? "soft_delete" : "restore", item.itemType, item.id, { title: item.title });
     }
   };
 
@@ -65,7 +64,6 @@ export default function ContentSection({ resources, setResources, papers, setPap
       } else {
         setPapers(cur => cur.filter(p => p.id !== item.id));
       }
-      await logAdminAction("hard_delete", item.itemType, item.id, { title: item.title });
     }
   };
 

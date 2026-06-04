@@ -11,6 +11,22 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { email, password, name, rollNo, programme, batch_year } = body;
 
+    // 0. Verify roll number is registered before allowing signup
+    const { data: registered, error: rollError } = await supabaseAdmin
+      .from('registered_rollnos')
+      .select('name, programme, batch_year')
+      .eq('roll_no', rollNo)
+      .single();
+      
+    if (rollError) {
+      return NextResponse.json({ error: "This roll number is not registered for ChemSAGE. Contact an admin." }, { status: 403 });
+    }
+
+    // Use registered data to ensure integrity
+    const finalName = registered.name || name;
+    const finalProgramme = registered.programme || programme;
+    const finalBatchYear = registered.batch_year || batch_year;
+
     // 1. Create user using admin API (bypasses rate limits and email verification)
     const { data: authData, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -28,9 +44,9 @@ export async function POST(request: Request) {
     const { error: profileError } = await supabaseAdmin.from('profiles').insert({
       id: userId,
       roll_no: rollNo,
-      name: name,
-      programme: programme,
-      batch_year: batch_year,
+      name: finalName,
+      programme: finalProgramme,
+      batch_year: finalBatchYear,
       status: 'pending',
       role: 'student'
     });
@@ -43,11 +59,20 @@ export async function POST(request: Request) {
 
     // 3. Add admin notification
     try {
-      await supabaseAdmin.from("admin_notifications").insert({
-        type: "new_signup",
-        message: `New signup: ${name} (${rollNo})`,
-        related_user_id: userId,
-      });
+      const { data: admins } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('role', 'admin');
+        
+      if (admins && admins.length > 0) {
+        const notifications = admins.map(admin => ({
+          user_id: admin.id,
+          title: "New Student Signup",
+          type: 'Admin',
+          message: `New signup request pending approval: ${name} (${rollNo})`,
+        }));
+        await supabaseAdmin.from('notifications').insert(notifications);
+      }
     } catch {}
 
     return NextResponse.json({ success: true, userId });

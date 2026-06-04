@@ -77,10 +77,10 @@ function UploadModal({ onClose, onSuccess, uploaderId }: UploadModalProps) {
     if (!file || !subject.trim()) { setError("Please select a file and enter a subject."); return; }
     setUploading(true); setError(null); setProgress(10);
     const path = `${Date.now()}-${file.name}`;
-    const upload = await supabase.storage.from("exam-archive").upload(path, file);
+    const upload = await supabase.storage.from("past_papers").upload(path, file);
     if (upload.error) { setError(upload.error.message); setUploading(false); setProgress(0); return; }
     setProgress(55);
-    const { data: publicUrlData } = supabase.storage.from("exam-archive").getPublicUrl(path);
+    const { data: publicUrlData } = supabase.storage.from("past_papers").getPublicUrl(path);
     setProgress(70);
     const { error: insertError } = await supabase.from("exam_papers").insert({
       subject: subject.trim(), exam_type: examType, year, semester,
@@ -213,9 +213,9 @@ function ReplacePaperModal({ paper, onClose, onSuccess }: { paper: ExamPaper; on
     if (!file) return;
     setUploading(true); setError(null);
     const path = `${Date.now()}-${file.name}`;
-    const upload = await supabase.storage.from("exam-archive").upload(path, file);
+    const upload = await supabase.storage.from("past_papers").upload(path, file);
     if (upload.error) { setError(upload.error.message); setUploading(false); return; }
-    const { data: publicUrlData } = supabase.storage.from("exam-archive").getPublicUrl(path);
+    const { data: publicUrlData } = supabase.storage.from("past_papers").getPublicUrl(path);
     let newVersion = "v1.1";
     if (paper.version) { const m = paper.version.match(/v(\d+)\.(\d+)/); if (m) newVersion = `v${m[1]}.${parseInt(m[2]) + 1}`; }
     const { error: e } = await supabase.from("exam_papers").update({ file_url: publicUrlData.publicUrl, file_size: file.size, version: newVersion, updated_at: new Date().toISOString() }).eq("id", paper.id);
@@ -460,9 +460,13 @@ export default function ExamArchivePage() {
 
   const handleDownload = async (id: string, url: string, currentCount: number) => {
     window.open(url, "_blank");
-    const newCount = currentCount + 1;
-    setPapers(c => c.map(p => p.id === id ? { ...p, download_count: newCount } : p));
-    await supabase.from("exam_papers").update({ download_count: newCount }).eq("id", id);
+    // Optimistic UI update
+    setPapers(c => c.map(p => p.id === id ? { ...p, download_count: (currentCount || 0) + 1 } : p));
+    // Atomic server-side increment — prevents race conditions with concurrent downloads
+    const { data: newCount } = await supabase.rpc("increment_download_count", { p_table: "exam_papers", p_id: id });
+    if (typeof newCount === "number") {
+      setPapers(c => c.map(p => p.id === id ? { ...p, download_count: newCount } : p));
+    }
   };
 
   const processed = useMemo(() => {

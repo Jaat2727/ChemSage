@@ -1,149 +1,96 @@
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@/lib/supabase";
-import { formatDateTime } from "@/lib/utils";
-import { FileText, Database, Users, CalendarDays } from "lucide-react";
-import { EmptyState, LoadingCard } from "@/components/ui/Feedback";
+import { Activity, FileText, Users, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { formatTime } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
-
-type ActivityItem = {
-  id: string;
-  type: "resource" | "paper" | "group";
-  title: string;
-  timestamp: string;
-  meta?: string;
-};
 
 export default function ActivityTab({ profile }: { profile: Profile }) {
   const supabase = createClientComponentClient();
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [feed, setFeed] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchActivity = async () => {
-      const [
-        { data: resources },
-        { data: papers },
-        { data: groups }
-      ] = await Promise.all([
-        supabase.from("resources").select("id, title, category, created_at").eq("uploaded_by", profile.id),
-        supabase.from("exam_papers").select("id, subject, exam_type, created_at").eq("uploaded_by", profile.id),
-        supabase.from("room_members")
-          .select("joined_at, room_id, rooms(id, name)")
-          .eq("user_id", profile.id)
-      ]);
+    const fetchFeed = async () => {
+      const { data } = await supabase
+        .from("activity_feed")
+        .select("*")
+        .eq("user_id", profile.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
 
-      const items: ActivityItem[] = [];
-
-      if (resources) {
-        resources.forEach((r) => {
-          items.push({
-            id: `res-${r.id}`,
-            type: "resource",
-            title: `Uploaded resource: ${r.title}`,
-            meta: r.category,
-            timestamp: r.created_at
-          });
-        });
-      }
-
-      if (papers) {
-        papers.forEach((p) => {
-          items.push({
-            id: `pap-${p.id}`,
-            type: "paper",
-            title: `Contributed past paper: ${p.subject}`,
-            meta: p.exam_type,
-            timestamp: p.created_at
-          });
-        });
-      }
-
-      if (groups) {
-        groups.forEach((g: any) => {
-          if (g.rooms) {
-            items.push({
-              id: `grp-${g.room_id}`,
-              type: "group",
-              title: `Joined study circle: ${g.rooms.name}`,
-              timestamp: g.joined_at || new Date().toISOString()
-            });
-          }
-        });
-      }
-
-      // Special item for joining
-      if (profile.created_at) {
-        items.push({
-          id: `join-${profile.id}`,
-          type: "group",
-          title: "Joined ChemSAGE",
-          timestamp: profile.created_at
-        });
-      }
-
-      items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      
-      setActivities(items);
+      if (data) setFeed(data);
       setLoading(false);
     };
+    void fetchFeed();
+  }, [profile.id]);
 
-    void fetchActivity();
-  }, [profile.id, profile.created_at]);
-
-  if (loading) return <LoadingCard />;
+  if (loading) return <div className="text-sm text-[var(--muted)]">Loading activity timeline...</div>;
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">Academic Timeline</h2>
+    <div className="max-w-3xl space-y-6">
+      <div>
+        <h2 className="text-xl font-bold tracking-tight text-white mb-1">Activity Timeline</h2>
+        <p className="text-sm text-[var(--muted)]">Chronological history of contributions and community interactions.</p>
       </div>
 
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-        {activities.length === 0 ? (
-          <EmptyState title="No activity yet" description="This user hasn't made any public contributions." />
+        {feed.length === 0 ? (
+          <div className="py-12 text-center text-sm text-[var(--muted)]">
+            <Activity size={24} className="mx-auto mb-3 opacity-20" />
+            No recent activity found for this user.
+          </div>
         ) : (
-          <div className="relative border-l-2 border-[var(--border)] ml-4 space-y-8 pb-4">
-            {activities.map((item, index) => {
-              let Icon = CalendarDays;
-              let color = "text-gray-400";
-              let bg = "bg-gray-500/10";
-              
-              if (item.type === "resource") {
-                Icon = Database;
-                color = "text-[var(--accent)]";
-                bg = "bg-[var(--accent)]/10";
-              } else if (item.type === "paper") {
-                Icon = FileText;
-                color = "text-blue-400";
-                bg = "bg-blue-500/10";
-              } else if (item.type === "group") {
-                Icon = Users;
-                color = "text-purple-400";
-                bg = "bg-purple-500/10";
-              }
-
-              return (
-                <div key={`${item.id}-${index}`} className="relative pl-8">
-                  {/* Timeline Dot / Icon */}
-                  <div className={`absolute -left-[17px] top-0 flex h-8 w-8 items-center justify-center rounded-full border-4 border-[var(--surface)] ${bg} ${color}`}>
-                    <Icon size={12} />
+          <div className="relative border-l-2 border-[var(--surface-soft)] ml-4 space-y-8 pb-4">
+            {feed.map((item, idx) => (
+              <div key={item.id} className="relative pl-6">
+                {/* Timeline Dot */}
+                <span className="absolute -left-[9px] top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--surface)] border-2 border-[var(--accent)] ring-4 ring-[var(--surface)]" />
+                
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                  <div>
+                    {item.target_type === 'resource' && (
+                      <>
+                        <div className="flex items-center gap-2 text-sm text-gray-200">
+                          <FileText size={14} className="text-emerald-400" />
+                          <span>Uploaded a resource: <span className="font-bold text-white">{item.details?.title}</span></span>
+                        </div>
+                        <p className="text-[10px] text-[var(--muted)] mt-1 uppercase font-bold tracking-wider">{item.details?.category}</p>
+                      </>
+                    )}
+                    {item.target_type === 'room' && (
+                      <>
+                        <div className="flex items-center gap-2 text-sm text-gray-200">
+                          <Users size={14} className="text-purple-400" />
+                          <span>Created a study group: <span className="font-bold text-white">{item.details?.name}</span></span>
+                        </div>
+                        <p className="text-[10px] text-[var(--muted)] mt-1 uppercase font-bold tracking-wider">{item.details?.location}</p>
+                      </>
+                    )}
+                    {item.action_type === 'earn_star' && (
+                      <div className="flex items-center gap-2 text-sm text-gray-200">
+                        <span className="text-amber-400 font-bold">★</span>
+                        <span>{item.details?.message}</span>
+                      </div>
+                    )}
                   </div>
                   
-                  {/* Content */}
-                  <div className="flex flex-col">
-                    <p className="text-sm font-bold text-white">{item.title}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-[var(--muted)]">
-                      {item.meta && (
-                        <span className="rounded-md bg-[var(--background)] border border-[var(--border)] px-1.5 py-0.5 font-medium uppercase tracking-wider">
-                          {item.meta}
-                        </span>
-                      )}
-                      <span>{formatDateTime(item.timestamp)}</span>
-                    </div>
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    <span className="text-[10px] text-[var(--muted)] font-mono">
+                      {new Date(item.created_at).toLocaleDateString()} • {formatTime(item.created_at)}
+                    </span>
+                    {(item.target_type === 'resource' || item.target_type === 'room') && (
+                      <Link 
+                        href={item.target_type === 'resource' ? "/vault" : `/groups/${item.target_id}`} 
+                        className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-[var(--accent)] hover:text-white transition-colors"
+                      >
+                        View <ArrowRight size={12} />
+                      </Link>
+                    )}
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>

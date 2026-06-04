@@ -84,7 +84,7 @@ export function NotificationPortal({
   // Assume a fixed padding from right edge if on mobile, else align with bell
   const rightOffset = typeof window !== "undefined" && window.innerWidth < 400 ? 16 : 24;
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const portalContent = (
     <>
@@ -144,13 +144,13 @@ export function NotificationPortal({
                   key={n.id}
                   className={cn(
                     "group relative flex items-start gap-3 rounded-lg p-3 transition-all",
-                    n.read 
+                    n.is_read 
                       ? "hover:bg-[var(--surface-soft)] opacity-70" 
                       : "bg-[var(--surface)] hover:bg-[var(--surface-soft)] border border-[var(--border)]"
                   )}
                 >
                   {/* Unread indicator dot */}
-                  {!n.read && (
+                  {!n.is_read && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[var(--accent)] rounded-r-full" />
                   )}
 
@@ -162,7 +162,7 @@ export function NotificationPortal({
                     <div className="flex items-baseline justify-between gap-2">
                       <p className={cn(
                         "text-sm truncate",
-                        n.read ? "font-medium text-[var(--muted)]" : "font-bold text-white"
+                        n.is_read ? "font-medium text-[var(--muted)]" : "font-bold text-white"
                       )}>
                         {n.type}
                       </p>
@@ -172,7 +172,7 @@ export function NotificationPortal({
                     </div>
                     <p className={cn(
                       "text-xs mt-0.5 line-clamp-2 leading-relaxed",
-                      n.read ? "text-[var(--muted)]" : "text-gray-300"
+                      n.is_read ? "text-[var(--muted)]" : "text-gray-300"
                     )}>
                       {n.message}
                     </p>
@@ -180,7 +180,7 @@ export function NotificationPortal({
 
                   {/* Actions (Hover) */}
                   <div className="absolute right-2 top-3 flex flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100 sm:flex-row sm:top-1/2 sm:-translate-y-1/2 sm:right-3 sm:bg-gradient-to-l sm:from-[#111] sm:via-[#111] sm:to-transparent sm:pl-4">
-                    {!n.read && (
+                    {!n.is_read && (
                       <button 
                         onClick={(e) => onMarkRead(n.id, e)}
                         className="flex h-6 w-6 items-center justify-center rounded-md bg-[var(--background)] border border-[var(--border)] text-[var(--muted)] hover:text-white hover:border-white/30 transition-colors"

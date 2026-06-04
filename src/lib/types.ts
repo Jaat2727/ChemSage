@@ -187,7 +187,7 @@ export interface AppNotification {
   user_id: string;
   type: NotificationCategory | string;
   message: string;
-  read: boolean;
+  is_read: boolean;
   created_at: string;
   link?: string;
 }

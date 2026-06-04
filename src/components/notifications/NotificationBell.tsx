@@ -14,7 +14,7 @@ export function NotificationBell() {
   const [bellRect, setBellRect] = useState<DOMRect | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -74,19 +74,15 @@ export function NotificationBell() {
 
   const handleMarkRead = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    await supabase.from("notifications").update({ read: true }).eq("id", id);
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
+    await supabase.from("notifications").update({ is_read: true }).eq("id", id);
   };
 
   const handleMarkAllRead = async () => {
-    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
-    if (!unreadIds.length) return;
-
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-
-    for (const id of unreadIds) {
-       await supabase.from("notifications").update({ read: true }).eq("id", id);
-    }
+    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
+    if (unreadIds.length === 0) return;
+    setNotifications((current) => current.map((n) => ({ ...n, is_read: true })));
+    await supabase.from("notifications").update({ is_read: true }).in("id", unreadIds);
   };
 
   const handleClear = async (id: string, e: React.MouseEvent) => {

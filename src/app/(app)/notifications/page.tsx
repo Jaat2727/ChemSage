@@ -92,21 +92,19 @@ export default function NotificationsPage() {
 
   const handleMarkRead = async (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    await supabase.from("notifications").update({ read: true }).eq("id", id);
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
+    await supabase.from("notifications").update({ is_read: true }).eq("id", id);
   };
 
   const handleMarkAllRead = async () => {
-    const unreadIds = filteredNotifications.filter((n) => !n.read).map((n) => n.id);
-    if (!unreadIds.length) return;
+    const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
+    if (unreadIds.length === 0) return;
 
     setNotifications((prev) => prev.map((n) => 
-      unreadIds.includes(n.id) ? { ...n, read: true } : n
+      unreadIds.includes(n.id) ? { ...n, is_read: true } : n
     ));
 
-    for (const id of unreadIds) {
-       await supabase.from("notifications").update({ read: true }).eq("id", id);
-    }
+    await supabase.from("notifications").update({ is_read: true }).in("id", unreadIds);
   };
 
   const handleClear = async (id: string, e?: React.MouseEvent) => {
@@ -116,16 +114,14 @@ export default function NotificationsPage() {
   };
 
   const handleClearAllRead = async () => {
-    const readIds = filteredNotifications.filter((n) => n.read).map((n) => n.id);
+    const readIds = notifications.filter((n) => n.is_read).map((n) => n.id);
     if (!readIds.length) return;
     
     if (!confirm("Are you sure you want to delete all read notifications?")) return;
 
     setNotifications((prev) => prev.filter((n) => !readIds.includes(n.id)));
 
-    for (const id of readIds) {
-       await supabase.from("notifications").delete().eq("id", id);
-    }
+    await supabase.from("notifications").delete().in("id", readIds);
   };
 
   if (!profile) return null;
@@ -163,9 +159,9 @@ export default function NotificationsPage() {
                     )}
                   >
                     {category}
-                    {category === "All" && notifications.filter(n => !n.read).length > 0 && (
-                      <span className="flex h-5 items-center justify-center rounded-full bg-[var(--accent)] px-1.5 text-[10px] font-bold text-black">
-                        {notifications.filter(n => !n.read).length}
+                    {category === "All" && notifications.filter(n => !n.is_read).length > 0 && (
+                      <span className="ml-2 bg-[var(--accent)] text-black px-1.5 py-0.5 rounded text-[10px]">
+                        {notifications.filter(n => !n.is_read).length}
                       </span>
                     )}
                   </button>

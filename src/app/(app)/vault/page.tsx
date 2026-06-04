@@ -102,10 +102,10 @@ function UploadModal({ onClose, onSuccess, uploaderId, folderId }: { onClose: ()
     if (!file || !title.trim()) { setError("File and title required."); return; }
     setUploading(true); setError(null); setProgress(10);
     const path = `${Date.now()}-${file.name}`;
-    const upload = await supabase.storage.from("study-vault").upload(path, file);
+    const upload = await supabase.storage.from("resources").upload(path, file);
     if (upload.error) { setError(upload.error.message); setUploading(false); setProgress(0); return; }
     setProgress(55);
-    const { data: publicUrlData } = supabase.storage.from("study-vault").getPublicUrl(path);
+    const { data: publicUrlData } = supabase.storage.from("resources").getPublicUrl(path);
     setProgress(70);
     const tagsArray = tagsInput.split(",").map(t => t.trim().toLowerCase()).filter(Boolean);
     const { error: insertError } = await supabase.from("resources").insert({
@@ -213,9 +213,9 @@ function ReplaceFileModal({ resource, onClose, onSuccess, userId }: { resource: 
   const handleReplace = async () => {
     if (!file) return; setUploading(true); setError(null);
     const path = `${Date.now()}-${file.name}`;
-    const upload = await supabase.storage.from("study-vault").upload(path, file);
+    const upload = await supabase.storage.from("resources").upload(path, file);
     if (upload.error) { setError(upload.error.message); setUploading(false); return; }
-    const { data: publicUrlData } = supabase.storage.from("study-vault").getPublicUrl(path);
+    const { data: publicUrlData } = supabase.storage.from("resources").getPublicUrl(path);
     let newVersion = "v1.1";
     if (resource.version) { const m = resource.version.match(/v(\d+)\.(\d+)/); if (m) newVersion = `v${m[1]}.${parseInt(m[2]) + 1}`; }
     // Save version history
@@ -519,9 +519,13 @@ export default function StudyVaultPage() {
 
   const handleDownload = async (id: string, url: string, count: number) => {
     window.open(url, "_blank");
-    const nc = count + 1;
-    setResources(c => c.map(r => r.id === id ? { ...r, download_count: nc } : r));
-    await supabase.from("resources").update({ download_count: nc }).eq("id", id);
+    // Optimistic UI update
+    setResources(c => c.map(r => r.id === id ? { ...r, download_count: (count || 0) + 1 } : r));
+    // Atomic server-side increment — prevents race conditions with concurrent downloads
+    const { data: newCount } = await supabase.rpc("increment_download_count", { p_table: "resources", p_id: id });
+    if (typeof newCount === "number") {
+      setResources(c => c.map(r => r.id === id ? { ...r, download_count: newCount } : r));
+    }
   };
 
   if (!profile) return <LoadingCard />;

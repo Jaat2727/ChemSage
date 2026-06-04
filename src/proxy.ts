@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -38,16 +38,33 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/signup") ||
     path.startsWith("/forgot-password");
 
+  // Helper to copy cookies so we don't lose session state (like cleared invalid refresh tokens)
+  const applyCookies = (response: NextResponse) => {
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      // @ts-ignore - passing options down
+      response.cookies.set(cookie.name, cookie.value, {
+        domain: cookie.domain,
+        path: cookie.path,
+        maxAge: cookie.maxAge,
+        expires: cookie.expires,
+        httpOnly: cookie.httpOnly,
+        secure: cookie.secure,
+        sameSite: cookie.sameSite,
+      });
+    });
+    return response;
+  };
+
   // Allow unauthenticated access to auth routes and the root landing page
   if (!user && !isAuthRoute && path !== "/") {
     const redirectUrl = new URL("/login", request.url);
     redirectUrl.searchParams.set("next", path);
-    return NextResponse.redirect(redirectUrl);
+    return applyCookies(NextResponse.redirect(redirectUrl));
   }
 
   // Redirect authenticated users away from auth pages to their default workspace
   if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL("/vault", request.url));
+    return applyCookies(NextResponse.redirect(new URL("/vault", request.url)));
   }
 
   return supabaseResponse;

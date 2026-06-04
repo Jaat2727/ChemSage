@@ -42,7 +42,7 @@ export default function DashboardPage() {
   // Data States
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
-  const [resources, setResources] = useState<ResourceItem[]>([]);
+  const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [groups, setGroups] = useState<Room[]>([]);
   const [unreadMessages, setUnreadMessages] = useState<number>(0);
   const [newMembers, setNewMembers] = useState<Profile[]>([]);
@@ -51,27 +51,30 @@ export default function DashboardPage() {
     if (!profile || profile.status !== "active") return;
     
     const loadData = async () => {
-      // 1. Load Local Tasks
-      try {
-        const savedTasks = window.localStorage.getItem(`chemsage.tasks.${profile.id}`);
-        if (savedTasks) setTasks(JSON.parse(savedTasks));
-      } catch (e) {
-        console.error("Failed to load tasks", e);
-      }
-      
-      // 2. Fetch Supabase Data
-      const [schedRes, resRes, groupRes, membershipsRes, profilesRes] = await Promise.all([
+      // 1. Fetch Supabase Data
+      const [tasksRes, schedRes, activityRes, groupRes, membershipsRes, profilesRes] = await Promise.all([
+        supabase.from("tasks").select("*").eq("user_id", profile.id).order("created_at", { ascending: false }),
         supabase.from("schedule").select("*").eq("user_id", profile.id).order("start_time"),
-        supabase.from("resources").select("*").order("created_at", { ascending: false }).limit(5),
+        supabase.from("activity_feed").select("*, user:user_id(name)").order("created_at", { ascending: false }).limit(6),
         supabase.from("rooms").select("*").order("created_at", { ascending: false }).limit(5),
         supabase.from("room_members").select("room_id, last_read_at").eq("user_id", profile.id),
         supabase.from("profiles").select("*").eq("status", "active").neq("id", profile.id).order("created_at", { ascending: false }).limit(3)
       ]);
       
       setSchedule(Array.isArray(schedRes.data) ? schedRes.data : []);
-      setResources(Array.isArray(resRes.data) ? resRes.data : []);
+      setActivityFeed(Array.isArray(activityRes.data) ? activityRes.data : []);
       setGroups(Array.isArray(groupRes.data) ? groupRes.data : []);
       setNewMembers(Array.isArray(profilesRes.data) ? profilesRes.data : []);
+      
+      if (tasksRes.data && Array.isArray(tasksRes.data)) {
+        setTasks(tasksRes.data.map((row: any) => ({
+          id: row.id,
+          title: row.title,
+          priority: row.priority,
+          status: row.status,
+          dueDate: row.due_date || null
+        })));
+      }
       
       // Basic Unread calculation (simulated for now by checking membership count, or we'd fetch messages > last_read_at)
       if (membershipsRes.data) {
@@ -101,14 +104,7 @@ export default function DashboardPage() {
   
   const nextDeadline = pendingTasks.filter(t => t.dueDate).sort((a,b) => a.dueDate!.localeCompare(b.dueDate!))[0] || null;
 
-  // Interleave recent activity (Resources & Groups)
-  const recentActivity = useMemo(() => {
-    const combined = [
-      ...resources.map(r => ({ type: 'resource', data: r, date: new Date(r.created_at).getTime() })),
-      ...groups.map(g => ({ type: 'group', data: g, date: new Date(g.created_at || "").getTime() }))
-    ];
-    return combined.sort((a, b) => b.date - a.date).slice(0, 6);
-  }, [resources, groups]);
+
 
   if (!profile) return <LoadingCard />;
   if (profile.status !== "active") return <LockedScreen title="Dashboard locked" description="Only active users can access the workspace." />;
@@ -139,8 +135,8 @@ export default function DashboardPage() {
             <p className="text-sm font-bold text-white">{groups.length} Joined</p>
           </div>
           <div className="shrink-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] mb-0.5">Resource Uploads</p>
-            <p className="text-sm font-bold text-white">{resources.length} Recent</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] mb-0.5">Community Activity</p>
+            <p className="text-sm font-bold text-white">{activityFeed.length} Recent</p>
           </div>
         </div>
       </div>
@@ -278,13 +274,13 @@ export default function DashboardPage() {
             </h2>
             
             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-sm">
-              {recentActivity.length === 0 ? (
+              {activityFeed.length === 0 ? (
                 <div className="p-6 text-center text-sm text-[var(--muted)]">No recent activity found.</div>
               ) : (
                 <div className="divide-y divide-[var(--border)]">
-                  {recentActivity.map((activity, i) => (
-                    <div key={i} className="p-4 hover:bg-[var(--surface-soft)] transition-colors flex gap-4 items-start">
-                      {activity.type === 'resource' ? (
+                  {activityFeed.map((activity) => (
+                    <div key={activity.id} className="p-4 hover:bg-[var(--surface-soft)] transition-colors flex gap-4 items-start">
+                      {activity.target_type === 'resource' ? (
                         <div className="mt-0.5 h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-900/50">
                           <FileText size={14} />
                         </div>
@@ -294,19 +290,19 @@ export default function DashboardPage() {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        {activity.type === 'resource' ? (
+                        {activity.target_type === 'resource' ? (
                           <>
-                            <p className="text-sm text-gray-200">New resource uploaded: <span className="font-bold text-white">{(activity.data as ResourceItem).title}</span></p>
-                            <p className="text-[10px] text-[var(--muted)] mt-1 uppercase font-bold tracking-wider">{(activity.data as ResourceItem).category}</p>
+                            <p className="text-sm text-gray-200"><span className="font-bold text-white">{activity.user?.name || "Someone"}</span> uploaded a resource: <span className="font-bold text-white">{activity.details?.title}</span></p>
+                            <p className="text-[10px] text-[var(--muted)] mt-1 uppercase font-bold tracking-wider">{activity.details?.category || 'Vault'}</p>
                           </>
                         ) : (
                           <>
-                            <p className="text-sm text-gray-200">New study group formed: <span className="font-bold text-white">{(activity.data as Room).name}</span></p>
-                            <p className="text-[10px] text-[var(--muted)] mt-1 uppercase font-bold tracking-wider">{(activity.data as Room).location || "Community"}</p>
+                            <p className="text-sm text-gray-200"><span className="font-bold text-white">{activity.user?.name || "Someone"}</span> formed a study group: <span className="font-bold text-white">{activity.details?.name}</span></p>
+                            <p className="text-[10px] text-[var(--muted)] mt-1 uppercase font-bold tracking-wider">{activity.details?.location || "Community"}</p>
                           </>
                         )}
                       </div>
-                      <Link href={activity.type === 'resource' ? "/vault" : `/groups/${(activity.data as Room).id}`} className="p-2 rounded hover:bg-[var(--background)] text-[var(--muted)] hover:text-white transition-colors shrink-0">
+                      <Link href={activity.target_type === 'resource' ? "/vault" : `/groups/${activity.target_id}`} className="p-2 rounded hover:bg-[var(--background)] text-[var(--muted)] hover:text-white transition-colors shrink-0">
                         <ArrowRight size={16} />
                       </Link>
                     </div>

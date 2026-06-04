@@ -33,7 +33,6 @@ export default function UsersSection({ profiles, setProfiles, logAdminAction, pr
     const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", user.id);
     if (!error) {
       setProfiles((cur) => cur.map((p) => p.id === user.id ? { ...p, status: newStatus } : p));
-      await logAdminAction(newStatus === "banned" ? "ban_user" : "unban_user", "user", user.id);
     }
     setActiveMenuId(null);
   };
@@ -43,7 +42,6 @@ export default function UsersSection({ profiles, setProfiles, logAdminAction, pr
     const { error } = await supabase.from("profiles").update({ role: newRole }).eq("id", user.id);
     if (!error) {
       setProfiles((cur) => cur.map((p) => p.id === user.id ? { ...p, role: newRole } : p));
-      await logAdminAction(newRole === "admin" ? "grant_admin" : "revoke_admin", "user", user.id);
     }
     setActiveMenuId(null);
   };

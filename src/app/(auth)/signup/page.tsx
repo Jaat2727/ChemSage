@@ -50,25 +50,16 @@ export default function SignupPage() {
       const rollNo = extractRollNo(normalizedEmail);
       const parsed = parseRollNo(rollNo);
 
-      const { data: existingRollNo, error: rollError } = await supabase
-        .from("registered_rollnos")
-        .select("roll_no, name, programme, batch_year")
-        .eq("roll_no", rollNo)
-        .single();
-      if (rollError && !/0 rows/i.test(rollError.message)) throw rollError;
-
-      const registered = (existingRollNo as RegisteredRollNo | null) ?? null;
-
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: normalizedEmail,
           password: form.password,
-          name: registered?.name || form.name,
+          name: form.name,
           rollNo,
-          programme: registered?.programme || parsed.programme,
-          batch_year: registered?.batch_year || parsed.batch_year,
+          programme: parsed.programme,
+          batch_year: parsed.batch_year,
         }),
       });
 
