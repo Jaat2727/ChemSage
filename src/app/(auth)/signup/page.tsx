@@ -66,12 +66,24 @@ export default function SignupPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 409) {
+          setError(<span>{data.error} <Link href="/login" className="text-[var(--accent)] underline">Sign in instead</Link></span>);
+          setLoading(false);
+          return;
+        }
         if (data.error?.toLowerCase().includes("already registered") || data.error?.toLowerCase().includes("already exists")) {
           setError(<span>This roll number is already registered. <Link href="/login" className="text-[var(--accent)] underline">Sign in instead</Link></span>);
           setLoading(false);
           return;
         }
         throw new Error(data.error || "Failed to request access.");
+      }
+
+      // If account was repaired, let them sign in directly
+      if (data.repaired) {
+        setError(<span>Your account has been recovered! <Link href="/login" className="text-[var(--accent)] underline">Sign in now</Link></span>);
+        setLoading(false);
+        return;
       }
 
       await supabase.auth.signOut();
