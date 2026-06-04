@@ -71,8 +71,7 @@ export async function POST(request: Request) {
               programme: rProg,
               batch_year: parseInt(rBatch as string) || 2024,
               status: initialStatus, 
-              role: 'student',
-              email: email
+              role: 'student'
             });
 
             // Log auto repair event
@@ -104,8 +103,7 @@ export async function POST(request: Request) {
       programme: finalProgramme,
       batch_year: finalBatchYear,
       status: initialStatus,
-      role: 'student',
-      email: email
+      role: 'student'
     });
 
     if (profileError) {
