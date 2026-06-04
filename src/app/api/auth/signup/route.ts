@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const { data: authData, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: false, // Require email verification link
+      email_confirm: true, // Bypass email verification
       user_metadata: {
         name: finalName,
         rollNo,
