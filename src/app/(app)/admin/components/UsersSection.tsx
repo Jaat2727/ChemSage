@@ -30,18 +30,36 @@ export default function UsersSection({ profiles, setProfiles, logAdminAction, pr
 
   const toggleStatus = async (user: Profile) => {
     const newStatus = user.status === "banned" ? "active" : "banned";
-    const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", user.id);
+    const { error } = await supabase.rpc("admin_update_user_status", { target_user_id: user.id, new_status: newStatus });
     if (!error) {
       setProfiles((cur) => cur.map((p) => p.id === user.id ? { ...p, status: newStatus } : p));
+      await logAdminAction(
+        newStatus === "banned" ? "Ban User" : "Unban User",
+        "Profile",
+        user.id,
+        { target_name: user.name, target_roll_no: user.roll_no }
+      );
+    } else {
+      console.error("Failed to update status:", error);
+      alert("Failed to update status: " + error.message);
     }
     setActiveMenuId(null);
   };
 
   const toggleAdmin = async (user: Profile) => {
     const newRole = user.role === "admin" ? "student" : "admin";
-    const { error } = await supabase.from("profiles").update({ role: newRole }).eq("id", user.id);
+    const { error } = await supabase.rpc("admin_update_user_role", { target_user_id: user.id, new_role: newRole });
     if (!error) {
       setProfiles((cur) => cur.map((p) => p.id === user.id ? { ...p, role: newRole } : p));
+      await logAdminAction(
+        newRole === "admin" ? "Make Admin" : "Revoke Admin",
+        "Profile",
+        user.id,
+        { target_name: user.name, target_roll_no: user.roll_no }
+      );
+    } else {
+      console.error("Failed to update role:", error);
+      alert("Failed to update role: " + error.message);
     }
     setActiveMenuId(null);
   };
