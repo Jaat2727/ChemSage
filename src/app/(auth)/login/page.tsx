@@ -67,7 +67,7 @@ export default function LoginPage() {
 
     const profile = await refreshProfile();
     if (!profile) {
-      setError("Profile setup is incomplete. Please contact an administrator.");
+      setError(<span>No active account found. Your previous request may have been rejected. <Link href="/signup" className="text-[var(--accent)] underline">Request access again</Link></span>);
       await supabase.auth.signOut();
       setLoading(false);
       return;

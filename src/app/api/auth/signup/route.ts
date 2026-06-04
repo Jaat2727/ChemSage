@@ -89,17 +89,29 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Failed to repair account. Contact admin." }, { status: 500 });
       }
 
-      // Log the auto-repair
+      // Log the re-signup
       try {
         await supabaseAdmin.from('admin_audit_logs').insert({
-          action_type: 'User Repair (System Auto-Repair)',
+          action_type: 'Signup (Re-request after rejection)',
           target_type: 'Profile',
           target_id: existingUser.id,
-          details: { roll_no: rRoll, email, reason: "Orphaned profile reconstructed on signup" }
+          details: { roll_no: rRoll, email, reason: "User re-signed up after previous rejection or orphaned profile" }
         });
+
+        // Notify admins about the new pending request
+        const { data: admins } = await supabaseAdmin.from('profiles').select('id').eq('role', 'admin');
+        if (admins && admins.length > 0) {
+          const notifications = admins.map(admin => ({
+            user_id: admin.id,
+            title: "New Student Signup (Re-request)",
+            type: 'Admin',
+            message: `Re-signup request pending approval: ${rName} (${rRoll})`,
+          }));
+          await supabaseAdmin.from('notifications').insert(notifications);
+        }
       } catch {}
 
-      return NextResponse.json({ success: true, userId: existingUser.id, repaired: true });
+      return NextResponse.json({ success: true, userId: existingUser.id });
     }
 
     // 2. No existing user — create fresh

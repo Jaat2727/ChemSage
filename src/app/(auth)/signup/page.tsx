@@ -79,13 +79,6 @@ export default function SignupPage() {
         throw new Error(data.error || "Failed to request access.");
       }
 
-      // If account was repaired, let them sign in directly
-      if (data.repaired) {
-        setError(<span>Your account has been recovered! <Link href="/login" className="text-[var(--accent)] underline">Sign in now</Link></span>);
-        setLoading(false);
-        return;
-      }
-
       await supabase.auth.signOut();
       setSuccess(true);
     } catch (caught) {
