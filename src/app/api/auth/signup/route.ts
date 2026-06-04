@@ -24,7 +24,8 @@ export async function POST(request: Request) {
       .single();
 
     const isApproved = !rollError && registered;
-    const initialStatus = isApproved ? 'active' : 'pending';
+    // All signups require admin approval — whitelist only used for data integrity
+    const initialStatus = 'pending';
 
     const finalName = isApproved ? registered.name : name;
     const finalProgramme = isApproved ? registered.programme : programme;
@@ -141,34 +142,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: profileError.message }, { status: 400 });
     }
 
-    // 4. Log and notify
+    // 4. Log and notify admins
     try {
-      if (initialStatus === 'active') {
-        await supabaseAdmin.from('admin_audit_logs').insert({
-          action_type: 'Signup (Auto-Approved)',
-          target_type: 'Profile',
-          target_id: userId,
-          details: { roll_no: rollNo, email }
-        });
-      } else {
-        await supabaseAdmin.from('admin_audit_logs').insert({
-          action_type: 'Signup (Pending)',
-          target_type: 'Profile',
-          target_id: userId,
-          details: { roll_no: rollNo, email }
-        });
+      await supabaseAdmin.from('admin_audit_logs').insert({
+        action_type: 'Signup (Pending Approval)',
+        target_type: 'Profile',
+        target_id: userId,
+        details: { roll_no: rollNo, email, in_whitelist: isApproved }
+      });
 
-        // Notify admins
-        const { data: admins } = await supabaseAdmin.from('profiles').select('id').eq('role', 'admin');
-        if (admins && admins.length > 0) {
-          const notifications = admins.map(admin => ({
-            user_id: admin.id,
-            title: "New Student Signup",
-            type: 'Admin',
-            message: `New signup request pending approval: ${finalName} (${rollNo})`,
-          }));
-          await supabaseAdmin.from('notifications').insert(notifications);
-        }
+      // Notify all admins about new pending signup
+      const { data: admins } = await supabaseAdmin.from('profiles').select('id').eq('role', 'admin');
+      if (admins && admins.length > 0) {
+        const notifications = admins.map(admin => ({
+          user_id: admin.id,
+          title: "New Student Signup",
+          type: 'Admin',
+          message: `New signup request pending approval: ${finalName} (${rollNo})`,
+        }));
+        await supabaseAdmin.from('notifications').insert(notifications);
       }
     } catch {}
 
