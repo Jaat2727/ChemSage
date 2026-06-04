@@ -467,7 +467,11 @@ export default function StudyVaultPage() {
       // Basic ilike search on title, subject, course_code
       query = query.or(`title.ilike.%${debouncedSearch}%,subject.ilike.%${debouncedSearch}%,course_code.ilike.%${debouncedSearch}%`);
     } else {
-      query = query.eq("folder_id", currentFolderId);
+      if (currentFolderId === null) {
+        query = query.is("folder_id", null);
+      } else {
+        query = query.eq("folder_id", currentFolderId);
+      }
     }
 
     if (category !== "All") {

@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
     if (!isSmailEmail(normalizedEmail)) {
       throw new Error("Please enter your IITM smail address or a valid roll number.");
     }
-    const { error: otpError } = await supabase.auth.signInWithOtp({ email: normalizedEmail });
+    const { error: otpError } = await supabase.auth.resetPasswordForEmail(normalizedEmail);
     if (otpError) throw otpError;
   };
 
@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
                     throw new Error("Please enter the full 6-digit OTP.");
                   }
                   const normalizedEmail = normalizeEmail(email);
-                  const { error: verifyError } = await supabase.auth.verifyOtp({ email: normalizedEmail, token: otpValue, type: "email" });
+                  const { error: verifyError } = await supabase.auth.verifyOtp({ email: normalizedEmail, token: otpValue, type: "recovery" });
                   if (verifyError) throw verifyError;
                   setStep(3);
                 } catch (caught) {
