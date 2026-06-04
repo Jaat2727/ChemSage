@@ -280,8 +280,8 @@ function ResourceActions({ resource, profile, onEdit, onReplace, onDelete, onRes
 }
 
 // ─── Preview Drawer ──────────────────────────────────────────────────────
-function PreviewDrawer({ resource, profilesMap, profile, onClose, onDownload, onEdit, onReplace, onDelete, onRestore }: {
-  resource: ResourceItem; profilesMap: Map<string, string>; profile: Profile;
+function PreviewDrawer({ resource, profile, onClose, onDownload, onEdit, onReplace, onDelete, onRestore }: {
+  resource: ResourceItem; profile: Profile;
   onClose: () => void; onDownload: (id: string, url: string, count: number) => void;
   onEdit: () => void; onReplace: () => void; onDelete: () => void; onRestore: () => void;
 }) {
@@ -357,7 +357,7 @@ function PreviewDrawer({ resource, profilesMap, profile, onClose, onDownload, on
             <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4 space-y-2">
               <h3 className="text-xs font-bold uppercase text-[var(--muted)] flex items-center gap-1.5"><User size={12} /> Ownership</h3>
               <div className="text-sm space-y-1.5">
-                <div className="flex justify-between"><span className="text-[var(--muted)]">Uploaded by</span><span className="font-bold text-white">{(resource as any).uploader_name || "Unknown"}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--muted)]">Uploaded by</span><span className="font-bold text-white">{resource.author?.name || "Unknown"}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--muted)]">Created</span><span className="font-bold text-white">{shortDate(resource.created_at)}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--muted)]">Last Updated</span><span className="font-bold text-white">{shortDate(resource.updated_at || resource.created_at)}</span></div>
               </div>
@@ -662,7 +662,7 @@ export default function StudyVaultPage() {
                       {r.status === "deleted" && <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-[9px] font-bold text-red-400">DEL</span>}
                     </div>
                     <div className="space-y-1 text-[10px] text-[var(--muted)] bg-[var(--background)] rounded-lg p-2 mb-2">
-                      <div className="flex justify-between"><span>By</span><span className="font-bold text-white truncate ml-2">{profilesMap.get(r.uploaded_by) || "Unknown"}</span></div>
+                      <div className="flex justify-between"><span>By</span><span className="font-bold text-white truncate ml-2">{r.author?.name || "Unknown"}</span></div>
                       <div className="flex justify-between"><span>Updated</span><span className="font-bold text-white">{shortDate(r.updated_at || r.created_at)}</span></div>
                       <div className="flex justify-between border-t border-[var(--border)] pt-1 mt-0.5"><span>Version</span><span className="font-bold text-[var(--accent)]">{r.version || "v1.0"}</span></div>
                     </div>
@@ -686,7 +686,7 @@ export default function StudyVaultPage() {
                 <div className="divide-y divide-[var(--border)]">{processed.map(r => (
                   <div key={r.id} onClick={() => setSelectedResource(r)} className={cn("group cursor-pointer grid grid-cols-[1fr_auto] md:grid-cols-[auto_1fr_100px_80px_70px_auto] items-center gap-3 px-4 py-2.5 hover:bg-[var(--surface-soft)]", r.status === "deleted" ? "opacity-60" : "")}>
                     <div className="hidden md:flex items-center w-6"><button onClick={(e) => toggleStar(r.id, e)} className="text-[var(--muted)] hover:text-amber-400"><Star size={13} className={stars.has(r.id) ? "fill-amber-400 text-amber-400" : ""} /></button></div>
-                    <div className="min-w-0"><h3 className="truncate text-sm font-bold text-white group-hover:text-[var(--accent)]">{r.title}</h3><div className="flex items-center gap-2 text-[10px] text-[var(--muted)]"><span>{r.uploader_name || "Unknown"}</span><span>·</span><span>{shortDate(r.updated_at || r.created_at)}</span><span className="text-[var(--accent)] font-bold">{r.version || "v1.0"}</span></div></div>
+                    <div className="min-w-0"><h3 className="truncate text-sm font-bold text-white group-hover:text-[var(--accent)]">{r.title}</h3><div className="flex items-center gap-2 text-[10px] text-[var(--muted)]"><span>{r.author?.name || "Unknown"}</span><span>·</span><span>{shortDate(r.updated_at || r.created_at)}</span><span className="text-[var(--accent)] font-bold">{r.version || "v1.0"}</span></div></div>
                     <div className="hidden md:block text-[10px] font-bold text-[var(--muted)]">{r.category}</div>
                     <div className="hidden md:block text-xs text-[var(--muted)]">{formatBytes(r.file_size)}</div>
                     <div className="hidden md:flex items-center gap-1 text-xs font-bold text-emerald-400"><Download size={11} />{r.download_count || 0}</div>

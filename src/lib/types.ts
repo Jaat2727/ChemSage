@@ -91,6 +91,7 @@ export interface ResourceItem {
   semester?: string;
   course_code?: string;
   description?: string;
+  author?: Pick<Profile, "id" | "name">;
 }
 
 export interface ExamPaper {
@@ -124,7 +125,7 @@ export interface ScheduleEntry {
 }
 
 export interface ChatMessage extends MessageRow {
-  sender?: Pick<Profile, "id" | "name" | "roll_no" | "programme" | "batch_year">;
+  sender?: Pick<Profile, "id" | "name" | "roll_no" | "programme" | "batch_year" | "avatar_url">;
 }
 
 // ─── Knowledge Management Types ──────────────────────────────────────────
@@ -148,6 +149,7 @@ export interface ResourceVersion {
   changed_by: string;
   change_note?: string;
   created_at: string;
+  author?: Pick<Profile, "id" | "name">;
 }
 
 export interface Comment {

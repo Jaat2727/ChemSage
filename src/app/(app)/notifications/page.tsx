@@ -88,7 +88,7 @@ export default function NotificationsPage() {
     return notifications.filter(n => n.type.toLowerCase() === activeFilter.toLowerCase());
   }, [notifications, activeFilter]);
 
-  const unreadCount = filteredNotifications.filter(n => !n.read).length;
+  const unreadCount = filteredNotifications.filter(n => !n.is_read).length;
 
   const handleMarkRead = async (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -187,7 +187,7 @@ export default function NotificationsPage() {
                   <Check size={14} /> Mark all read
                 </button>
               )}
-              {filteredNotifications.some(n => n.read) && (
+              {filteredNotifications.some(n => n.is_read) && (
                 <button 
                   onClick={handleClearAllRead}
                   className="flex items-center gap-2 rounded-lg bg-[var(--surface-soft)] border border-[var(--border)] px-4 py-2 text-xs font-bold text-[var(--muted)] transition-colors hover:text-red-400 hover:border-red-500/30 active:scale-[0.97]"
@@ -217,7 +217,7 @@ export default function NotificationsPage() {
                       key={n.id}
                       className={cn(
                         "group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 transition-colors",
-                        n.read ? "bg-transparent opacity-80" : "bg-[var(--surface-soft)]"
+                        n.is_read ? "bg-transparent opacity-80" : "bg-[var(--surface-soft)]"
                       )}
                     >
                       <div className="flex gap-4">
@@ -228,11 +228,11 @@ export default function NotificationsPage() {
                           <div className="flex items-center gap-2">
                             <p className={cn(
                               "text-base font-bold",
-                              n.read ? "text-[var(--muted)]" : "text-white"
+                              n.is_read ? "text-[var(--muted)]" : "text-white"
                             )}>
                               {n.type}
                             </p>
-                            {!n.read && <span className="rounded bg-[var(--accent)]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--accent)] border border-[var(--accent)]/20">New</span>}
+                            {!n.is_read && <span className="rounded bg-[var(--accent)]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--accent)] border border-[var(--accent)]/20">New</span>}
                           </div>
                           <p className="mt-1 text-sm text-[var(--muted)] max-w-2xl leading-relaxed">
                             {n.message}
@@ -244,7 +244,7 @@ export default function NotificationsPage() {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        {!n.read && (
+                        {!n.is_read && (
                           <button 
                             onClick={() => handleMarkRead(n.id)}
                             className="flex items-center gap-2 rounded-lg bg-[var(--background)] border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--muted)] transition-colors hover:text-white hover:border-white/30"

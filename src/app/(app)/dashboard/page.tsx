@@ -54,11 +54,11 @@ export default function DashboardPage() {
       // 1. Fetch Supabase Data
       const [tasksRes, schedRes, activityRes, groupRes, membershipsRes, profilesRes] = await Promise.all([
         supabase.from("tasks").select("id, title, priority, status, due_date").eq("user_id", profile.id).order("created_at", { ascending: false }).limit(50),
-        supabase.from("schedule").select("id, subject, room_no, start_time, end_time, day_of_week").eq("user_id", profile.id).order("start_time"),
+        supabase.from("schedule").select("id, subject, room_no, start_time, end_time, day_of_week, user_id, type").eq("user_id", profile.id).order("start_time"),
         supabase.from("activity_feed").select("id, user_id, action_type, target_type, target_name, created_at, user:user_id(name)").order("created_at", { ascending: false }).limit(6),
-        supabase.from("rooms").select("id, name, description, created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("rooms").select("id, name, description, created_at, created_by, is_public").order("created_at", { ascending: false }).limit(5),
         supabase.from("room_members").select("room_id, last_read_at").eq("user_id", profile.id),
-        supabase.from("profiles").select("id, name, programme").eq("status", "active").neq("id", profile.id).order("created_at", { ascending: false }).limit(3)
+        supabase.from("profiles").select("*").eq("status", "active").neq("id", profile.id).order("created_at", { ascending: false }).limit(3)
       ]);
       
       setSchedule(Array.isArray(schedRes.data) ? schedRes.data : []);
