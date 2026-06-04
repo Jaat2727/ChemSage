@@ -130,8 +130,7 @@ with check (
   or public.is_admin()
 );
 
-create policy "profiles insert self" on public.profiles
-for insert with check (id = auth.uid());
+
 
 create policy "registered_rollnos read auth" on public.registered_rollnos
 for select using (auth.role() = 'authenticated');
@@ -209,5 +208,39 @@ create extension if not exists pg_cron;
 select cron.schedule(
   'delete-old-messages',
   '0 * * * *',
-  $$ delete from public.messages where room_id != 'global' and created_at < now() - interval '1 day'; $$
 );
+
+-- Trigger function to protect profile columns from unauthorized updates
+create or replace function public.protect_profile_columns()
+returns trigger
+language plpgsql
+security definer
+as $$
+begin
+  -- Only allow admins to change sensitive columns
+  if not public.is_admin() then
+    if new.role is distinct from old.role then
+      new.role := old.role;
+    end if;
+    if new.status is distinct from old.status then
+      new.status := old.status;
+    end if;
+    if new.roll_no is distinct from old.roll_no then
+      new.roll_no := old.roll_no;
+    end if;
+    if new.batch_year is distinct from old.batch_year then
+      new.batch_year := old.batch_year;
+    end if;
+    if new.programme is distinct from old.programme then
+      new.programme := old.programme;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_profile_columns_trigger on public.profiles;
+create trigger protect_profile_columns_trigger
+before update on public.profiles
+for each row
+execute function public.protect_profile_columns();

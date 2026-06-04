@@ -1,7 +1,8 @@
-import { useMemo } from "react";
-import { HardDrive, Database, Server, Activity, ShieldAlert } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { HardDrive, Database, Server, Activity, ShieldAlert, Wrench, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 import type { ResourceItem, ExamPaper, AdminAuditLog } from "@/lib/types";
+import { createClientComponentClient } from "@/lib/supabase";
 
 interface SystemProps {
   resources: ResourceItem[];
@@ -10,7 +11,31 @@ interface SystemProps {
 }
 
 export default function SystemSection({ resources, papers, auditLogs }: SystemProps) {
-  
+  const supabase = createClientComponentClient();
+  const [orphans, setOrphans] = useState<any[]>([]);
+  const [repairing, setRepairing] = useState<string | null>(null);
+
+  const fetchOrphans = async () => {
+    const { data } = await supabase.rpc('get_orphan_users');
+    if (data) setOrphans(data);
+  };
+
+  useEffect(() => {
+    fetchOrphans();
+  }, []);
+
+  const handleRepair = async (userId: string) => {
+    setRepairing(userId);
+    const { error } = await supabase.rpc('repair_user', { target_user_id: userId });
+    if (!error) {
+      alert("User repaired successfully!");
+      fetchOrphans();
+    } else {
+      alert("Failed to repair user: " + error.message);
+    }
+    setRepairing(null);
+  };
+
   const storageMetrics = useMemo(() => {
     const resourceBytes = resources.reduce((acc, r) => acc + (r.file_size || 0), 0);
     const paperBytes = papers.reduce((acc, p) => acc + (p.file_size || 0), 0);
@@ -103,8 +128,56 @@ export default function SystemSection({ resources, papers, auditLogs }: SystemPr
         </div>
       </div>
 
-      {/* Security Logs */}
+      {/* User Repair Tools */}
       <div>
+        <div className="flex items-center gap-3 mb-4 mt-8">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400">
+            <Wrench size={16} />
+          </div>
+          <h3 className="font-bold text-white">User Repair Tools</h3>
+        </div>
+        
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden p-6">
+          <h4 className="text-sm font-bold text-white mb-2">Orphaned Users (Missing Profile)</h4>
+          <p className="text-xs text-[var(--muted)] mb-4">
+            These users exist in the authentication system but lack a profile record. They cannot log in properly.
+          </p>
+          
+          {orphans.length === 0 ? (
+            <div className="flex items-center gap-2 text-emerald-400 text-sm bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/20">
+              <CheckCircle2 size={16} />
+              <span className="font-bold">System Healthy: No orphaned users found.</span>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {orphans.map((orphan) => (
+                <div key={orphan.id} className="flex items-center justify-between bg-[var(--background)] border border-[var(--border)] p-4 rounded-lg">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle size={14} className="text-orange-400" />
+                      <span className="font-bold text-white text-sm">{orphan.email}</span>
+                    </div>
+                    <div className="text-xs text-[var(--muted)] font-mono mt-1">ID: {orphan.id}</div>
+                    <div className="text-xs text-[var(--muted)] mt-1">
+                      Meta: {orphan.raw_user_meta_data?.name} ({orphan.raw_user_meta_data?.rollNo})
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleRepair(orphan.id)}
+                    disabled={repairing === orphan.id}
+                    className="rounded bg-orange-500/20 text-orange-400 border border-orange-500/30 px-4 py-2 text-xs font-bold hover:bg-orange-500/30 disabled:opacity-50 transition-colors"
+                  >
+                    {repairing === orphan.id ? "Repairing..." : "Repair Profile"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Security Logs */}
+      <div className="mt-8">
         <div className="flex items-center gap-3 mb-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
             <ShieldAlert size={16} />
@@ -137,7 +210,7 @@ export default function SystemSection({ resources, papers, auditLogs }: SystemPr
                       </td>
                       <td className="px-5 py-3">
                         <span className="font-bold text-white">{log.admin?.name || "System"}</span>
-                        <span className="block text-[10px] text-[var(--muted)] font-mono mt-0.5">{log.admin_id.slice(0, 8)}...</span>
+                        <span className="block text-[10px] text-[var(--muted)] font-mono mt-0.5">{log.admin_id?.slice(0, 8) || "auto"}...</span>
                       </td>
                       <td className="px-5 py-3">
                         <span className="rounded bg-[var(--background)] border border-[var(--border)] px-2 py-1 text-[10px] font-mono font-bold text-[var(--accent)]">
