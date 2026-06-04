@@ -91,7 +91,8 @@ export default function ContentTab({ profile, type, isOwner, isAdmin }: ContentT
           <div className="p-8">
             <EmptyState 
               title={`No ${isResource ? "resources" : "papers"} found`} 
-              description="This user hasn't uploaded any content here yet." 
+              description="This user hasn't uploaded any content here yet."
+              action={isOwner ? <a href={isResource ? "/vault" : "/archive"} className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-bold text-black hover:bg-[#bce600] transition-colors">Upload {isResource ? "Resource" : "Paper"}</a> : null}
             />
           </div>
         ) : (

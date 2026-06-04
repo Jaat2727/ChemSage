@@ -57,6 +57,7 @@ export default function BookmarksTab({ profile }: { profile: Profile }) {
             <EmptyState 
               title="No saved content" 
               description="Bookmarks help you keep track of useful resources, past papers, and study circles." 
+              action={<a href="/vault" className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-bold text-black hover:bg-[#bce600] transition-colors">Explore the Vault</a>}
             />
           </div>
         ) : (

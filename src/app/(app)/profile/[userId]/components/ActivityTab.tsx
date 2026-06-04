@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@/lib/supabase";
-import { Activity, FileText, Users, ArrowRight } from "lucide-react";
+import { Activity, FileText, Users, ArrowRight, User } from "lucide-react";
 import Link from "next/link";
 import { formatTime } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
@@ -36,9 +36,17 @@ export default function ActivityTab({ profile }: { profile: Profile }) {
 
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
         {feed.length === 0 ? (
-          <div className="py-12 text-center text-sm text-[var(--muted)]">
-            <Activity size={24} className="mx-auto mb-3 opacity-20" />
-            No recent activity found for this user.
+          <div className="py-16 text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[var(--surface-soft)] mb-4">
+              <Activity size={32} className="text-[var(--muted)] opacity-50" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">No Activity Yet</h3>
+            <p className="text-sm text-[var(--muted)] max-w-md mx-auto mb-6">
+              This user hasn't contributed any resources, joined study circles, or updated their profile recently.
+            </p>
+            <Link href="/vault" className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-black hover:bg-[#bce600] transition-colors">
+              Explore the Vault
+            </Link>
           </div>
         ) : (
           <div className="relative border-l-2 border-[var(--surface-soft)] ml-4 space-y-8 pb-4">
@@ -49,7 +57,7 @@ export default function ActivityTab({ profile }: { profile: Profile }) {
                 
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                   <div>
-                    {item.target_type === 'resource' && (
+                    {item.target_type === 'resource' && item.action_type === 'upload_resource' && (
                       <>
                         <div className="flex items-center gap-2 text-sm text-gray-200">
                           <FileText size={14} className="text-emerald-400" />
@@ -58,14 +66,32 @@ export default function ActivityTab({ profile }: { profile: Profile }) {
                         <p className="text-[10px] text-[var(--muted)] mt-1 uppercase font-bold tracking-wider">{item.details?.category}</p>
                       </>
                     )}
+                    {item.target_type === 'resource' && item.action_type === 'edit_resource' && (
+                      <div className="flex items-center gap-2 text-sm text-gray-200">
+                        <FileText size={14} className="text-blue-400" />
+                        <span>Updated resource metadata: <span className="font-bold text-white">{item.details?.title}</span></span>
+                      </div>
+                    )}
+                    {item.target_type === 'paper' && (
+                      <div className="flex items-center gap-2 text-sm text-gray-200">
+                        <FileText size={14} className="text-amber-400" />
+                        <span>{item.action_type === 'upload_paper' ? 'Uploaded' : 'Updated'} exam paper: <span className="font-bold text-white">{item.details?.subject}</span></span>
+                      </div>
+                    )}
                     {item.target_type === 'room' && (
                       <>
                         <div className="flex items-center gap-2 text-sm text-gray-200">
                           <Users size={14} className="text-purple-400" />
-                          <span>Created a study group: <span className="font-bold text-white">{item.details?.name}</span></span>
+                          <span>{item.action_type === 'create_room' ? 'Created study group' : 'Joined study group'}: <span className="font-bold text-white">{item.details?.name || item.details?.room_id}</span></span>
                         </div>
-                        <p className="text-[10px] text-[var(--muted)] mt-1 uppercase font-bold tracking-wider">{item.details?.location}</p>
+                        {item.details?.location && <p className="text-[10px] text-[var(--muted)] mt-1 uppercase font-bold tracking-wider">{item.details?.location}</p>}
                       </>
+                    )}
+                    {item.target_type === 'profile' && (
+                      <div className="flex items-center gap-2 text-sm text-gray-200">
+                        <User size={14} className="text-blue-400" />
+                        <span>{item.details?.message || 'Updated profile information'}</span>
+                      </div>
                     )}
                     {item.action_type === 'earn_star' && (
                       <div className="flex items-center gap-2 text-sm text-gray-200">

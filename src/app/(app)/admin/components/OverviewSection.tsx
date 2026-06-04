@@ -1,38 +1,24 @@
-import { useMemo } from "react";
 import { Users, FileText, Database, MessageSquare, Activity } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
-import type { Profile, ResourceItem, ExamPaper, Room, AdminAuditLog } from "@/lib/types";
+import type { AdminAuditLog } from "@/lib/types";
 
 interface OverviewProps {
-  profiles: Profile[];
-  resources: ResourceItem[];
-  papers: ExamPaper[];
-  rooms: Room[];
+  stats: any;
   auditLogs: AdminAuditLog[];
 }
 
-export default function OverviewSection({ profiles, resources, papers, rooms, auditLogs }: OverviewProps) {
-  const stats = useMemo(() => {
-    const students = profiles.filter((p) => p.role === "student" && p.status === "active").length;
-    const activeUsers = profiles.filter((p) => p.status === "active").length;
-    const pending = profiles.filter((p) => p.status === "pending").length;
-    
-    // Calculate storage
-    const resourceBytes = resources.reduce((acc, r) => acc + (r.file_size || 0), 0);
-    const paperBytes = papers.reduce((acc, p) => acc + (p.file_size || 0), 0);
-    const totalBytes = resourceBytes + paperBytes;
-    const storageGB = (totalBytes / (1024 * 1024 * 1024)).toFixed(2);
+export default function OverviewSection({ stats, auditLogs }: OverviewProps) {
+  const storageGB = stats ? (stats.total_storage_bytes / (1024 * 1024 * 1024)).toFixed(2) : "0.00";
 
-    return [
-      { label: "Active Students", value: students, icon: Users, color: "text-blue-400" },
-      { label: "Total Approved Users", value: activeUsers, icon: Users, color: "text-emerald-400" },
-      { label: "Pending Approvals", value: pending, icon: Users, color: pending > 0 ? "text-amber-400" : "text-[var(--muted)]" },
-      { label: "Resources Uploaded", value: resources.length, icon: Database, color: "text-[var(--accent)]" },
-      { label: "Past Papers", value: papers.length, icon: FileText, color: "text-purple-400" },
-      { label: "Active Study Circles", value: rooms.length, icon: MessageSquare, color: "text-pink-400" },
-      { label: "Total Storage", value: `${storageGB} GB`, icon: Activity, color: "text-indigo-400" },
-    ];
-  }, [profiles, resources, papers, rooms]);
+  const statCards = [
+    { label: "Active Students", value: stats?.active_students || 0, icon: Users, color: "text-blue-400" },
+    { label: "Total Approved Users", value: stats?.active_users || 0, icon: Users, color: "text-emerald-400" },
+    { label: "Pending Approvals", value: stats?.pending_users || 0, icon: Users, color: (stats?.pending_users || 0) > 0 ? "text-amber-400" : "text-[var(--muted)]" },
+    { label: "Resources Uploaded", value: stats?.total_resources || 0, icon: Database, color: "text-[var(--accent)]" },
+    { label: "Past Papers", value: stats?.total_papers || 0, icon: FileText, color: "text-purple-400" },
+    { label: "Active Study Circles", value: stats?.total_rooms || 0, icon: MessageSquare, color: "text-pink-400" },
+    { label: "Total Storage", value: `${storageGB} GB`, icon: Activity, color: "text-indigo-400" },
+  ];
 
   return (
     <div className="space-y-8">
@@ -42,7 +28,7 @@ export default function OverviewSection({ profiles, resources, papers, rooms, au
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => {
+        {statCards.map((stat, i) => {
           const Icon = stat.icon;
           return (
             <div key={i} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-all hover:border-[var(--accent)]/30 hover:shadow-sm">

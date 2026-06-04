@@ -48,6 +48,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
   
   // Global Admin State
+  const [stats, setStats] = useState<any>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [papers, setPapers] = useState<ExamPaper[]>([]);
@@ -56,8 +57,6 @@ export default function AdminPage() {
   const [stars, setStars] = useState<StarRecord[]>([]);
   const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Derived state
   const pendingUsers = useMemo(() => profiles.filter((p) => p.status === "pending"), [profiles]);
 
   useEffect(() => {
@@ -65,18 +64,20 @@ export default function AdminPage() {
     
     const loadData = async () => {
       const [
-        { data: p }, { data: r }, { data: e }, { data: f }, 
+        { data: statsData }, { data: p }, { data: r }, { data: e }, { data: f }, 
         { data: rm }, { data: s }, { data: a }
       ] = await Promise.all([
-        supabase.from("profiles").select("*"),
-        supabase.from("resources").select("*").order("created_at", { ascending: false }),
-        supabase.from("exam_papers").select("*").order("created_at", { ascending: false }),
-        supabase.from("folders").select("*").order("name"),
-        supabase.from("rooms").select("*"),
-        supabase.from("stars").select("*"),
+        supabase.rpc("get_admin_stats"),
+        supabase.from("profiles").select("*").limit(200),
+        supabase.from("resources").select("*").order("created_at", { ascending: false }).limit(200),
+        supabase.from("exam_papers").select("*").order("created_at", { ascending: false }).limit(200),
+        supabase.from("folders").select("*").order("name").limit(200),
+        supabase.from("rooms").select("*").limit(200),
+        supabase.from("stars").select("*").limit(200),
         supabase.from("admin_audit_logs").select("*, admin:admin_id(id, name, roll_no)").order("created_at", { ascending: false }).limit(100),
       ]);
       
+      setStats(statsData);
       setProfiles(Array.isArray(p) ? p : []);
       setResources(Array.isArray(r) ? r : []);
       setPapers(Array.isArray(e) ? e : []);
@@ -111,6 +112,7 @@ export default function AdminPage() {
   if (loading) return <LoadingCard title="> loading admin platform..." />;
 
   const sharedProps = {
+    stats,
     profiles, setProfiles,
     resources, setResources,
     papers, setPapers,

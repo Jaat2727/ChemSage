@@ -316,8 +316,8 @@ function PaperActions({ paper, profile, onEdit, onReplace, onDelete, onRestore }
 }
 
 // ─── Detail Side Panel ────────────────────────────────────────────────────
-function DetailPanel({ paper, profilesMap, profile, onClose, onDownload, onEdit, onReplace, onDelete, onRestore }: {
-  paper: ExamPaper; profilesMap: Map<string, string>; profile: Profile;
+function DetailPanel({ paper, profile, onClose, onDownload, onEdit, onReplace, onDelete, onRestore }: {
+  paper: ExamPaper; profile: Profile;
   onClose: () => void;
   onDownload: (id: string, url: string, count: number) => void;
   onEdit: () => void; onReplace: () => void; onDelete: () => void; onRestore: () => void;
@@ -381,7 +381,7 @@ function DetailPanel({ paper, profilesMap, profile, onClose, onDownload, onEdit,
           <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--muted)] flex items-center gap-2"><User size={14} /> Ownership</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-[var(--muted)]">Uploaded by</span><span className="font-bold text-white">{profilesMap.get(paper.uploaded_by) || "Unknown"}</span></div>
+              <div className="flex justify-between"><span className="text-[var(--muted)]">Uploaded by</span><span className="font-bold text-white">{(paper as any).uploader_name || "Unknown"}</span></div>
               <div className="flex justify-between"><span className="text-[var(--muted)]">Created</span><span className="font-bold text-white">{shortDate(paper.created_at)}</span></div>
               <div className="flex justify-between"><span className="text-[var(--muted)]">Last Updated</span><span className="font-bold text-white">{shortDate(paper.updated_at || paper.created_at)}</span></div>
               <div className="flex justify-between"><span className="text-[var(--muted)]">Version</span><span className="font-bold text-[var(--accent)]">{paper.version || "v1.0"}</span></div>
@@ -421,7 +421,8 @@ function DetailPanel({ paper, profilesMap, profile, onClose, onDownload, onEdit,
 export default function ExamArchivePage() {
   const { profile } = useAuth();
   const [papers, setPapers] = useState<ExamPaper[]>([]);
-  const [profilesMap, setProfilesMap] = useState<Map<string, string>>(new Map());
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const [examType, setExamType] = useState<ExamTypeFilter>("All");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -440,23 +441,55 @@ export default function ExamArchivePage() {
 
   useEffect(() => { const t = setTimeout(() => setDebouncedSearch(search), 300); return () => clearTimeout(t); }, [search]);
 
-  const load = useCallback(async () => {
+  const fetchPapers = useCallback(async (reset = false) => {
     if (!profile) return;
     setLoading(true);
-    const [papersRes, profsRes] = await Promise.all([
-      supabase.from("exam_papers").select("*").order("created_at", { ascending: false }),
-      supabase.from("profiles").select("id, name")
-    ]);
-    if (papersRes.error) setError(papersRes.error.message);
-    let data = Array.isArray(papersRes.data) ? papersRes.data as ExamPaper[] : [];
-    // Filter out deleted for non-admins
-    if (profile.role !== "admin") data = data.filter(p => p.status !== "deleted");
-    setPapers(data);
-    setProfilesMap(new Map((profsRes.data || []).map((p: { id: string; name: string }) => [p.id, p.name])));
-    setLoading(false);
-  }, [profile]);
+    const currentPage = reset ? 0 : page;
+    const PAGE_SIZE = 50;
 
-  useEffect(() => { if (profile?.status === "active") void load(); }, [profile, load]);
+    let query = supabase.from("exam_papers").select("*, uploader:profiles!uploaded_by(name)");
+
+    if (debouncedSearch) {
+      query = query.or(`subject.ilike.%${debouncedSearch}%,course_code.ilike.%${debouncedSearch}%,faculty.ilike.%${debouncedSearch}%`);
+    }
+
+    if (examType !== "All") query = query.eq("exam_type", examType);
+    if (yearFilter) query = query.eq("year", yearFilter);
+    if (semesterFilter) query = query.eq("semester", semesterFilter);
+    if (profile.role !== "admin") query = query.neq("status", "deleted");
+
+    switch (sortBy) {
+      case "Newest": query = query.order("created_at", { ascending: false }); break;
+      case "Oldest": query = query.order("created_at", { ascending: true }); break;
+      case "Most Downloaded": query = query.order("download_count", { ascending: false }); break;
+      case "Recently Updated": query = query.order("updated_at", { ascending: false }); break;
+    }
+
+    query = query.range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
+
+    const { data, error: err } = await query;
+    if (err) setError(err.message);
+    
+    let items = Array.isArray(data) ? (data as any[]) : [];
+    items = items.map(p => ({ ...p, uploader_name: p.uploader?.name }));
+
+    if (reset) {
+      setPapers(items);
+    } else {
+      setPapers(prev => [...prev, ...items]);
+    }
+    setHasMore(items.length === PAGE_SIZE);
+    setPage(currentPage + 1);
+    setLoading(false);
+  }, [profile, debouncedSearch, examType, yearFilter, semesterFilter, sortBy, page]);
+
+  useEffect(() => {
+    if (profile?.status === "active") void fetchPapers(true);
+  }, [profile, debouncedSearch, examType, yearFilter, semesterFilter, sortBy]);
+
+  const loadMore = () => {
+    if (!loading && hasMore) fetchPapers();
+  };
 
   const handleDownload = async (id: string, url: string, currentCount: number) => {
     window.open(url, "_blank");
@@ -469,26 +502,7 @@ export default function ExamArchivePage() {
     }
   };
 
-  const processed = useMemo(() => {
-    const q = debouncedSearch.toLowerCase();
-    let result = papers.filter((p) => {
-      const typeMatch = examType === "All" || p.exam_type === examType;
-      const searchMatch = !q || p.subject.toLowerCase().includes(q) || (p.course_code || "").toLowerCase().includes(q) || (p.faculty || "").toLowerCase().includes(q);
-      const yearMatch = !yearFilter || p.year === yearFilter;
-      const semMatch = !semesterFilter || p.semester === semesterFilter;
-      return typeMatch && searchMatch && yearMatch && semMatch;
-    });
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case "Newest": return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        case "Oldest": return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        case "Most Downloaded": return (b.download_count || 0) - (a.download_count || 0);
-        case "Recently Updated": return new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime();
-        default: return 0;
-      }
-    });
-    return result;
-  }, [papers, examType, debouncedSearch, sortBy, yearFilter, semesterFilter]);
+  const processed = papers;
 
   const trendingPapers = useMemo(() => [...papers].sort((a, b) => (b.download_count || 0) - (a.download_count || 0)).slice(0, 5), [papers]);
 
@@ -622,7 +636,7 @@ export default function ExamArchivePage() {
                     {/* Metadata */}
                     <div className="space-y-1.5 text-[10px] text-[var(--muted)] bg-[var(--background)] rounded-lg p-2.5 mb-3">
                       {paper.faculty && <div className="flex items-center justify-between"><span>Faculty</span><span className="font-bold text-white truncate ml-2">{paper.faculty}</span></div>}
-                      <div className="flex items-center justify-between"><span>Uploaded by</span><span className="font-bold text-white truncate ml-2">{profilesMap.get(paper.uploaded_by) || "Unknown"}</span></div>
+                      <div className="flex items-center justify-between"><span>Uploaded by</span><span className="font-bold text-white truncate ml-2">{(paper as any).uploader_name || "Unknown"}</span></div>
                       <div className="flex items-center justify-between"><span>Last Updated</span><span className="font-bold text-white">{shortDate(paper.updated_at || paper.created_at)}</span></div>
                       <div className="flex items-center justify-between border-t border-[var(--border)] pt-1.5 mt-1"><span>Version</span><span className="font-bold text-[var(--accent)]">{paper.version || "v1.0"}</span></div>
                     </div>
@@ -641,6 +655,13 @@ export default function ExamArchivePage() {
                     </div>
                   </article>
                 ))}
+                {processed.length > 0 && hasMore && (
+                  <div className="col-span-full flex justify-center mt-4">
+                    <button onClick={loadMore} disabled={loading} className="px-6 py-2 rounded-xl border border-[var(--border)] text-sm font-bold text-white hover:bg-[var(--surface-soft)]">
+                      {loading ? "Loading..." : "Load More"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -707,7 +728,7 @@ export default function ExamArchivePage() {
 
       {/* Detail Side Panel */}
       {selectedPaper && (
-        <DetailPanel paper={selectedPaper} profilesMap={profilesMap} profile={profile} onClose={() => setSelectedPaper(null)}
+        <DetailPanel paper={selectedPaper} profile={profile} onClose={() => setSelectedPaper(null)}
           onDownload={handleDownload}
           onEdit={() => { setEditingPaper(selectedPaper); setSelectedPaper(null); }}
           onReplace={() => { setReplacingPaper(selectedPaper); setSelectedPaper(null); }}
@@ -717,10 +738,10 @@ export default function ExamArchivePage() {
       )}
 
       {/* Modals */}
-      {showUploadModal && <UploadModal uploaderId={profile.id} onClose={() => setShowUploadModal(false)} onSuccess={load} />}
-      {editingPaper && <EditPaperModal paper={editingPaper} onClose={() => setEditingPaper(null)} onSuccess={() => { setEditingPaper(null); load(); }} />}
-      {replacingPaper && <ReplacePaperModal paper={replacingPaper} onClose={() => setReplacingPaper(null)} onSuccess={() => { setReplacingPaper(null); load(); }} />}
-      {deletingPaper && <DeletePaperModal paper={deletingPaper.paper} isRestore={deletingPaper.isRestore} onClose={() => setDeletingPaper(null)} onSuccess={() => { setDeletingPaper(null); load(); }} />}
+      {showUploadModal && <UploadModal uploaderId={profile.id} onClose={() => setShowUploadModal(false)} onSuccess={() => fetchPapers(true)} />}
+      {editingPaper && <EditPaperModal paper={editingPaper} onClose={() => setEditingPaper(null)} onSuccess={() => { setEditingPaper(null); fetchPapers(true); }} />}
+      {replacingPaper && <ReplacePaperModal paper={replacingPaper} onClose={() => setReplacingPaper(null)} onSuccess={() => { setReplacingPaper(null); fetchPapers(true); }} />}
+      {deletingPaper && <DeletePaperModal paper={deletingPaper.paper} isRestore={deletingPaper.isRestore} onClose={() => setDeletingPaper(null)} onSuccess={() => { setDeletingPaper(null); fetchPapers(true); }} />}
     </div>
   );
 }

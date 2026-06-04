@@ -1,19 +1,33 @@
-import { useMemo } from "react";
-import { User, Activity, TrendingUp, CheckCircle2, ShieldAlert, Star } from "lucide-react";
+import { useEffect, useState } from "react";
+import { User, Activity, TrendingUp, CheckCircle2, ShieldAlert, Star, Folder, Download, Bookmark, Users } from "lucide-react";
+import { createClientComponentClient } from "@/lib/supabase";
 import type { Profile } from "@/lib/types";
 
 export default function OverviewTab({ profile, isOwner }: { profile: Profile; isOwner: boolean }) {
+  const supabase = createClientComponentClient();
+  const [analytics, setAnalytics] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      const { data } = await supabase.rpc("get_profile_analytics", { p_user_id: profile.id });
+      if (data) setAnalytics(data);
+    };
+    void fetchAnalytics();
+  }, [profile.id]);
+
   const calculateCompletion = () => {
     let score = 0;
-    const fields = [
-      profile.avatar_url,
-      profile.banner_url,
-      profile.bio,
-      profile.academic_interests?.length,
-      profile.preferred_subjects?.length
-    ];
-    fields.forEach(f => { if (f) score += 20; });
-    return score;
+    if (profile.avatar_url) score += 15;
+    if (profile.banner_url) score += 10;
+    if (profile.bio) score += 15;
+    if (profile.academic_interests && profile.academic_interests.length > 0) score += 20;
+    if (profile.preferred_subjects && profile.preferred_subjects.length > 0) score += 20;
+    // Profile Metadata Complete (Name, Programme, etc.)
+    if (profile.name && profile.programme && profile.batch_year) score += 10;
+    // Activity Present (we can assume based on analytics)
+    if (analytics && analytics.activity_count > 0) score += 10;
+    
+    return Math.min(score, 100);
   };
   
   const completion = calculateCompletion();
@@ -99,7 +113,7 @@ export default function OverviewTab({ profile, isOwner }: { profile: Profile; is
             </div>
             <div className="mb-1">
               <h1 className="text-xl font-bold text-white">{profile.name}</h1>
-              <p className="text-xs font-mono text-[var(--muted)] mt-1">{profile.roll_no} • {profile.programme} '{profile.batch_year.toString().slice(2)}</p>
+              <p className="text-xs font-mono text-[var(--muted)] mt-1">{profile.roll_no} • {profile.programme} '{profile.batch_year?.toString().slice(2) || "XX"}</p>
             </div>
           </div>
           <div className="mt-4 text-sm text-gray-300">
@@ -107,6 +121,31 @@ export default function OverviewTab({ profile, isOwner }: { profile: Profile; is
           </div>
         </div>
       </div>
+
+      {analytics && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 flex flex-col items-center justify-center text-center">
+            <Folder size={18} className="text-blue-400 mb-2" />
+            <span className="text-2xl font-black text-white">{analytics.resources_uploaded}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] mt-1">Uploads</span>
+          </div>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 flex flex-col items-center justify-center text-center">
+            <Download size={18} className="text-emerald-400 mb-2" />
+            <span className="text-2xl font-black text-white">{analytics.total_downloads}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] mt-1">Downloads Generated</span>
+          </div>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 flex flex-col items-center justify-center text-center">
+            <Bookmark size={18} className="text-amber-400 mb-2" />
+            <span className="text-2xl font-black text-white">{analytics.bookmarks}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] mt-1">Bookmarks</span>
+          </div>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 flex flex-col items-center justify-center text-center">
+            <Users size={18} className="text-purple-400 mb-2" />
+            <span className="text-2xl font-black text-white">{analytics.circles_joined}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] mt-1">Study Circles</span>
+          </div>
+        </div>
+      )}
 
     </div>
   );

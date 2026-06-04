@@ -298,8 +298,8 @@ function PreviewDrawer({ resource, profilesMap, profile, onClose, onDownload, on
     async function loadExtra() {
       setLoadingComments(true);
       const [cRes, vRes] = await Promise.all([
-        supabase.from("comments").select("*, user:profiles(id, name, roll_no)").eq("resource_id", resource.id).order("created_at", { ascending: false }),
-        supabase.from("resource_versions").select("*").eq("resource_id", resource.id).order("created_at", { ascending: false })
+        supabase.from("comments").select("*, user:profiles!user_id(id, name, roll_no)").eq("resource_id", resource.id).order("created_at", { ascending: false }),
+        supabase.from("resource_versions").select("*, author:profiles!changed_by(name)").eq("resource_id", resource.id).order("created_at", { ascending: false })
       ]);
       setComments(Array.isArray(cRes.data) ? cRes.data as CommentType[] : []);
       setVersions(Array.isArray(vRes.data) ? vRes.data as ResourceVersion[] : []);
@@ -357,7 +357,7 @@ function PreviewDrawer({ resource, profilesMap, profile, onClose, onDownload, on
             <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-4 space-y-2">
               <h3 className="text-xs font-bold uppercase text-[var(--muted)] flex items-center gap-1.5"><User size={12} /> Ownership</h3>
               <div className="text-sm space-y-1.5">
-                <div className="flex justify-between"><span className="text-[var(--muted)]">Uploaded by</span><span className="font-bold text-white">{profilesMap.get(resource.uploaded_by) || "Unknown"}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--muted)]">Uploaded by</span><span className="font-bold text-white">{(resource as any).uploader_name || "Unknown"}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--muted)]">Created</span><span className="font-bold text-white">{shortDate(resource.created_at)}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--muted)]">Last Updated</span><span className="font-bold text-white">{shortDate(resource.updated_at || resource.created_at)}</span></div>
               </div>
@@ -396,7 +396,7 @@ function PreviewDrawer({ resource, profilesMap, profile, onClose, onDownload, on
                     <p className="text-xs font-bold text-white">{v.version}</p>
                     <button onClick={() => window.open(v.file_url, "_blank")} className="text-[10px] font-bold text-[var(--accent)] hover:text-[#bce600] flex items-center gap-1"><Download size={10} /> Download</button>
                   </div>
-                  <p className="text-[10px] text-[var(--muted)]">{shortDate(v.created_at)} · {profilesMap.get(v.changed_by) || "Unknown"}</p>
+                  <p className="text-[10px] text-[var(--muted)]">{shortDate(v.created_at)} · {v.author?.name || "Unknown"}</p>
                   {v.change_note && <p className="text-[10px] text-[var(--muted)] mt-1 italic">"{v.change_note}"</p>}
                 </div>
               ))}</div>
@@ -428,8 +428,9 @@ export default function StudyVaultPage() {
   const { profile } = useAuth();
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [folders, setFolders] = useState<FolderType[]>([]);
-  const [profilesMap, setProfilesMap] = useState<Map<string, string>>(new Map());
   const [stars, setStars] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [breadcrumb, setBreadcrumb] = useState<{ id: string | null; name: string }[]>([{ id: null, name: "Root" }]);
@@ -453,25 +454,74 @@ export default function StudyVaultPage() {
 
   useEffect(() => { const t = setTimeout(() => setDebouncedSearch(search), 300); return () => clearTimeout(t); }, [search]);
 
-  const load = useCallback(async () => {
-    if (!profile) return; setLoading(true);
-    const [resData, folderData, profsData, starsData] = await Promise.all([
-      supabase.from("resources").select("*"),
+  const fetchResources = useCallback(async (reset = false) => {
+    if (!profile) return;
+    setLoading(true);
+    const currentPage = reset ? 0 : page;
+    const PAGE_SIZE = 50;
+
+    let query = supabase.from("resources").select("*, uploader:profiles!uploaded_by(name)");
+    
+    // Apply filters
+    if (debouncedSearch) {
+      // Basic ilike search on title, subject, course_code
+      query = query.or(`title.ilike.%${debouncedSearch}%,subject.ilike.%${debouncedSearch}%,course_code.ilike.%${debouncedSearch}%`);
+    } else {
+      query = query.eq("folder_id", currentFolderId);
+    }
+
+    if (category !== "All") {
+      query = query.eq("category", category);
+    }
+    
+    if (profile.role !== "admin") {
+      query = query.neq("status", "deleted");
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case "Newest": query = query.order("created_at", { ascending: false }); break;
+      case "Oldest": query = query.order("created_at", { ascending: true }); break;
+      case "Most Downloaded": query = query.order("download_count", { ascending: false }); break;
+      case "Recently Updated": query = query.order("updated_at", { ascending: false }); break;
+      case "Alphabetical": query = query.order("title", { ascending: true }); break;
+    }
+
+    // Pagination
+    query = query.range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
+
+    const [resData, folderData, starsData] = await Promise.all([
+      query,
       supabase.from("folders").select("*").eq("type", "general"),
-      supabase.from("profiles").select("id, name"),
       supabase.from("stars").select("resource_id").eq("user_id", profile.id).not("resource_id", "is", null)
     ]);
-    let data = Array.isArray(resData.data) ? resData.data as ResourceItem[] : [];
-    if (profile.role !== "admin") data = data.filter(r => r.status !== "deleted");
-    setResources(data);
+
+    let data = Array.isArray(resData.data) ? (resData.data as any[]) : [];
+    
+    // Map uploader object to string for existing components
+    data = data.map(r => ({ ...r, uploader_name: r.uploader?.name }));
+
+    if (reset) {
+      setResources(data);
+    } else {
+      setResources(prev => [...prev, ...data]);
+    }
+
+    setHasMore(data.length === PAGE_SIZE);
+    setPage(currentPage + 1);
     setFolders(Array.isArray(folderData.data) ? folderData.data as FolderType[] : []);
-    setProfilesMap(new Map((profsData.data || []).map((p: { id: string; name: string }) => [p.id, p.name])));
     setStars(new Set((starsData.data || []).map((s: { resource_id: string }) => s.resource_id)));
     if (resData.error) setError(resData.error.message);
     setLoading(false);
-  }, [profile]);
+  }, [profile, debouncedSearch, category, currentFolderId, sortBy, page]);
 
-  useEffect(() => { if (profile?.status === "active") void load(); }, [profile, load]);
+  useEffect(() => {
+    if (profile?.status === "active") void fetchResources(true);
+  }, [profile, debouncedSearch, category, currentFolderId, sortBy]);
+
+  const loadMore = () => {
+    if (!loading && hasMore) fetchResources();
+  };
 
   const navigateToFolder = (folderId: string | null, folderName: string) => {
     if (folderId === null) { setBreadcrumb([{ id: null, name: "Root" }]); }
@@ -485,26 +535,7 @@ export default function StudyVaultPage() {
 
   const currentFolders = useMemo(() => folders.filter(f => f.parent_id === currentFolderId), [folders, currentFolderId]);
 
-  const processed = useMemo(() => {
-    const q = debouncedSearch.toLowerCase();
-    let result = resources.filter(r => {
-      const folderMatch = debouncedSearch ? true : r.folder_id === currentFolderId;
-      const catMatch = category === "All" || r.category === category;
-      const searchMatch = !q || r.title.toLowerCase().includes(q) || (r.subject || "").toLowerCase().includes(q) || (r.course_code || "").toLowerCase().includes(q);
-      return folderMatch && catMatch && searchMatch;
-    });
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case "Newest": return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        case "Oldest": return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        case "Most Downloaded": return (b.download_count || 0) - (a.download_count || 0);
-        case "Recently Updated": return new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime();
-        case "Alphabetical": return a.title.localeCompare(b.title);
-        default: return 0;
-      }
-    });
-    return result;
-  }, [resources, currentFolderId, category, debouncedSearch, sortBy]);
+  const processed = resources;
 
   const recentlyUpdated = useMemo(() => [...resources].sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime()).slice(0, 5), [resources]);
   const mostDownloaded = useMemo(() => [...resources].sort((a, b) => (b.download_count || 0) - (a.download_count || 0)).slice(0, 5), [resources]);
@@ -655,13 +686,21 @@ export default function StudyVaultPage() {
                 <div className="divide-y divide-[var(--border)]">{processed.map(r => (
                   <div key={r.id} onClick={() => setSelectedResource(r)} className={cn("group cursor-pointer grid grid-cols-[1fr_auto] md:grid-cols-[auto_1fr_100px_80px_70px_auto] items-center gap-3 px-4 py-2.5 hover:bg-[var(--surface-soft)]", r.status === "deleted" ? "opacity-60" : "")}>
                     <div className="hidden md:flex items-center w-6"><button onClick={(e) => toggleStar(r.id, e)} className="text-[var(--muted)] hover:text-amber-400"><Star size={13} className={stars.has(r.id) ? "fill-amber-400 text-amber-400" : ""} /></button></div>
-                    <div className="min-w-0"><h3 className="truncate text-sm font-bold text-white group-hover:text-[var(--accent)]">{r.title}</h3><div className="flex items-center gap-2 text-[10px] text-[var(--muted)]"><span>{profilesMap.get(r.uploaded_by) || "Unknown"}</span><span>·</span><span>{shortDate(r.updated_at || r.created_at)}</span><span className="text-[var(--accent)] font-bold">{r.version || "v1.0"}</span></div></div>
+                    <div className="min-w-0"><h3 className="truncate text-sm font-bold text-white group-hover:text-[var(--accent)]">{r.title}</h3><div className="flex items-center gap-2 text-[10px] text-[var(--muted)]"><span>{r.uploader_name || "Unknown"}</span><span>·</span><span>{shortDate(r.updated_at || r.created_at)}</span><span className="text-[var(--accent)] font-bold">{r.version || "v1.0"}</span></div></div>
                     <div className="hidden md:block text-[10px] font-bold text-[var(--muted)]">{r.category}</div>
                     <div className="hidden md:block text-xs text-[var(--muted)]">{formatBytes(r.file_size)}</div>
                     <div className="hidden md:flex items-center gap-1 text-xs font-bold text-emerald-400"><Download size={11} />{r.download_count || 0}</div>
                     <div className="flex items-center gap-1"><ResourceActions resource={r} profile={profile} onEdit={() => setEditingResource(r)} onReplace={() => setReplacingResource(r)} onDelete={() => setDeletingResource({ resource: r, isRestore: false })} onRestore={() => setDeletingResource({ resource: r, isRestore: true })} /><button onClick={(e) => { e.stopPropagation(); handleDownload(r.id, r.file_url, r.download_count || 0); }} className="p-1.5 rounded-md bg-[var(--surface-soft)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-black"><Download size={13} /></button></div>
                   </div>
-                ))}</div>
+                ))}
+                {processed.length > 0 && hasMore && (
+                    <div className="flex justify-center mt-6">
+                      <button onClick={loadMore} disabled={loading} className="px-6 py-2 rounded-xl border border-[var(--border)] text-sm font-bold text-white hover:bg-[var(--surface-soft)]">
+                        {loading ? "Loading..." : "Load More"}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -700,12 +739,12 @@ export default function StudyVaultPage() {
       )}
 
       {/* Drawers & Modals */}
-      {selectedResource && <PreviewDrawer resource={selectedResource} profilesMap={profilesMap} profile={profile} onClose={() => setSelectedResource(null)} onDownload={handleDownload} onEdit={() => { setEditingResource(selectedResource); setSelectedResource(null); }} onReplace={() => { setReplacingResource(selectedResource); setSelectedResource(null); }} onDelete={() => { setDeletingResource({ resource: selectedResource, isRestore: false }); setSelectedResource(null); }} onRestore={() => { setDeletingResource({ resource: selectedResource, isRestore: true }); setSelectedResource(null); }} />}
-      {showUploadModal && <UploadModal uploaderId={profile.id} folderId={currentFolderId} onClose={() => setShowUploadModal(false)} onSuccess={load} />}
-      {showFolderModal && <CreateFolderModal parentId={currentFolderId} userId={profile.id} onClose={() => setShowFolderModal(false)} onSuccess={() => { setShowFolderModal(false); load(); }} />}
-      {editingResource && <EditResourceModal resource={editingResource} onClose={() => setEditingResource(null)} onSuccess={() => { setEditingResource(null); load(); }} />}
-      {replacingResource && <ReplaceFileModal resource={replacingResource} userId={profile.id} onClose={() => setReplacingResource(null)} onSuccess={() => { setReplacingResource(null); load(); }} />}
-      {deletingResource && <DeleteModal resource={deletingResource.resource} isRestore={deletingResource.isRestore} onClose={() => setDeletingResource(null)} onSuccess={() => { setDeletingResource(null); load(); }} />}
+      {selectedResource && <PreviewDrawer resource={selectedResource} profile={profile} onClose={() => setSelectedResource(null)} onDownload={handleDownload} onEdit={() => { setEditingResource(selectedResource); setSelectedResource(null); }} onReplace={() => { setReplacingResource(selectedResource); setSelectedResource(null); }} onDelete={() => { setDeletingResource({ resource: selectedResource, isRestore: false }); setSelectedResource(null); }} onRestore={() => { setDeletingResource({ resource: selectedResource, isRestore: true }); setSelectedResource(null); }} />}
+      {showUploadModal && <UploadModal uploaderId={profile.id} folderId={currentFolderId} onClose={() => setShowUploadModal(false)} onSuccess={() => fetchResources(true)} />}
+      {showFolderModal && <CreateFolderModal parentId={currentFolderId} userId={profile.id} onClose={() => setShowFolderModal(false)} onSuccess={() => { setShowFolderModal(false); fetchResources(true); }} />}
+      {editingResource && <EditResourceModal resource={editingResource} onClose={() => setEditingResource(null)} onSuccess={() => { setEditingResource(null); fetchResources(true); }} />}
+      {replacingResource && <ReplaceFileModal resource={replacingResource} userId={profile.id} onClose={() => setReplacingResource(null)} onSuccess={() => { setReplacingResource(null); fetchResources(true); }} />}
+      {deletingResource && <DeleteModal resource={deletingResource.resource} isRestore={deletingResource.isRestore} onClose={() => setDeletingResource(null)} onSuccess={() => { setDeletingResource(null); fetchResources(true); }} />}
     </div>
   );
 }
