@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className="flex min-h-screen bg-[var(--background)] text-white antialiased" suppressHydrationWarning>
+      <body className="flex flex-col min-h-screen bg-[var(--background)] text-white antialiased" suppressHydrationWarning>
 
         <AuthProvider>{children}</AuthProvider>
       </body>

@@ -24,14 +24,23 @@ export async function POST(request: Request) {
 
     const userId = authData.user.id;
 
-    // 2. Insert into profiles with pending status
+    // Check if roll number exists in registered_rollnos for auto-activation
+    const { data: isRegistered } = await supabaseAdmin
+      .from("registered_rollnos")
+      .select("roll_no")
+      .eq("roll_no", rollNo)
+      .maybeSingle();
+
+    const status = isRegistered ? "active" : "pending";
+
+    // 2. Insert into profiles
     const { error: profileError } = await supabaseAdmin.from('profiles').insert({
       id: userId,
       roll_no: rollNo,
       name: name,
       programme: programme,
       batch_year: batch_year,
-      status: 'pending',
+      status: status,
       role: 'student'
     });
 

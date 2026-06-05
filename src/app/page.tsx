@@ -4,10 +4,12 @@ import {
   Users, CalendarClock, Lock, ChevronRight, GraduationCap, BadgeCheck,
   FolderOpen, MessageSquare, ArrowUpRight
 } from "lucide-react";
+import CursorFollower from "@/components/CursorFollower";
 
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen bg-[#050505] text-white selection:bg-[var(--accent)] selection:text-black font-sans">
+      <CursorFollower />
 
       {/* ─── Navigation ─────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 w-full border-b border-white/[0.04] bg-[#050505]/90 backdrop-blur-lg">

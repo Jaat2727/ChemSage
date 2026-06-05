@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [isAutoApproved, setIsAutoApproved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<React.ReactNode | null>(null);
 
@@ -22,15 +23,29 @@ export default function SignupPage() {
     return (
       <div className="animate-scale-in w-full max-w-sm mx-auto">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--background)] p-8 text-center shadow-2xl">
-          <div className="mx-auto mb-4 w-fit rounded-full border border-emerald-800 bg-emerald-950/30 p-4 text-emerald-400">
-            <Clock size={28} />
-          </div>
-          <h2 className="text-xl font-bold text-white">Access Requested</h2>
-          <p className="mt-2 text-sm text-[var(--muted)]">
-            Your account has been created and is pending admin verification. You&apos;ll be able to sign in once approved.
-          </p>
+          {isAutoApproved ? (
+            <>
+              <div className="mx-auto mb-4 w-fit rounded-full border border-emerald-800 bg-emerald-950/30 p-4 text-emerald-400">
+                <Shield size={28} />
+              </div>
+              <h2 className="text-xl font-bold text-white">Account Active</h2>
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                Your account is active and approved! You can now log in immediately.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="mx-auto mb-4 w-fit rounded-full border border-amber-800 bg-amber-950/30 p-4 text-amber-400">
+                <Clock size={28} />
+              </div>
+              <h2 className="text-xl font-bold text-white">Access Requested</h2>
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                Your account has been created and is pending admin verification. You&apos;ll be able to sign in once approved.
+              </p>
+            </>
+          )}
           <Link href="/login" className="mt-6 block rounded-lg bg-[var(--accent)] py-2.5 text-sm font-bold text-black hover:bg-[#bce600] transition-colors">
-            Back to Login
+            Go to Login
           </Link>
         </div>
       </div>
@@ -58,6 +73,11 @@ export default function SignupPage() {
       if (rollError && !/0 rows/i.test(rollError.message)) throw rollError;
 
       const registered = (existingRollNo as RegisteredRollNo | null) ?? null;
+      if (registered) {
+        setIsAutoApproved(true);
+      } else {
+        setIsAutoApproved(false);
+      }
 
       const res = await fetch("/api/auth/signup", {
         method: "POST",
