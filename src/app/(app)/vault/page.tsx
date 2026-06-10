@@ -1496,7 +1496,7 @@ export default function StudyVaultPage() {
                               </div>
                               <div className="flex items-center gap-0.5 shrink-0 select-none">
                                 <button onClick={(e) => toggleStar(r.id, e)} className="p-1 text-[var(--fg-faint)] hover:text-amber-400 transition-colors"><Star size={12} className={stars.has(r.id) ? "fill-amber-400 text-amber-400" : ""} /></button>
-                                <ResourceActions resource={r} profile={profile} onEdit={() => setEditingResource(r)} onReplace={() => setReplacingResource(r)} onDelete={() => setDeletingResource({ resource: r, isRestore: false })} onRestore={() => setDeletingResource({ resource: r, isRestore: true })} onMove={() => setMovingItem({ id: r.id, name: r.title, isFolder: false, parentId: r.folder_id })} />
+                                <ResourceActions resource={r} profile={profile} onEdit={() => setEditingResource(r)} onReplace={() => setReplacingResource(r)} onDelete={() => setDeletingResource({ resource: r, isRestore: false })} onRestore={() => setDeletingResource({ resource: r, isRestore: true })} onMove={() => setMovingItem({ id: r.id, name: r.title, isFolder: false, parentId: r.folder_id ?? null })} />
                               </div>
                             </div>
                             <div className="flex flex-wrap gap-1.5 mb-3 select-none">
@@ -1680,7 +1680,7 @@ export default function StudyVaultPage() {
                       <td className="py-2.5 text-[10px] text-[var(--fg-muted)] hidden md:table-cell">{shortDate(r.created_at)}</td>
                       <td className="py-2.5 text-[10px] text-[var(--fg-muted)] font-mono text-right hidden sm:table-cell">{formatBytes(r.file_size)}</td>
                       <td className="pr-4 py-2.5 text-right flex items-center justify-end gap-1">
-                        <ResourceActions resource={r} profile={profile} onEdit={() => setEditingResource(r)} onReplace={() => setReplacingResource(r)} onDelete={() => setDeletingResource({ resource: r, isRestore: false })} onRestore={() => setDeletingResource({ resource: r, isRestore: true })} onMove={() => setMovingItem({ id: r.id, name: r.title, isFolder: false, parentId: r.folder_id })} />
+                        <ResourceActions resource={r} profile={profile} onEdit={() => setEditingResource(r)} onReplace={() => setReplacingResource(r)} onDelete={() => setDeletingResource({ resource: r, isRestore: false })} onRestore={() => setDeletingResource({ resource: r, isRestore: true })} onMove={() => setMovingItem({ id: r.id, name: r.title, isFolder: false, parentId: r.folder_id ?? null })} />
                       </td>
                     </tr>
                   ))}
