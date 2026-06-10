@@ -24,6 +24,7 @@ export default function DirectChatsSidebar() {
   const { profile } = useAuth();
   const pathname = usePathname();
   const [chats, setChats] = useState<DMChat[]>([]);
+  const [reloadTrigger, setReloadTrigger] = useState(0);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -68,15 +69,19 @@ export default function DirectChatsSidebar() {
 
       const otherMembers = Array.isArray(otherMembersData) ? otherMembersData : [];
 
-      // 3. Get latest messages (we fetch recent 500 across all DMs and group locally for ease)
-      const { data: messagesData } = await supabase
-        .from("messages")
-        .select("room_id, content, created_at, sender_id")
-        .in("room_id", privateRoomIds)
-        .order("created_at", { ascending: false })
-        .limit(500);
+      // 3. Get latest message and unread count per room
+      const messagesPromises = privateRoomIds.map(roomId => 
+        supabase
+          .from("messages")
+          .select("room_id, content, created_at, sender_id")
+          .eq("room_id", roomId)
+          .order("created_at", { ascending: false })
+          // limit to 50 for unread counting purposes for each room
+          .limit(50)
+      );
 
-      const messages = Array.isArray(messagesData) ? messagesData : [];
+      const messagesResults = await Promise.all(messagesPromises);
+      const messages = messagesResults.flatMap(res => res.data || []);
       
       const builtChats: DMChat[] = [];
       for (const myMem of myRooms) {
@@ -143,7 +148,13 @@ export default function DirectChatsSidebar() {
         
         setChats(current => {
           const chatIdx = current.findIndex(c => c.roomId === newMsg.room_id);
-          if (chatIdx === -1) return current; // For simplicity, ignore newly created rooms until refresh
+          if (chatIdx === -1) {
+            // If we receive a message for a room we don't track, and it involves us, reload.
+            if (newMsg.room_id.includes(profile.id)) {
+              setTimeout(() => setReloadTrigger(prev => prev + 1), 0);
+            }
+            return current;
+          }
           
           const newChats = [...current];
           const chat = { ...newChats[chatIdx] };
@@ -188,12 +199,20 @@ export default function DirectChatsSidebar() {
       })
       .subscribe();
 
+    // Listen for new room memberships (e.g. clicking a profile in Discover)
+    const membersChannel = supabase.channel('hub-members')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_members', filter: `user_id=eq.${profile.id}` }, () => {
+        setReloadTrigger(prev => prev + 1);
+      })
+      .subscribe();
+
     return () => {
       mounted = false;
       supabase.removeChannel(presence);
       supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(membersChannel);
     };
-  }, [profile?.id, pathname]);
+  }, [profile?.id, pathname, reloadTrigger]);
 
   const toggleFavorite = async (e: React.MouseEvent, chat: DMChat) => {
     e.preventDefault();
