@@ -161,30 +161,28 @@ export default function DirectMessagePage() {
       
       {/* Left Chat Column */}
       <div className="flex-1 flex flex-col min-w-0 border-r border-[var(--border)] relative">
-        <header className="flex h-14 shrink-0 items-center border-b border-[var(--border)] px-4 bg-[var(--surface-soft)] shadow-sm">
-          <Link href="/hub" className="rounded-lg p-2 text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white md:hidden">
-            <ArrowLeft size={18} />
+        <header className="flex h-16 shrink-0 items-center border-b border-[var(--border)] px-4 bg-[#0f0f11] shadow-sm z-10">
+          <Link href="/hub" className="rounded-full p-2 text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white md:hidden mr-1">
+            <ArrowLeft size={20} />
           </Link>
           
-          <div className="flex-1 flex items-center justify-between px-2">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center font-bold text-sm text-[var(--muted)]">
-                {otherUser?.name?.charAt(0).toUpperCase() || "U"}
+          <div className="flex-1 flex items-center justify-between px-1">
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative">
+                <div className="h-10 w-10 rounded-full bg-[var(--accent)] text-black flex items-center justify-center font-bold text-lg">
+                  {otherUser?.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+                {syncing ? null : <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 border-2 border-[#0f0f11]" />}
               </div>
               <div>
-                <h1 className="text-sm font-bold text-white leading-tight">{otherUser?.name || "Direct chat"}</h1>
-                <p className="text-[10px] font-medium text-[var(--muted)] leading-tight">{otherUser?.roll_no || "one-to-one room"}</p>
+                <h1 className="text-base font-bold text-white leading-tight group-hover:underline">{otherUser?.name || "Direct chat"}</h1>
+                <p className="text-[11px] font-medium text-[#7a7a7c] leading-tight mt-0.5">{syncing ? "updating..." : "last seen recently"}</p>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
-              <Wifi size={12} className={syncing ? "text-amber-400" : "text-emerald-400"} />
-              {syncing ? "Syncing" : "Connected"}
             </div>
           </div>
         </header>
 
-        <section className="flex-1 space-y-5 overflow-y-auto px-4 py-6">
+        <section className="flex-1 overflow-y-auto px-4 py-6 bg-[#0a0a0c] bg-[url('/chat-pattern.png')] bg-repeat" style={{ backgroundSize: '400px' }}>
           {error ? <p className="rounded-lg border border-red-800 bg-red-950/50 px-4 py-3 text-sm font-medium text-red-300">{error}</p> : null}
 
           {messages.length === 0 ? (
@@ -214,18 +212,26 @@ export default function DirectMessagePage() {
           {messages.map((message) => {
             const isMe = message.sender_id === profile.id;
             return (
-              <article key={message.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                <div className={`max-w-[88%] px-4 py-2.5 text-sm ${isMe ? "rounded-2xl rounded-tr-sm bg-[var(--accent)] text-black" : "rounded-2xl rounded-tl-sm border border-[var(--border)] bg-[var(--surface-soft)] text-white"}`}>
-                  <MessageDisplay content={message.content} />
-                </div>
-
-                <div className="mt-1.5 flex items-center gap-2 px-2 text-[11px] font-medium text-[var(--muted)]">
-                  <span>{formatDateTime(message.created_at)}</span>
-                  {isMe ? (
-                    <button onClick={() => handleDeleteMessage(message.id)} className="text-[var(--muted)] hover:text-red-300 transition-colors" title="Delete message">
-                      <Trash2 size={13} />
-                    </button>
-                  ) : null}
+              <article key={message.id} className={`flex w-full ${isMe ? "justify-end" : "justify-start"} mb-2`}>
+                <div className={`relative max-w-[85%] md:max-w-[70%] flex flex-col px-3 pt-2 pb-1.5 text-[0.9375rem] shadow-sm ${
+                  isMe 
+                  ? "rounded-2xl rounded-br-sm bg-[var(--accent)] text-black" 
+                  : "rounded-2xl rounded-bl-sm border border-[var(--border)] bg-[#1a1a1c] text-white"
+                }`}>
+                  <div className="pb-3 pr-2">
+                    <MessageDisplay content={message.content} />
+                  </div>
+                  <div className={`absolute bottom-1 right-2 flex items-center gap-1 text-[10px] font-medium ${isMe ? "text-black/60" : "text-[var(--muted)]"}`}>
+                    <span>{new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    {isMe && (
+                      <span className="flex items-center">
+                        <CheckCircle2 size={10} className="ml-0.5" />
+                        <button onClick={() => handleDeleteMessage(message.id)} className="ml-1.5 hover:text-red-600 transition-colors" title="Delete message">
+                          <Trash2 size={10} />
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 </div>
               </article>
             );
@@ -233,7 +239,7 @@ export default function DirectMessagePage() {
           <div ref={messagesEndRef} />
         </section>
 
-        <footer className="border-t border-[var(--border)] bg-[var(--surface)] p-4">
+        <footer className="bg-[#0f0f11] p-3 md:p-4">
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -250,23 +256,34 @@ export default function DirectMessagePage() {
               else setInputText("");
               setSending(false);
             }}
-            className="flex items-end gap-3"
+            className="mx-auto flex max-w-4xl items-end gap-2"
           >
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  e.currentTarget.form?.requestSubmit();
-                }
-              }}
-              placeholder={`Message @${otherUser.name}`}
-              className="min-h-[44px] w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm font-medium text-white placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-colors"
-              rows={1}
-            />
-            <button type="submit" disabled={!inputText.trim() || sending} className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl bg-[var(--accent)] text-black transition-colors hover:bg-[#bce600] disabled:opacity-50">
-              <Send size={18} />
+            <button type="button" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white">
+              <LinkIcon size={20} />
+            </button>
+            
+            <div className="relative flex-1">
+              <textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
+                placeholder="Message..."
+                className="min-h-[44px] w-full resize-none rounded-3xl border border-transparent bg-[#1a1a1c] pl-4 pr-12 pt-3 text-[0.9375rem] text-white placeholder:text-[#6a6a6c] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all"
+                rows={1}
+                style={{ scrollbarWidth: 'none' }}
+              />
+              <button type="button" className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:text-white">
+                <span className="text-xl leading-none">😊</span>
+              </button>
+            </div>
+            
+            <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-black transition-transform hover:scale-105 active:scale-95 disabled:scale-100 disabled:opacity-50 disabled:bg-[#1a1a1c] disabled:text-[#6a6a6c] shadow-lg shadow-[var(--accent)]/10">
+              <Send size={18} className="ml-1" />
             </button>
           </form>
         </footer>
