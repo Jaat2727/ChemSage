@@ -7,7 +7,7 @@ import { EmptyState, InlineAlert, LoadingCard, LockedScreen } from "@/components
 import { Card, SectionHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
-import { Input, Select } from "@/components/ui/Input";
+import { Input, Select, Label } from "@/components/ui/Input";
 import { createClientComponentClient } from "@/lib/supabase";
 import type { ScheduleEntry } from "@/lib/types";
 import { formatTime, cn, timeAgo } from "@/lib/utils";
@@ -253,7 +253,7 @@ export default function ScheduleManagerPage() {
 
       {/* Add Class Modal */}
       <Modal open={showSheet} onClose={() => setShowSheet(false)} title="Add Class" sheet maxWidth="lg">
-        <form className="grid gap-4 md:grid-cols-2" onSubmit={async (event) => {
+        <form className="flex flex-col gap-5 p-1" onSubmit={async (event) => {
           event.preventDefault();
           if (!profile) return;
           setSaving(true);
@@ -269,17 +269,45 @@ export default function ScheduleManagerPage() {
           }
           setSaving(false);
         }}>
-          <Input value={form.subject} onChange={(e) => setForm((current) => ({ ...current, subject: e.target.value }))} placeholder="Subject Name" className="md:col-span-2" required />
-          <Select value={form.type} onChange={(e) => setForm((current) => ({ ...current, type: e.target.value as ScheduleEntry['type'] }))}>
-            <option>Lecture</option><option>Lab</option><option>Tutorial</option>
-          </Select>
-          <Input value={form.room_no} onChange={(e) => setForm((current) => ({ ...current, room_no: e.target.value }))} placeholder="Room number" required />
-          <Select value={form.day_of_week} onChange={(e) => setForm((current) => ({ ...current, day_of_week: e.target.value }))}>
-            {days.map((day) => <option key={day}>{day}</option>)}
-          </Select>
-          <Input type="time" value={form.start_time} onChange={(e) => setForm((current) => ({ ...current, start_time: e.target.value }))} required />
-          <Input type="time" value={form.end_time} onChange={(e) => setForm((current) => ({ ...current, end_time: e.target.value }))} className="md:col-start-2" required />
-          <button type="submit" disabled={saving} className="rounded-[var(--radius-md)] bg-[var(--accent)] px-4 py-3 font-bold text-black transition-all hover:bg-[var(--accent-hover)] active:scale-[0.98] md:col-span-2 disabled:opacity-50">
+          <div>
+            <Label>Subject Name</Label>
+            <Input value={form.subject} onChange={(e) => setForm((current) => ({ ...current, subject: e.target.value }))} placeholder="e.g. Organic Chemistry" required />
+          </div>
+          
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label>Class Type</Label>
+              <Select value={form.type} onChange={(e) => setForm((current) => ({ ...current, type: e.target.value as ScheduleEntry['type'] }))}>
+                <option>Lecture</option><option>Lab</option><option>Tutorial</option>
+              </Select>
+            </div>
+            <div>
+              <Label>Room Number</Label>
+              <Input value={form.room_no} onChange={(e) => setForm((current) => ({ ...current, room_no: e.target.value }))} placeholder="e.g. CRC 101" required />
+            </div>
+          </div>
+
+          <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-overlay)] p-4 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+            <Label className="mb-3 flex items-center gap-2"><Clock size={12} className="text-[var(--accent)]" /> Schedule Slot</Label>
+            <div className="grid gap-4 sm:grid-cols-2 relative z-10">
+              <div className="sm:col-span-2">
+                <Select value={form.day_of_week} onChange={(e) => setForm((current) => ({ ...current, day_of_week: e.target.value }))}>
+                  {days.map((day) => <option key={day}>{day}</option>)}
+                </Select>
+              </div>
+              <div className="col-span-1">
+                <Label className="text-[10px] opacity-70">Start Time</Label>
+                <Input type="time" value={form.start_time} onChange={(e) => setForm((current) => ({ ...current, start_time: e.target.value }))} required className="cursor-pointer" />
+              </div>
+              <div className="col-span-1">
+                <Label className="text-[10px] opacity-70">End Time</Label>
+                <Input type="time" value={form.end_time} onChange={(e) => setForm((current) => ({ ...current, end_time: e.target.value }))} required className="cursor-pointer" />
+              </div>
+            </div>
+          </div>
+          
+          <button type="submit" disabled={saving} className="mt-2 rounded-[var(--radius-md)] bg-[var(--accent)] px-4 py-3.5 font-bold text-black transition-all hover:bg-[var(--accent-hover)] active:scale-[0.98] disabled:opacity-50 shadow-[0_0_20px_rgba(212,255,0,0.15)] hover:shadow-[0_0_25px_rgba(212,255,0,0.25)] flex items-center justify-center gap-2">
             {saving ? "Saving..." : "Add to Schedule"}
           </button>
         </form>
