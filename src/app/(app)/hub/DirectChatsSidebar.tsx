@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
-import { Hash, MessageSquare, Search, Star, Clock, User as UserIcon } from "lucide-react";
+import { Hash, MessageSquare, Search, Star, Clock, User as UserIcon, Users2 } from "lucide-react";
 import { createClientComponentClient } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
 import { cn, formatDateTime } from "@/lib/utils";
@@ -246,6 +246,7 @@ export default function DirectChatsSidebar() {
             </div>
           </Link>
         </div>
+        )}
 
         {activeTab === 'chats' ? (
           <>
