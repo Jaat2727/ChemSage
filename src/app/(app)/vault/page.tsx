@@ -606,6 +606,12 @@ function CollapsibleDetailsPane({ resource, profile, onClose, onDownload, onEdit
     setComments(Array.isArray(data) ? data as CommentType[] : []);
   };
 
+  const deleteComment = async (commentId: string) => {
+    if (!confirm("Are you sure you want to delete this comment?")) return;
+    await supabase.from("comments").delete().eq("id", commentId);
+    setComments(prev => prev.filter(c => c.id !== commentId));
+  };
+
   const copyShareLink = () => {
     if (!resource) return;
     navigator.clipboard.writeText(resource.file_url);
@@ -780,7 +786,14 @@ function CollapsibleDetailsPane({ resource, profile, onClose, onDownload, onEdit
                         <div className="h-4 w-4 rounded-full bg-white/10 flex items-center justify-center"><User size={9} className="text-white/70" /></div>
                         <span className="font-bold text-white">{(c.user as { name: string } | undefined)?.name || "Classmate"}</span>
                       </div>
-                      <span className="text-[var(--fg-faint)]">{timeAgo(c.created_at)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--fg-faint)]">{timeAgo(c.created_at)}</span>
+                        {(profile.id === c.user_id || profile.role === "admin") && (
+                          <button onClick={() => deleteComment(c.id)} className="text-[var(--fg-faint)] hover:text-red-400 transition-colors p-0.5 rounded hover:bg-red-500/10" title="Delete comment">
+                            <Trash2 size={10} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <p className="text-[11px] text-[var(--fg-muted)] leading-relaxed pl-5">{c.content}</p>
                   </div>
@@ -943,6 +956,8 @@ export default function StudyVaultPage() {
   // Search & sorting
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const [sortBy, setSortBy] = useState<SortOption>("Newest");
 
   // Local caching states
@@ -951,6 +966,15 @@ export default function StudyVaultPage() {
   // Toggles for Sidebars (Responsive)
   const [showNavSidebar, setShowNavSidebar] = useState(false); // Mobile
   const [showDetailsSidebar, setShowDetailsSidebar] = useState(true); // Large screen default
+
+  // Close search dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setIsSearchFocused(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1213,7 +1237,7 @@ export default function StudyVaultPage() {
     <div className="flex flex-col h-[calc(100vh-100px)] rounded-xl border border-[var(--border-default)] bg-[var(--bg-overlay)] shadow-2xl overflow-hidden animate-fade-in relative">
       
       {/* ─── Top Explorer Navigation Bar ──────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 border-b border-[var(--border-default)] bg-[var(--bg-base)] shrink-0 select-none z-10 relative">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 border-b border-[var(--border-default)] bg-[var(--bg-base)] shrink-0 select-none z-50 relative">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
             <Folder size={16} fill="currentColor" className="opacity-80" />
@@ -1242,14 +1266,39 @@ export default function StudyVaultPage() {
 
         <div className="flex items-center gap-2">
           {/* Global Search */}
-          <div className="relative group w-full sm:w-64">
+          <div ref={searchRef} className="relative group w-full sm:w-64 z-50">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-faint)] group-focus-within:text-[var(--accent)] transition-colors" />
             <input 
               value={search} onChange={(e) => setSearch(e.target.value)} 
+              onFocus={() => setIsSearchFocused(true)}
               placeholder="Search files & folders..."
-              className="w-full pl-9 pr-8 py-1.5 rounded-md border border-[var(--border-default)] bg-[var(--bg-raised)] text-xs text-white placeholder-[var(--fg-faint)] focus:border-[var(--border-strong)] focus:outline-none transition-all"
+              className="w-full pl-9 pr-8 py-1.5 rounded-md border border-[var(--border-default)] bg-[var(--bg-raised)] text-xs text-white placeholder-[var(--fg-faint)] focus:border-[var(--accent)] focus:outline-none transition-all shadow-inner"
             />
-            {search && <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--fg-muted)] hover:text-white"><X size={12} /></button>}
+            {search && <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--fg-muted)] hover:text-[var(--accent)]"><X size={12} /></button>}
+            
+            {/* Search Suggestions Dropdown */}
+            {isSearchFocused && search.trim() && resources.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1.5 bg-black/90 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl overflow-hidden animate-fade-in-up">
+                <div className="p-2 space-y-0.5">
+                  <p className="px-2 pb-1.5 text-[9px] font-bold uppercase text-[var(--fg-faint)] tracking-wider">Top Results</p>
+                  {resources.slice(0, 5).map(r => (
+                    <button 
+                      key={r.id} 
+                      onClick={() => { handleSelectResource(r); setIsSearchFocused(false); }}
+                      className="w-full flex items-center gap-2.5 p-2 rounded-md hover:bg-[var(--accent)]/10 group transition-colors text-left"
+                    >
+                      <div className="h-6 w-6 rounded bg-white/5 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        {getFileIcon(r.file_type || "", r.file_url || "", 12)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">{r.title}</p>
+                        <p className="text-[9px] text-[var(--fg-muted)] truncate">{r.course_code || "CY"} • {formatBytes(r.file_size)}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div className="w-[1px] h-4 bg-[var(--border-default)] mx-1 hidden sm:block" />
           {(!(!currentFolderId && selectedSemester === "All") || profile?.role === "admin") && (
