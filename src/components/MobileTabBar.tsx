@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, User } from "lucide-react";
+import { Menu, User, X } from "lucide-react";
 import { navItems } from "./navItems";
 import { useAuth } from "@/providers/AuthProvider";
 import { cn } from "@/lib/utils";
@@ -17,13 +17,19 @@ export function MobileTabBar() {
 
   return (
     <>
+      {/* Bottom Sheet Overlay */}
       {menuOpen ? (
-        <div className="fixed inset-0 z-50 bg-black/80 md:hidden" onClick={() => setMenuOpen(false)}>
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm md:hidden animate-fade-in" onClick={() => setMenuOpen(false)}>
           <div
-            className="absolute bottom-16 left-3 right-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-lg shadow-black/50"
+            className="absolute bottom-[60px] left-3 right-3 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-overlay)] p-3 shadow-xl animate-sheet-up"
             onClick={(event) => event.stopPropagation()}
           >
-            <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">More Options</p>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <p className="text-overline text-[var(--fg-faint)]">More Options</p>
+              <button onClick={() => setMenuOpen(false)} className="p-1 text-[var(--fg-faint)] hover:text-[var(--fg-default)]">
+                <X size={14} />
+              </button>
+            </div>
             <div className="space-y-0.5">
               {moreItems.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -33,10 +39,10 @@ export function MobileTabBar() {
                     href={item.href}
                     onClick={() => setMenuOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+                      "flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-[0.8125rem] font-medium",
                       isActive
-                        ? "bg-[var(--surface-soft)] text-[var(--accent)]"
-                        : "text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-white",
+                        ? "bg-[var(--bg-subtle)] text-[var(--accent)]"
+                        : "text-[var(--fg-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--fg-default)]",
                     )}
                   >
                     <item.icon size={18} strokeWidth={isActive ? 2.3 : 1.8} />
@@ -46,11 +52,11 @@ export function MobileTabBar() {
               })}
               
               {profile && (
-                <div className="border-t border-[var(--border)] mt-2 pt-2">
+                <div className="border-t border-[var(--border-default)] mt-2 pt-2">
                   <Link
                     href={`/profile/${profile.id}`}
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-white"
+                    className="flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-[0.8125rem] font-medium text-[var(--fg-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--fg-default)]"
                   >
                     <User size={18} strokeWidth={1.8} />
                     My Profile
@@ -62,8 +68,9 @@ export function MobileTabBar() {
         </div>
       ) : null}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border)] bg-[var(--background)] pb-safe md:hidden">
-        <div className="grid h-15 grid-cols-5">
+      {/* Tab Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border-default)] bg-[var(--bg-base)] pb-safe md:hidden">
+        <div className="grid h-14 grid-cols-5">
           {primaryItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
@@ -71,8 +78,8 @@ export function MobileTabBar() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors",
-                  isActive ? "text-[var(--accent)]" : "text-[var(--muted)] hover:text-white",
+                  "flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors",
+                  isActive ? "text-[var(--accent)]" : "text-[var(--fg-faint)] hover:text-[var(--fg-default)]",
                 )}
               >
                 <item.icon size={20} strokeWidth={isActive ? 2.4 : 1.8} />
@@ -85,10 +92,10 @@ export function MobileTabBar() {
             type="button"
             onClick={() => setMenuOpen((current) => !current)}
             className={cn(
-              "flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors",
+              "flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors",
               menuOpen || moreItems.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
                 ? "text-[var(--accent)]"
-                : "text-[var(--muted)] hover:text-white",
+                : "text-[var(--fg-faint)] hover:text-[var(--fg-default)]",
             )}
           >
             <Menu size={20} />

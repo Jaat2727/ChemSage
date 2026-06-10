@@ -2,28 +2,31 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Shield, Terminal, User } from "lucide-react";
+import { LogOut, Shield, Terminal, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 import { navItems } from "./navItems";
 import { useAuth } from "@/providers/AuthProvider";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { cn } from "@/lib/utils";
 
-function NavItem({ item }: { item: (typeof navItems)[0] }) {
+function NavItem({ item, collapsed }: { item: (typeof navItems)[0]; collapsed: boolean }) {
   const pathname = usePathname();
   const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
   return (
     <Link
       href={item.href}
+      title={collapsed ? item.name : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+        "flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2 text-[0.8125rem] font-medium transition-colors duration-[var(--duration-default)]",
+        collapsed && "justify-center px-0",
         isActive
-          ? "bg-[var(--surface-soft)] text-[var(--accent)]"
-          : "text-[var(--muted)] hover:bg-[var(--surface)] hover:text-white",
+          ? "bg-[var(--bg-subtle)] text-[var(--accent)]"
+          : "text-[var(--fg-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--fg-default)]",
       )}
     >
-      <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-      <span>{item.name}</span>
+      <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} className="shrink-0" />
+      {!collapsed && <span>{item.name}</span>}
     </Link>
   );
 }
@@ -31,48 +34,86 @@ function NavItem({ item }: { item: (typeof navItems)[0] }) {
 export function Sidebar() {
   const router = useRouter();
   const { profile, signOut } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--background)] p-4 md:flex">
-      <div className="mb-6 flex items-center justify-between px-1 py-3">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1.5 text-[var(--accent)]">
-            <Terminal size={18} />
+    <aside
+      className={cn(
+        "hidden h-screen shrink-0 flex-col border-r border-[var(--border-default)] bg-[var(--bg-base)] transition-[width] duration-[var(--duration-medium)] ease-out md:flex",
+        collapsed ? "w-[var(--sidebar-compact)]" : "w-[var(--sidebar-width)]",
+      )}
+    >
+      {/* Logo */}
+      <div className={cn("flex items-center justify-between border-b border-[var(--border-subtle)] px-3 py-3", collapsed && "justify-center px-2")}>
+        {!collapsed ? (
+          <div className="flex items-center gap-3 px-1">
+            <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-overlay)] p-1.5 text-[var(--accent)]">
+              <Terminal size={16} />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold tracking-tight text-[var(--fg-default)]">ChemSAGE</h1>
+              <p className="text-caption text-[var(--fg-faint)]">v2.0 Workspace</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-base font-bold tracking-tight text-white">ChemSAGE</h1>
-            <p className="text-[11px] font-medium text-[var(--muted)]">v1.0 Workspace</p>
+        ) : (
+          <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-overlay)] p-1.5 text-[var(--accent)]">
+            <Terminal size={16} />
           </div>
+        )}
+        {!collapsed && <NotificationBell />}
+      </div>
+
+      {/* Nav label */}
+      {!collapsed && (
+        <div className="px-4 pt-4 pb-2">
+          <p className="text-overline text-[var(--fg-faint)]">Navigation</p>
         </div>
-        <NotificationBell />
-      </div>
+      )}
 
-      <div className="mb-3 px-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Navigation</p>
-      </div>
-
-      <nav className="flex-1 space-y-1 overflow-y-auto px-1">
+      {/* Nav items */}
+      <nav className={cn("flex-1 space-y-0.5 overflow-y-auto px-2", collapsed ? "pt-3" : "pt-1")}>
         {navItems.map((item) => (
-          <NavItem key={item.name} item={item} />
+          <NavItem key={item.name} item={item} collapsed={collapsed} />
         ))}
       </nav>
 
-      <div className="space-y-3 border-t border-[var(--border)] pt-4">
+      {/* Bottom section */}
+      <div className={cn("space-y-2 border-t border-[var(--border-default)] p-2", collapsed && "px-1.5")}>
+        {/* Collapse toggle */}
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] p-2 text-[var(--fg-faint)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--fg-default)]"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          {!collapsed && <span className="text-caption">Collapse</span>}
+        </button>
+
         {profile?.role === "admin" ? (
           <Link
             href="/admin"
-            className="flex items-center gap-2 rounded-lg border border-red-900 bg-red-950/40 px-3 py-2 text-sm font-medium text-red-300 transition-colors hover:bg-red-950/60"
+            title={collapsed ? "Admin Panel" : undefined}
+            className={cn(
+              "flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--error-border)] bg-[var(--error-muted)] px-3 py-2 text-[0.8125rem] font-medium text-[var(--error)] transition-colors hover:bg-[rgba(248,113,113,0.18)]",
+              collapsed && "justify-center px-0",
+            )}
           >
-            <Shield size={16} /> Admin Panel
+            <Shield size={16} className="shrink-0" />
+            {!collapsed && "Admin Panel"}
           </Link>
         ) : null}
 
         {profile && (
           <Link
             href={`/profile/${profile.id}`}
-            className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--surface-soft)]"
+            title={collapsed ? "My Profile" : undefined}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-overlay)] px-3 py-2 text-[0.8125rem] font-medium text-[var(--fg-default)] transition-colors hover:bg-[var(--bg-subtle)]",
+              collapsed && "justify-center px-0",
+            )}
           >
-            <User size={16} /> My Profile
+            <User size={16} className="shrink-0" />
+            {!collapsed && "My Profile"}
           </Link>
         )}
 
@@ -81,9 +122,13 @@ export function Sidebar() {
             await signOut();
             router.push("/");
           }}
-          className="flex w-full items-center gap-2 rounded-lg border border-red-900/30 bg-red-950/20 px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-900/40"
+          className={cn(
+            "flex w-full items-center gap-2 rounded-[var(--radius-md)] border border-[var(--error-border)] bg-[var(--error-muted)] px-3 py-2 text-[0.8125rem] font-medium text-[var(--error)] transition-colors hover:bg-[rgba(248,113,113,0.18)]",
+            collapsed && "justify-center px-0",
+          )}
         >
-          <LogOut size={16} /> Sign Out
+          <LogOut size={16} className="shrink-0" />
+          {!collapsed && "Sign Out"}
         </button>
       </div>
     </aside>

@@ -74,7 +74,7 @@ export interface RoomMember {
 export interface ResourceItem {
   id: string;
   title: string;
-  category: "Notes" | "Lab Reports" | "Assignments" | "References";
+  category: "Notes" | "Lab Reports" | "Assignments" | "References" | "Books" | "Faculty Material";
   file_url: string;
   file_type: string;
   file_size?: number | null;
@@ -137,6 +137,8 @@ export interface Folder {
   created_by: string;
   created_at: string;
   type: "general" | "past_papers";
+  semester?: string;
+  subject?: string;
 }
 
 export interface ResourceVersion {
