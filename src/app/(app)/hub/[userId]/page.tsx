@@ -23,6 +23,18 @@ export default function DirectMessagePage() {
   const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, message: ChatMessage } | null>(null);
+
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    const handleScroll = () => setContextMenu(null);
+    window.addEventListener("click", handleClick);
+    window.addEventListener("scroll", handleScroll, true);
+    return () => {
+      window.removeEventListener("click", handleClick);
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, []);
   
   const [mutualRooms, setMutualRooms] = useState<Room[]>([]);
   const [sharedClasses, setSharedClasses] = useState<ScheduleEntry[]>([]);
@@ -182,7 +194,11 @@ export default function DirectMessagePage() {
           </div>
         </header>
 
-        <section className="flex-1 overflow-y-auto px-4 py-6 bg-[#0a0a0c] bg-[url('/chat-pattern.png')] bg-repeat" style={{ backgroundSize: '400px' }}>
+        <section 
+          className="flex-1 overflow-y-auto px-4 py-6 bg-[#0a0a0c] bg-[url('/chat-pattern.png')] bg-repeat" 
+          style={{ backgroundSize: '400px' }}
+          onContextMenu={(e) => e.preventDefault()}
+        >
           {error ? <p className="rounded-lg border border-red-800 bg-red-950/50 px-4 py-3 text-sm font-medium text-red-300">{error}</p> : null}
 
           {messages.length === 0 ? (
@@ -213,11 +229,18 @@ export default function DirectMessagePage() {
             const isMe = message.sender_id === profile.id;
             return (
               <article key={message.id} className={`flex w-full ${isMe ? "justify-end" : "justify-start"} mb-2`}>
-                <div className={`relative max-w-[85%] md:max-w-[70%] flex flex-col px-3 pt-2 pb-1.5 text-[0.9375rem] shadow-sm ${
-                  isMe 
-                  ? "rounded-2xl rounded-br-sm bg-[var(--accent)] text-black" 
-                  : "rounded-2xl rounded-bl-sm border border-[var(--border)] bg-[#1a1a1c] text-white"
-                }`}>
+                <div 
+                  className={`relative max-w-[85%] md:max-w-[70%] flex flex-col px-3 pt-2 pb-1.5 text-[0.9375rem] shadow-sm cursor-pointer ${
+                    isMe 
+                    ? "rounded-2xl rounded-br-sm bg-[var(--accent)] text-black hover:bg-[#bce600]" 
+                    : "rounded-2xl rounded-bl-sm border border-[var(--border)] bg-[#1a1a1c] text-white hover:bg-[#2a2a2c]"
+                  }`}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setContextMenu({ x: e.clientX, y: e.clientY, message });
+                  }}
+                >
                   <div className="pb-3 pr-2">
                     <MessageDisplay content={message.content} />
                   </div>
@@ -226,9 +249,6 @@ export default function DirectMessagePage() {
                     {isMe && (
                       <span className="flex items-center">
                         <CheckCircle2 size={10} className="ml-0.5" />
-                        <button onClick={() => handleDeleteMessage(message.id)} className="ml-1.5 hover:text-red-600 transition-colors" title="Delete message">
-                          <Trash2 size={10} />
-                        </button>
                       </span>
                     )}
                   </div>
@@ -238,6 +258,34 @@ export default function DirectMessagePage() {
           })}
           <div ref={messagesEndRef} />
         </section>
+
+        {contextMenu && (
+          <div 
+            className="fixed z-50 min-w-[160px] rounded-xl border border-[#2a2a2c] bg-[#1a1a1c] py-1 shadow-xl overflow-hidden"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            <button 
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-[#2a2a2c] transition-colors"
+              onClick={() => {
+                navigator.clipboard.writeText(contextMenu.message.content);
+                setContextMenu(null);
+              }}
+            >
+              <FileText size={16} /> Copy Text
+            </button>
+            {contextMenu.message.sender_id === profile.id && (
+              <button 
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+                onClick={() => {
+                  handleDeleteMessage(contextMenu.message.id);
+                  setContextMenu(null);
+                }}
+              >
+                <Trash2 size={16} /> Delete Message
+              </button>
+            )}
+          </div>
+        )}
 
         <footer className="bg-[#0f0f11] p-3 md:p-4">
           <form

@@ -27,6 +27,18 @@ export default function DirectChatsSidebar() {
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<'chats' | 'discover'>('chats');
+  const [allUsers, setAllUsers] = useState<Profile[]>([]);
+
+  useEffect(() => {
+    if (activeTab === 'discover' && allUsers.length === 0 && profile?.id) {
+      const loadUsers = async () => {
+        const { data } = await supabase.from('profiles').select('*').neq('id', profile.id).order('name', { ascending: true });
+        if (data) setAllUsers(data as Profile[]);
+      };
+      loadUsers();
+    }
+  }, [activeTab, allUsers.length, profile?.id]);
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -183,7 +195,7 @@ export default function DirectChatsSidebar() {
     <nav className="flex w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[#0f0f11] hidden md:flex">
       
       {/* Header & Search */}
-      <div className="p-3 border-b border-[var(--border)] bg-[#0f0f11]">
+      <div className="pt-3 px-3 pb-2 border-b border-[var(--border)] bg-[#0f0f11] flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6a6a6c]" />
@@ -194,16 +206,33 @@ export default function DirectChatsSidebar() {
               className="w-full rounded-full border-none bg-[#1a1a1c] py-2 pl-9 pr-3 text-[0.875rem] font-medium text-white placeholder:text-[#6a6a6c] outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all"
             />
           </div>
-          <Link href="/hub" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-soft)] text-[var(--muted)] hover:bg-[var(--accent)] hover:text-black transition-colors" title="New Message">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" x2="15" y1="10" y2="10"/><line x1="12" x2="12" y1="7" y2="13"/></svg>
-          </Link>
+          <button onClick={() => setActiveTab(activeTab === 'chats' ? 'discover' : 'chats')} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-soft)] text-[var(--muted)] hover:bg-[var(--accent)] hover:text-black transition-colors" title="Toggle Tab">
+            {activeTab === 'chats' ? <Users2 size={16} /> : <MessageSquare size={16} />}
+          </button>
+        </div>
+        
+        {/* Tabs */}
+        <div className="flex bg-[#1a1a1c] rounded-full p-1">
+          <button 
+            onClick={() => setActiveTab('chats')} 
+            className={cn("flex-1 text-xs font-bold py-1.5 rounded-full transition-all", activeTab === 'chats' ? "bg-[#2a2a2c] text-white shadow-sm" : "text-[#6a6a6c] hover:text-white")}
+          >
+            Chats
+          </button>
+          <button 
+            onClick={() => setActiveTab('discover')} 
+            className={cn("flex-1 text-xs font-bold py-1.5 rounded-full transition-all", activeTab === 'discover' ? "bg-[#2a2a2c] text-white shadow-sm" : "text-[#6a6a6c] hover:text-white")}
+          >
+            Discover
+          </button>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-6">
         
-        {/* Global Hub link */}
-        <div className="px-1">
+        {/* Global Hub link - Always visible in Chats */}
+        {activeTab === 'chats' && (
+          <div className="px-1">
           <Link 
             href="/hub/global" 
             className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group", pathname.includes("/hub/global") ? "bg-[#1a1a1c] text-white" : "hover:bg-[#1a1a1c] text-[#a0a0a0]")}
@@ -218,52 +247,86 @@ export default function DirectChatsSidebar() {
           </Link>
         </div>
 
-        {/* Favorites */}
-        {favorites.length > 0 && (
-          <div>
-            <h3 className="px-4 mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
-              <Star size={12} /> Favorites
+        {activeTab === 'chats' ? (
+          <>
+            {/* Favorites */}
+            {favorites.length > 0 && (
+              <div>
+                <h3 className="px-4 mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+                  <Star size={12} /> Favorites
+                </h3>
+                <div className="space-y-0.5 px-2">
+                  {favorites.map(chat => (
+                    <ChatItem 
+                      key={chat.roomId} 
+                      chat={chat} 
+                      isActive={pathname.includes(chat.otherUser.id)} 
+                      isOnline={onlineUsers.has(chat.otherUser.id)}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Recent */}
+            <div>
+              <h3 className="px-4 mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+                <Clock size={12} /> Recent Conversations
+              </h3>
+              {loading ? (
+                <div className="px-4 py-2 text-sm text-[var(--muted)]">Loading chats...</div>
+              ) : recents.length === 0 && favorites.length === 0 ? (
+                <div className="px-4 py-4 text-center text-[var(--muted)]">
+                  <MessageSquare size={24} className="mx-auto mb-2 opacity-50" />
+                  <p className="text-xs">No active conversations</p>
+                </div>
+              ) : (
+                <div className="space-y-0.5 px-2">
+                  {recents.map(chat => (
+                    <ChatItem 
+                      key={chat.roomId} 
+                      chat={chat} 
+                      isActive={pathname.includes(chat.otherUser.id)}
+                      isOnline={onlineUsers.has(chat.otherUser.id)}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          /* Discover Tab */
+          <div className="px-1">
+            <h3 className="px-3 mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#6a6a6c]">
+              <UserIcon size={12} /> Discover Classmates
             </h3>
-            <div className="space-y-0.5 px-2">
-              {favorites.map(chat => (
-                <ChatItem 
-                  key={chat.roomId} 
-                  chat={chat} 
-                  isActive={pathname.includes(chat.otherUser.id)} 
-                  isOnline={onlineUsers.has(chat.otherUser.id)}
-                  onToggleFavorite={toggleFavorite}
-                />
+            <div className="space-y-1">
+              {allUsers.filter(u => !search || u.name.toLowerCase().includes(search.toLowerCase()) || u.roll_no?.toLowerCase().includes(search.toLowerCase())).map(user => (
+                <Link 
+                  key={user.id} 
+                  href={`/hub/${user.id}`}
+                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#1a1a1c] transition-colors"
+                >
+                  <div className="relative shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-[#2a2a2c] flex items-center justify-center font-bold text-white">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className={cn("absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#0f0f11]", onlineUsers.has(user.id) ? "bg-emerald-500" : "bg-transparent border-transparent")} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-[0.9375rem] font-bold text-white">{user.name}</p>
+                    <p className="truncate text-[0.8125rem] text-[#6a6a6c]">{user.programme} • {user.roll_no}</p>
+                  </div>
+                </Link>
               ))}
+              {allUsers.length === 0 && (
+                <div className="px-4 py-4 text-center text-[var(--muted)] text-xs">Loading directory...</div>
+              )}
             </div>
           </div>
         )}
-
-        {/* Recent */}
-        <div>
-          <h3 className="px-4 mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
-            <Clock size={12} /> Recent Conversations
-          </h3>
-          {loading ? (
-            <div className="px-4 py-2 text-sm text-[var(--muted)]">Loading chats...</div>
-          ) : recents.length === 0 && favorites.length === 0 ? (
-            <div className="px-4 py-4 text-center text-[var(--muted)]">
-              <MessageSquare size={24} className="mx-auto mb-2 opacity-50" />
-              <p className="text-xs">No active conversations</p>
-            </div>
-          ) : (
-            <div className="space-y-0.5 px-2">
-              {recents.map(chat => (
-                <ChatItem 
-                  key={chat.roomId} 
-                  chat={chat} 
-                  isActive={pathname.includes(chat.otherUser.id)}
-                  isOnline={onlineUsers.has(chat.otherUser.id)}
-                  onToggleFavorite={toggleFavorite}
-                />
-              ))}
-            </div>
-          )}
-        </div>
         
       </div>
     </nav>
