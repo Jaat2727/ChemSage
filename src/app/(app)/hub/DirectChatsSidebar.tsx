@@ -30,6 +30,26 @@ export default function DirectChatsSidebar() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<'chats' | 'discover'>('chats');
   const [allUsers, setAllUsers] = useState<Profile[]>([]);
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, roomId: string } | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = () => setContextMenu(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  const handleClearChat = async (roomId: string) => {
+    if (!confirm("Are you sure you want to clear this chat for everyone? This cannot be undone.")) return;
+    
+    setContextMenu(null);
+    
+    // Delete the room entirely (this cascades and deletes messages + room_members)
+    const { error } = await supabase.from('rooms').delete().eq('id', roomId);
+    if (!error) {
+      // Remove it completely from the sidebar
+      setChats(current => current.filter(c => c.roomId !== roomId));
+    }
+  };
 
   useEffect(() => {
     if (activeTab === 'discover' && allUsers.length === 0 && profile?.id) {
@@ -310,6 +330,10 @@ export default function DirectChatsSidebar() {
                       isActive={pathname.includes(chat.otherUser.id)} 
                       isOnline={onlineUsers.has(chat.otherUser.id)}
                       onToggleFavorite={toggleFavorite}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        setContextMenu({ x: e.clientX, y: e.clientY, roomId: chat.roomId });
+                      }}
                     />
                   ))}
                 </div>
@@ -337,6 +361,10 @@ export default function DirectChatsSidebar() {
                       isActive={pathname.includes(chat.otherUser.id)}
                       isOnline={onlineUsers.has(chat.otherUser.id)}
                       onToggleFavorite={toggleFavorite}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        setContextMenu({ x: e.clientX, y: e.clientY, roomId: chat.roomId });
+                      }}
                     />
                   ))}
                 </div>
@@ -375,15 +403,32 @@ export default function DirectChatsSidebar() {
           </div>
         )}
         
+        {/* Context Menu */}
+        {contextMenu && (
+          <div 
+            className="fixed z-50 min-w-[160px] rounded-xl border border-[var(--border)] bg-[#1a1a1c] p-1 shadow-2xl animate-in fade-in zoom-in-95 duration-100"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => handleClearChat(contextMenu.roomId)}
+              className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+            >
+              <MessageSquare size={14} />
+              Clear Chat
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );
 }
 
-function ChatItem({ chat, isActive, isOnline, onToggleFavorite }: { chat: DMChat, isActive: boolean, isOnline: boolean, onToggleFavorite: (e: React.MouseEvent, chat: DMChat) => void }) {
+function ChatItem({ chat, isActive, isOnline, onToggleFavorite, onContextMenu }: { chat: DMChat, isActive: boolean, isOnline: boolean, onToggleFavorite: (e: React.MouseEvent, chat: DMChat) => void, onContextMenu?: (e: React.MouseEvent) => void }) {
   return (
     <Link 
       href={`/hub/${chat.otherUser.id}`}
+      onContextMenu={onContextMenu}
       className={cn("group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all relative overflow-hidden", isActive ? "bg-[#1a1a1c]" : "hover:bg-[#1a1a1c]")}
     >
       <div className="relative shrink-0">
