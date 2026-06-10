@@ -123,6 +123,7 @@ export interface ScheduleEntry {
   start_time: string;
   end_time: string;
   user?: Pick<Profile, "id" | "name">;
+  created_at?: string;
 }
 
 export interface ChatMessage extends MessageRow {

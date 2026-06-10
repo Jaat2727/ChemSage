@@ -10,7 +10,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input, Select } from "@/components/ui/Input";
 import { createClientComponentClient } from "@/lib/supabase";
 import type { ScheduleEntry } from "@/lib/types";
-import { formatTime, cn } from "@/lib/utils";
+import { formatTime, cn, timeAgo } from "@/lib/utils";
 import { useAuth } from "@/providers/AuthProvider";
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -169,8 +169,9 @@ export default function ScheduleManagerPage() {
                               <p className="text-caption text-[var(--fg-faint)] flex items-center gap-1"><Clock size={10} /> {formatTime(entry.start_time)} - {formatTime(entry.end_time)}</p>
                               <p className="text-caption text-[var(--fg-faint)] flex items-center gap-1"><BookOpen size={10} /> Room {entry.room_no}</p>
                               {entry.user && (
-                                <p className="text-[9px] text-[var(--fg-muted)] mt-1.5 pt-1.5 border-t border-[var(--border-subtle)] truncate">
-                                  Added by <span className="font-medium text-[var(--fg-default)]">{entry.user.name}</span>
+                                <p className="text-[9px] text-[var(--fg-muted)] mt-1.5 pt-1.5 border-t border-[var(--border-subtle)] truncate flex items-center justify-between">
+                                  <span>Added by <span className="font-medium text-[var(--fg-default)]">{entry.user.name}</span></span>
+                                  {entry.created_at && <span className="opacity-70">{timeAgo(entry.created_at)}</span>}
                                 </p>
                               )}
                             </div>
