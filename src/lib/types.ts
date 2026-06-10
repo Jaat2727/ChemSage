@@ -122,6 +122,7 @@ export interface ScheduleEntry {
   day_of_week: string;
   start_time: string;
   end_time: string;
+  user?: Pick<Profile, "id" | "name">;
 }
 
 export interface ChatMessage extends MessageRow {

@@ -50,7 +50,7 @@ export default function ScheduleManagerPage() {
     
     const loadSchedule = async () => {
       const [scheduleRes, tasksRes] = await Promise.all([
-        supabase.from("schedule").select("*").eq("user_id", profile.id).order("start_time", { ascending: true }),
+        supabase.from("schedule").select("*, user:profiles(id, name)").order("start_time", { ascending: true }),
         supabase.from("tasks").select("*").eq("user_id", profile.id).order("created_at", { ascending: false }),
       ]);
       if (scheduleRes.error) setError(scheduleRes.error.message);
@@ -168,6 +168,11 @@ export default function ScheduleManagerPage() {
                             <div className="space-y-0.5">
                               <p className="text-caption text-[var(--fg-faint)] flex items-center gap-1"><Clock size={10} /> {formatTime(entry.start_time)} - {formatTime(entry.end_time)}</p>
                               <p className="text-caption text-[var(--fg-faint)] flex items-center gap-1"><BookOpen size={10} /> Room {entry.room_no}</p>
+                              {entry.user && (
+                                <p className="text-[9px] text-[var(--fg-muted)] mt-1.5 pt-1.5 border-t border-[var(--border-subtle)] truncate">
+                                  Added by <span className="font-medium text-[var(--fg-default)]">{entry.user.name}</span>
+                                </p>
+                              )}
                             </div>
                           </div>
                         ))}
