@@ -95,10 +95,11 @@ export default function DirectChatsSidebar() {
         
         // Calculate unread
         let unreadCount = 0;
+        const otherMsgs = roomMsgs.filter(m => m.sender_id !== profile.id);
         if (myMem.last_read_at) {
-          unreadCount = roomMsgs.filter(m => new Date(m.created_at) > new Date(myMem.last_read_at!)).length;
+          unreadCount = otherMsgs.filter(m => new Date(m.created_at) > new Date(myMem.last_read_at!)).length;
         } else {
-          unreadCount = roomMsgs.length;
+          unreadCount = otherMsgs.length;
         }
 
         builtChats.push({
