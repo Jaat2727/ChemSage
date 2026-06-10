@@ -1,0 +1,9 @@
+-- Allow users to delete all messages in a DM room they are part of
+-- This enables the "Clear Chat for both sides" feature similar to Telegram
+
+CREATE POLICY "messages delete dm both sides" ON messages 
+FOR DELETE TO authenticated 
+USING (
+  is_active_user() AND 
+  room_id LIKE '%' || auth.uid() || '%'
+);
