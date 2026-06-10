@@ -48,6 +48,7 @@ export interface MessageRow {
   content: string;
   is_anon: boolean;
   is_pinned?: boolean;
+  is_edited?: boolean;
   created_at: string;
 }
 

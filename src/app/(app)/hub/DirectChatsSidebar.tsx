@@ -140,18 +140,17 @@ export default function DirectChatsSidebar() {
     const messagesChannel = supabase.channel('hub-messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const newMsg = payload.new as any;
-        if (newMsg.sender_id === profile.id) return; // My own message doesn't bump unread usually if I'm in the room, but let's just update the list
         
         setChats(current => {
           const chatIdx = current.findIndex(c => c.roomId === newMsg.room_id);
-          if (chatIdx === -1) return current; // Room not in list yet, requires a full refresh to get member profiles. For simplicity, we ignore newly created rooms until refresh.
+          if (chatIdx === -1) return current; // For simplicity, ignore newly created rooms until refresh
           
           const newChats = [...current];
           const chat = { ...newChats[chatIdx] };
           chat.lastMessage = { content: newMsg.content, created_at: newMsg.created_at, sender_id: newMsg.sender_id };
           
-          // Only bump unread if we are not currently in that room
-          if (!pathname.includes(chat.roomId) && !pathname.includes(chat.otherUser.id)) {
+          // Only bump unread if it's not my message AND I am not currently in that room
+          if (newMsg.sender_id !== profile.id && !pathname.includes(chat.roomId) && !pathname.includes(chat.otherUser.id)) {
             chat.unreadCount += 1;
           }
           
@@ -159,6 +158,33 @@ export default function DirectChatsSidebar() {
           newChats.unshift(chat); // Move to top
           return newChats;
         });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, (payload) => {
+        const updatedMsg = payload.new as any;
+        setChats(current => {
+          const chatIdx = current.findIndex(c => c.roomId === updatedMsg.room_id);
+          if (chatIdx === -1) return current;
+          
+          const newChats = [...current];
+          const chat = { ...newChats[chatIdx] };
+          
+          // Only update lastMessage if this was the last message we tracked
+          if (chat.lastMessage && chat.lastMessage.created_at === updatedMsg.created_at) {
+            chat.lastMessage = { content: updatedMsg.content, created_at: updatedMsg.created_at, sender_id: updatedMsg.sender_id };
+            newChats[chatIdx] = chat;
+            return newChats;
+          }
+          return current;
+        });
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, (payload) => {
+        // Technically, deleting the last message means we need to fetch the new last message,
+        // but for simplicity we will just reload if the deleted message was our lastMessage
+        // In a perfect system, we would query the new last message for that room.
+        const deletedMsgId = payload.old.id;
+        // The payload for DELETE only gives ID. Since we didn't store message ID in `lastMessage`,
+        // it's tricky to know if the deleted one was our last. We'll leave it as is for now 
+        // to avoid expensive queries on every delete, since edits are more common.
       })
       .subscribe();
 

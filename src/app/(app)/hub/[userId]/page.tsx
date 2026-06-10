@@ -23,6 +23,8 @@ export default function DirectMessagePage() {
   const [sending, setSending] = useState(false);
   const [syncing, setSyncing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, message: ChatMessage } | null>(null);
 
   useEffect(() => {
@@ -121,6 +123,10 @@ export default function DirectMessagePage() {
           return [...current, row];
         });
       })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `room_id=eq.${roomId}` }, (payload) => {
+        const row = payload.new as unknown as ChatMessage;
+        setMessages((current) => current.map((item) => (item.id === row.id ? row : item)));
+      })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages", filter: `room_id=eq.${roomId}` }, (payload) => {
         const deletedId = (payload.old as { id?: string } | null)?.id;
         if (!deletedId) return;
@@ -150,6 +156,49 @@ export default function DirectMessagePage() {
       // Revert on error
       setMessages(previousMessages);
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile?.id || !roomId) return;
+    
+    if (file.type === "application/pdf") {
+      setError("please try adding images we havent added support for pdf yet");
+      return;
+    }
+    
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file.");
+      return;
+    }
+
+    setSending(true);
+    setError(null);
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const filePath = `${roomId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage.from('chat-attachments').upload(filePath, file);
+
+    if (uploadError) {
+      setError(uploadError.message);
+      setSending(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('chat-attachments').getPublicUrl(filePath);
+
+    // Insert message with markdown image
+    const { error: insertError } = await supabase.from("messages").insert({
+      room_id: roomId,
+      sender_id: profile.id,
+      content: `![image](${publicUrl})`,
+      is_anon: false,
+    });
+
+    if (insertError) setError(insertError.message);
+    setSending(false);
   };
 
   if (loading || !profile || !otherUser) return <LoadingCard />;
@@ -245,6 +294,7 @@ export default function DirectMessagePage() {
                     <MessageDisplay content={message.content} />
                   </div>
                   <div className={`absolute bottom-1 right-2 flex items-center gap-1 text-[10px] font-medium ${isMe ? "text-black/60" : "text-[var(--muted)]"}`}>
+                    {message.is_edited && <span className="mr-1 opacity-70">(edited)</span>}
                     <span>{new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     {isMe && (
                       <span className="flex items-center">
@@ -274,15 +324,28 @@ export default function DirectMessagePage() {
               <FileText size={16} /> Copy Text
             </button>
             {contextMenu.message.sender_id === profile.id && (
-              <button 
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
-                onClick={() => {
-                  handleDeleteMessage(contextMenu.message.id);
-                  setContextMenu(null);
-                }}
-              >
-                <Trash2 size={16} /> Delete Message
-              </button>
+              <>
+                <button 
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-white hover:bg-[#2a2a2c] transition-colors"
+                  onClick={() => {
+                    setEditingMessageId(contextMenu.message.id);
+                    // Extract plain text if it's an image, but typically users don't edit images. We'll let them edit the raw markdown for simplicity.
+                    setInputText(contextMenu.message.content);
+                    setContextMenu(null);
+                  }}
+                >
+                  <FileText size={16} /> Edit Message
+                </button>
+                <button 
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+                  onClick={() => {
+                    handleDeleteMessage(contextMenu.message.id);
+                    setContextMenu(null);
+                  }}
+                >
+                  <Trash2 size={16} /> Delete Message
+                </button>
+              </>
             )}
           </div>
         )}
@@ -294,45 +357,74 @@ export default function DirectMessagePage() {
               if (!inputText.trim() || !profile.id || !roomId) return;
               setSending(true);
               setError(null);
-              const { error: insertError } = await supabase.from("messages").insert({
-                room_id: roomId,
-                sender_id: profile.id,
-                content: inputText.trim(),
-                is_anon: false,
-              });
-              if (insertError) setError(insertError.message);
-              else setInputText("");
+              
+              if (editingMessageId) {
+                const { error: updateError } = await supabase.from("messages").update({
+                  content: inputText.trim(),
+                  is_edited: true,
+                }).eq("id", editingMessageId).eq("sender_id", profile.id);
+                
+                if (updateError) setError(updateError.message);
+                else {
+                  setInputText("");
+                  setEditingMessageId(null);
+                }
+              } else {
+                const { error: insertError } = await supabase.from("messages").insert({
+                  room_id: roomId,
+                  sender_id: profile.id,
+                  content: inputText.trim(),
+                  is_anon: false,
+                });
+                if (insertError) setError(insertError.message);
+                else setInputText("");
+              }
               setSending(false);
             }}
-            className="mx-auto flex max-w-4xl items-end gap-2"
+            className="mx-auto flex max-w-4xl flex-col justify-end gap-2"
           >
-            <button type="button" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white">
-              <LinkIcon size={20} />
-            </button>
-            
-            <div className="relative flex-1">
-              <textarea
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    e.currentTarget.form?.requestSubmit();
-                  }
-                }}
-                placeholder="Message..."
-                className="min-h-[44px] w-full resize-none rounded-3xl border border-transparent bg-[#1a1a1c] pl-4 pr-12 pt-3 text-[0.9375rem] text-white placeholder:text-[#6a6a6c] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all"
-                rows={1}
-                style={{ scrollbarWidth: 'none' }}
+            {editingMessageId && (
+              <div className="flex items-center justify-between bg-[#1a1a1c] px-4 py-2 rounded-t-xl text-xs text-[#6a6a6c] mb-[-8px] z-10 w-[calc(100%-100px)] mx-auto">
+                <span>Editing Message</span>
+                <button type="button" onClick={() => { setEditingMessageId(null); setInputText(""); }} className="hover:text-white transition-colors">Cancel</button>
+              </div>
+            )}
+            <div className="flex items-end gap-2 w-full z-20">
+              <input 
+                type="file" 
+                accept="image/*,application/pdf" 
+                ref={fileInputRef} 
+                className="hidden" 
+                onChange={handleFileUpload}
               />
-              <button type="button" className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:text-white">
-                <span className="text-xl leading-none">😊</span>
+              <button type="button" onClick={() => fileInputRef.current?.click()} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:bg-[var(--surface)] hover:text-white">
+                <LinkIcon size={20} />
+              </button>
+              
+              <div className="relative flex-1">
+                <textarea
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      e.currentTarget.form?.requestSubmit();
+                    }
+                  }}
+                  placeholder={editingMessageId ? "Edit your message..." : "Message..."}
+                  className="min-h-[44px] w-full resize-none rounded-3xl border border-transparent bg-[#1a1a1c] pl-4 pr-12 pt-3 text-[0.9375rem] text-white placeholder:text-[#6a6a6c] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all"
+                  rows={1}
+                  style={{ scrollbarWidth: 'none' }}
+                />
+                <button type="button" className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:text-white">
+                  <span className="text-xl leading-none">😊</span>
+                </button>
+              </div>
+              
+              <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-black transition-transform hover:scale-105 active:scale-95 disabled:scale-100 disabled:opacity-50 disabled:bg-[#1a1a1c] disabled:text-[#6a6a6c] shadow-lg shadow-[var(--accent)]/10">
+                <Send size={18} className="ml-1" />
               </button>
             </div>
-            
-            <button type="submit" disabled={!inputText.trim() || sending} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-black transition-transform hover:scale-105 active:scale-95 disabled:scale-100 disabled:opacity-50 disabled:bg-[#1a1a1c] disabled:text-[#6a6a6c] shadow-lg shadow-[var(--accent)]/10">
-              <Send size={18} className="ml-1" />
-            </button>
           </form>
         </footer>
       </div>

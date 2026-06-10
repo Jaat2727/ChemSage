@@ -10,11 +10,11 @@ export default function HubDirectoryPage() {
           <MessageSquare size={48} className="text-black ml-1 mt-1" />
         </div>
         
-        <h2 className="text-2xl font-light text-white mb-4">ChemSAGE Web</h2>
+        <h2 className="text-2xl font-light text-white mb-4">ChemSAGE Student Hub</h2>
         
         <p className="text-[0.9375rem] text-[#8a8a8c] mb-8 leading-relaxed">
-          Send and receive messages without keeping your phone online.<br/>
-          Use ChemSAGE on up to 4 linked devices and 1 phone.
+          A dedicated space for students to chat, collaborate, and ask for help.<br/>
+          Connect with your department peers seamlessly across all devices.
         </p>
         
         <div className="flex flex-col gap-4 text-left w-full border-t border-[#2a2a2c] pt-6">
