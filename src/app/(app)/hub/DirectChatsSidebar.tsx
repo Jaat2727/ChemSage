@@ -183,39 +183,37 @@ export default function DirectChatsSidebar() {
     <nav className="flex w-72 shrink-0 flex-col border-r border-[var(--border)] bg-[#0f0f11] hidden md:flex">
       
       {/* Header & Search */}
-      <div className="p-4 border-b border-[var(--border)]">
-        <div className="flex items-center justify-between mb-4">
-          <Link href="/hub" className="text-xl font-bold text-white hover:text-[var(--accent)] transition-colors">
-            Direct Chats
+      <div className="p-3 border-b border-[var(--border)] bg-[#0f0f11]">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6a6a6c]" />
+            <input 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search" 
+              className="w-full rounded-full border-none bg-[#1a1a1c] py-2 pl-9 pr-3 text-[0.875rem] font-medium text-white placeholder:text-[#6a6a6c] outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all"
+            />
+          </div>
+          <Link href="/hub" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-soft)] text-[var(--muted)] hover:bg-[var(--accent)] hover:text-black transition-colors" title="New Message">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" x2="15" y1="10" y2="10"/><line x1="12" x2="12" y1="7" y2="13"/></svg>
           </Link>
-          <Link href="/hub" className="p-1.5 rounded-md bg-[var(--surface-soft)] text-[var(--muted)] hover:bg-[var(--accent)] hover:text-black transition-colors group" title="New Message">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square-plus"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" x2="15" y1="10" y2="10"/><line x1="12" x2="12" y1="7" y2="13"/></svg>
-          </Link>
-        </div>
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
-          <input 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search conversations..." 
-            className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] py-2 pl-9 pr-3 text-sm font-medium text-white placeholder:text-[var(--muted)] outline-none focus:border-[var(--accent)] transition-colors"
-          />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-6">
         
         {/* Global Hub link */}
-        <div className="px-2">
+        <div className="px-1">
           <Link 
             href="/hub/global" 
-            className={cn("flex items-center gap-3 rounded-lg px-3 py-2 transition-all group", pathname.includes("/hub/global") ? "bg-[var(--surface)] text-white" : "hover:bg-[var(--surface-soft)] text-gray-300")}
+            className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group", pathname.includes("/hub/global") ? "bg-[#1a1a1c] text-white" : "hover:bg-[#1a1a1c] text-[#a0a0a0]")}
           >
-            <div className={cn("flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-soft)] transition-colors", pathname.includes("/hub/global") ? "bg-[var(--accent)] text-black" : "group-hover:bg-[var(--surface)] group-hover:text-white")}>
-              <Hash size={16} />
+            <div className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-colors", pathname.includes("/hub/global") ? "bg-[var(--accent)] text-black" : "bg-[#2a2a2c] text-white group-hover:bg-[#3a3a3c]")}>
+              <Hash size={20} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm truncate">Global Hub</p>
+              <p className="font-bold text-[0.9375rem] text-white truncate">Global Hub</p>
+              <p className="text-[0.8125rem] text-[#6a6a6c] truncate">Community Chat</p>
             </div>
           </Link>
         </div>
@@ -276,30 +274,30 @@ function ChatItem({ chat, isActive, isOnline, onToggleFavorite }: { chat: DMChat
   return (
     <Link 
       href={`/hub/${chat.otherUser.id}`}
-      className={cn("group flex items-center gap-3 rounded-lg px-2 py-2 transition-all relative overflow-hidden", isActive ? "bg-[var(--surface)] text-white shadow-sm border border-[var(--border)]" : "hover:bg-[var(--surface-soft)] text-gray-300 border border-transparent")}
+      className={cn("group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all relative overflow-hidden", isActive ? "bg-[#1a1a1c]" : "hover:bg-[#1a1a1c]")}
     >
       <div className="relative shrink-0">
-        <div className={cn("h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm", isActive ? "bg-[var(--background)] text-white" : "bg-[var(--surface)] text-[var(--muted)] group-hover:text-white")}>
+        <div className={cn("h-12 w-12 rounded-full flex items-center justify-center font-bold text-lg", isActive ? "bg-[var(--accent)] text-black" : "bg-[#2a2a2c] text-white group-hover:bg-[#3a3a3c]")}>
           {chat.otherUser.name.charAt(0).toUpperCase()}
         </div>
-        <div className={cn("absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#0f0f11]", isOnline ? "bg-emerald-500" : "bg-gray-600")} />
+        <div className={cn("absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-[3px] border-[#0f0f11]", isOnline ? "bg-emerald-500" : "bg-transparent border-transparent")} />
       </div>
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-0.5">
-          <p className="truncate text-sm font-bold">{chat.otherUser.name}</p>
+          <p className={cn("truncate text-[0.9375rem] font-bold", isActive ? "text-white" : "text-gray-200")}>{chat.otherUser.name}</p>
           {chat.lastMessage && (
-            <span className={cn("text-[10px] whitespace-nowrap ml-2", chat.unreadCount > 0 ? "text-[var(--accent)] font-bold" : "text-[var(--muted)] font-medium")}>
-              {new Date(chat.lastMessage.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+            <span className={cn("text-[10px] whitespace-nowrap pl-2", chat.unreadCount > 0 ? "text-[var(--accent)] font-bold" : "text-[#6a6a6c] font-medium")}>
+              {new Date(chat.lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
         </div>
         <div className="flex items-center justify-between gap-2">
-          <p className={cn("truncate text-[11px]", chat.unreadCount > 0 ? "text-white font-medium" : "text-[var(--muted)]")}>
+          <p className={cn("truncate text-[0.8125rem]", chat.unreadCount > 0 && !isActive ? "text-white font-medium" : "text-[#6a6a6c]")}>
             {chat.lastMessage?.content || "Started a conversation"}
           </p>
           {chat.unreadCount > 0 && (
-            <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[9px] font-bold text-black">
+            <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--accent)] px-1.5 text-[10px] font-bold text-black shadow-sm">
               {chat.unreadCount}
             </span>
           )}
@@ -308,7 +306,7 @@ function ChatItem({ chat, isActive, isOnline, onToggleFavorite }: { chat: DMChat
 
       <button 
         onClick={(e) => onToggleFavorite(e, chat)} 
-        className={cn("absolute right-2 top-2 p-1.5 rounded bg-[var(--background)] border border-[var(--border)] transition-all shadow-sm opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0", chat.isFavorite ? "opacity-100 translate-x-0 text-amber-400 border-amber-900/50" : "text-[var(--muted)] hover:text-amber-400")}
+        className={cn("absolute right-3 top-3 p-1 rounded-full transition-all opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 bg-[#0f0f11]", chat.isFavorite ? "opacity-100 translate-x-0 text-amber-400" : "text-[#6a6a6c] hover:text-amber-400")}
       >
         <Star size={12} className={chat.isFavorite ? "fill-current" : ""} />
       </button>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, Trash2, User as UserIcon, Wifi, BookOpen, Users2, Link as LinkIcon, Download, FileText, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Send, Trash2, User as UserIcon, Wifi, BookOpen, Users2, Link as LinkIcon, Download, FileText, Image as ImageIcon, CheckCircle2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { createClientComponentClient } from "@/lib/supabase";
 import type { ChatMessage, Profile, Room, ScheduleEntry } from "@/lib/types";
