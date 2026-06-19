@@ -123,6 +123,10 @@ dotnet run --project .\ChemSAGE-WinUI.csproj -c Debug -p:Platform=x64
    - Settings: current user notifications.
    - Admin Panel: admin stats and orphan-user RPC results for admin users.
 
+## Continuous integration
+
+GitHub Actions builds the WinUI project on every push and pull request that changes `ChemSAGE-WinUI/**` or the workflow itself. The workflow runs on `windows-latest`, installs the .NET 9 SDK, builds the solution for `Release|x64`, and uploads the generated binaries as the `ChemSAGE-WinUI-win-x64-release` artifact.
+
 ## Troubleshooting
 
 | Problem | Fix |
