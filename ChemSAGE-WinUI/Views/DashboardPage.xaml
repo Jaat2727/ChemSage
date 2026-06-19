@@ -1,0 +1,44 @@
+<Page x:Class="ChemSAGE_WinUI.Views.DashboardPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <Grid Padding="{StaticResource PagePadding}" RowSpacing="20">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <StackPanel Spacing="6">
+                <TextBlock Text="{Binding WelcomeMessage}" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Text="Native Windows workspace for chemistry resources, collaboration, and academic planning." Opacity="0.75" />
+            </StackPanel>
+            <Grid Grid.Row="1" ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <Border Background="{StaticResource ChemSagePanelBrush}" Padding="20" CornerRadius="12">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Profile summary" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock Text="{Binding Profile.Email}" />
+                        <TextBlock Text="{Binding Profile.RollNumber}" />
+                        <TextBlock Text="{Binding Profile.Role}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Background="{StaticResource ChemSagePanelBrush}" Padding="20" CornerRadius="12">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Quick actions" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <Button Content="Select resource files" Command="{Binding PickResourceCommand}" />
+                        <Button Content="Open Study Circles" IsEnabled="False" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+            <Grid Grid.Row="2" ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <Border Background="{StaticResource ChemSagePanelBrush}" Padding="20" CornerRadius="12">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Recent activity" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <ListView ItemsSource="{Binding RecentActivity}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Background="{StaticResource ChemSagePanelBrush}" Padding="20" CornerRadius="12">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Upcoming deadlines" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <ListView ItemsSource="{Binding UpcomingDeadlines}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

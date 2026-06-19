@@ -1,0 +1,13 @@
+<Page x:Class="ChemSAGE_WinUI.Views.ProfilePage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <Grid Padding="{StaticResource PagePadding}">
+            <Border Background="{StaticResource ChemSagePanelBrush}" Padding="24" CornerRadius="12">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Profile" Style="{StaticResource TitleTextBlockStyle}" />
+                    <TextBlock Text="Desktop view synchronized with the same Supabase tables and database functions used by the web application." TextWrapping="Wrap" Opacity="0.75" />
+                    <StackPanel Spacing="10"><TextBlock Text="Profile" Style="{StaticResource SubtitleTextBlockStyle}"/><TextBlock Text="{Binding Profile.Email}"/><TextBlock Text="{Binding Profile.RollNumber}"/><TextBlock Text="Analytics synced from get_profile_analytics" Opacity="0.7"/></StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>
