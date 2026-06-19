@@ -15,7 +15,7 @@ public sealed partial class MainWindow : Window
         _navigationService = navigationService;
         _navigationService.Initialize(ContentFrame);
         ExtendsContentIntoTitleBar = true;
-        SystemBackdrop = new MicaBackdrop { Kind = MicaKind.BaseAlt };
+        SystemBackdrop = new MicaBackdrop();
         RootNavigation.SelectedItem = RootNavigation.MenuItems.OfType<NavigationViewItem>().First();
         _navigationService.NavigateTo(NavigationRegistry.Dashboard);
     }
