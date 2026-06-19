@@ -1,66 +1,49 @@
 name: Build ChemSAGE WinUI
 
 on:
-push:
-branches:
-- main
-- develop
-- "copilot/**"
-paths:
-- "ChemSAGE-WinUI/**"
-- ".github/workflows/chemsage-winui.yml"
+  push:
+    paths:
+      - "ChemSAGE-WinUI/**"
+      - ".github/workflows/chemsage-winui.yml"
 
-pull_request:
-paths:
-- "ChemSAGE-WinUI/**"
-- ".github/workflows/chemsage-winui.yml"
+  pull_request:
+    paths:
+      - "ChemSAGE-WinUI/**"
+      - ".github/workflows/chemsage-winui.yml"
 
-workflow_dispatch:
+  workflow_dispatch:
 
 permissions:
-contents: read
+  contents: read
 
 jobs:
-build:
-name: Build WinUI 3 Desktop Client
-runs-on: windows-latest
+  build-winui:
+    runs-on: windows-latest
 
-```
-steps:
-  - name: Checkout Repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-  - name: Setup .NET 9
-    uses: actions/setup-dotnet@v4
-    with:
-      dotnet-version: 9.0.x
+      - name: Set up .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
 
-  - name: Setup MSBuild
-    uses: microsoft/setup-msbuild@v2
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
 
-  - name: Restore Dependencies
-    run: dotnet restore ChemSAGE-WinUI/ChemSAGE-WinUI.sln
+      - name: Restore NuGet packages
+        run: dotnet restore ChemSAGE-WinUI/ChemSAGE-WinUI.sln
 
-  - name: Build Solution
-    run: |
-      msbuild ChemSAGE-WinUI/ChemSAGE-WinUI.sln ^
-        /m ^
-        /p:Configuration=Release ^
-        /p:Platform=x64 ^
-        /p:RuntimeIdentifier=win-x64
+      - name: Build WinUI project
+        shell: cmd
+        run: |
+          msbuild ChemSAGE-WinUI\ChemSAGE-WinUI.sln /m /p:Configuration=Release /p:Platform=x64 /p:RuntimeIdentifier=win-x64
 
-  - name: Publish Application
-    run: |
-      dotnet publish ChemSAGE-WinUI/ChemSAGE-WinUI.csproj `
-        -c Release `
-        -r win-x64 `
-        --self-contained true `
-        -o publish
-
-  - name: Upload Published Build
-    uses: actions/upload-artifact@v4
-    with:
-      name: ChemSAGE-WinUI-win-x64
-      path: publish/**
-      retention-days: 30
-```
+      - name: Upload WinUI binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChemSAGE-WinUI-win-x64-release
+          path: ChemSAGE-WinUI/bin/x64/Release/**
+          if-no-files-found: error
+          retention-days: 14
