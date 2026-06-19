@@ -1,0 +1,1 @@
+/home/runner/work/ChemSage/ChemSage/ChemSAGE-WinUI/obj/x64/Release/net9.0-windows10.0.19041.0/win-x64/ChemSAGE-WinUI.csproj.AssemblyReference.cache
