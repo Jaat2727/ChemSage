@@ -1,0 +1,40 @@
+<Page x:Class="ChemSAGE_WinUI.Views.PastPapersPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:components="using:ChemSAGE_WinUI.Components">
+    <ScrollViewer>
+        <Grid Padding="{StaticResource PagePadding}" RowSpacing="16">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <StackPanel Spacing="6">
+                <TextBlock Text="Past Papers" Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Text="Browse, filter, preview metadata, and download past papers from Supabase Storage." Opacity="0.75" />
+            </StackPanel>
+
+            <Grid Grid.Row="1" ColumnSpacing="12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <components:SearchBar Text="{Binding SearchText, Mode=TwoWay}" />
+                <ComboBox Grid.Column="1" Header="Subject" ItemsSource="{Binding Subjects}" SelectedItem="{Binding SelectedSubject, Mode=TwoWay}" PlaceholderText="All" />
+                <ComboBox Grid.Column="2" Header="Semester" ItemsSource="{Binding Semesters}" SelectedItem="{Binding SelectedSemester, Mode=TwoWay}" PlaceholderText="All" />
+                <ComboBox Grid.Column="3" Header="Year" ItemsSource="{Binding Years}" SelectedItem="{Binding SelectedYear, Mode=TwoWay}" PlaceholderText="All" />
+                <ComboBox Grid.Column="4" Header="Exam Type" ItemsSource="{Binding ExamTypes}" SelectedItem="{Binding SelectedExamType, Mode=TwoWay}" PlaceholderText="All" />
+                <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                    <Button Content="Apply" Command="{Binding LoadCommand}" />
+                    <Button Content="Clear" Command="{Binding ClearFiltersCommand}" />
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <components:EmptyStateView DataContext="{Binding EmptyState}" Visibility="{Binding IsPaperListEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <ListView ItemsSource="{Binding Papers}" Visibility="{Binding HasPapers, Converter={StaticResource BoolToVisibilityConverter}}" SelectedItem="{Binding SelectedPaper, Mode=TwoWay}" SelectionMode="Single">
+                <ListView.ItemTemplate><DataTemplate><components:PaperCard /></DataTemplate></ListView.ItemTemplate>
+            </ListView>
+            </Grid>
+
+            <StackPanel Grid.Row="3" Spacing="8">
+                <components:LoadingView Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <ProgressBar Minimum="0" Maximum="100" Value="{Binding TransferProgress}" />
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button Content="Download selected" Command="{Binding DownloadSelectedCommand}" />
+                    <components:ErrorView DataContext="{Binding ErrorMessage}" Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

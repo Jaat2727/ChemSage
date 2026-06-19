@@ -1,0 +1,8 @@
+<UserControl x:Class="ChemSAGE_WinUI.Components.FilterPanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Background="{StaticResource ChemSagePanelBrush}" Padding="16" CornerRadius="12">
+        <StackPanel Spacing="8">
+            <TextBlock Text="Filters" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock Text="Use the page filter controls to refine Supabase results." Opacity="0.7" TextWrapping="Wrap" />
+        </StackPanel>
+    </Border>
+</UserControl>

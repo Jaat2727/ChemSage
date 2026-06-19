@@ -1,0 +1,12 @@
+<UserControl x:Class="ChemSAGE_WinUI.Components.PaperCard" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Padding="14" RowSpacing="6">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <TextBlock Text="{Binding Subject}" Style="{StaticResource SubtitleTextBlockStyle}" TextWrapping="Wrap" />
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
+            <TextBlock Text="{Binding ExamType}" />
+            <TextBlock Text="{Binding Semester}" />
+            <TextBlock Text="{Binding Year}" />
+            <TextBlock Text="{Binding Faculty}" />
+        </StackPanel>
+    </Grid>
+</UserControl>
