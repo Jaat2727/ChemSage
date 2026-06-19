@@ -1,0 +1,11 @@
+<Page x:Class="ChemSAGE_WinUI.Views.SignupPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Padding="48" MaxWidth="520">
+        <StackPanel Spacing="16" VerticalAlignment="Center">
+            <TextBlock Text="Create ChemSAGE account" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBox Header="Full name" Text="{Binding FullName, Mode=TwoWay}" />
+            <TextBox Header="IITM email" Text="{Binding Email, Mode=TwoWay}" />
+            <PasswordBox Header="Password" PasswordChanged="OnPasswordChanged" />
+            <Button Content="Sign up" Command="{Binding SignUpCommand}" HorizontalAlignment="Stretch" />
+        </StackPanel>
+    </Grid>
+</Page>
